@@ -35,7 +35,7 @@ import { format } from 'date-fns';
 export default function BudgetPage() {
   const { getSymbol, convert } = useCurrency();
   const { user } = useAuth();
-  const [budget, setBudget] = useState<Budget | null>(null);
+  const [budget, setBudget] = useState<Omit<Budget, 'spent'> | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -56,27 +56,25 @@ export default function BudgetPage() {
     const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
     const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
 
-    const unsubscribeExpenses = onSnapshot(expensesQuery, (expensesSnap) => {
-        const expensesData = expensesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
-        setExpenses(expensesData);
-
-        const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
-
-        if (budget) {
-            setBudget(prevBudget => ({ ...prevBudget!, spent: totalSpent }));
+    // Fetch the static budget details once
+    getDoc(budgetDocRef).then(budgetSnap => {
+        if (budgetSnap.exists()) {
+            setBudget(budgetSnap.data() as Omit<Budget, 'spent'>);
         }
     });
 
-    const unsubscribeBudget = onSnapshot(budgetDocRef, (budgetSnap) => {
-        if (budgetSnap.exists()) {
-            setBudget(budgetSnap.data() as Budget);
-        }
+    // Listen for real-time updates on expenses
+    const unsubscribeExpenses = onSnapshot(expensesQuery, (expensesSnap) => {
+        const expensesData = expensesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
+        setExpenses(expensesData);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching expenses:", error);
         setLoading(false);
     });
 
     return () => {
         unsubscribeExpenses();
-        unsubscribeBudget();
     };
   }, [user]);
 
@@ -110,7 +108,8 @@ export default function BudgetPage() {
      return <div className="flex items-center justify-center h-screen">Could not load budget data.</div>;
   }
 
-  const spentPercentage = budget.total > 0 ? (budget.spent / budget.total) * 100 : 0;
+  const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const spentPercentage = budget.total > 0 ? (totalSpent / budget.total) * 100 : 0;
   
   return (
     <div className="container mx-auto">
@@ -170,14 +169,14 @@ export default function BudgetPage() {
           <CardHeader>
             <CardTitle>Monthly Progress</CardTitle>
             <CardDescription>
-              {getSymbol()}{convert(budget.spent).toLocaleString()} / {getSymbol()}{convert(budget.total).toLocaleString()}
+              {getSymbol()}{convert(totalSpent).toLocaleString()} / {getSymbol()}{convert(budget.total).toLocaleString()}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Progress value={spentPercentage} className="w-full" />
              <div className="mt-4 flex justify-between text-sm text-muted-foreground">
-                <span>Total Spent: {getSymbol()}{convert(budget.spent).toLocaleString()}</span>
-                <span>Remaining: {getSymbol()}{convert(budget.total - budget.spent).toLocaleString()}</span>
+                <span>Total Spent: {getSymbol()}{convert(totalSpent).toLocaleString()}</span>
+                <span>Remaining: {getSymbol()}{convert(budget.total - totalSpent).toLocaleString()}</span>
              </div>
           </CardContent>
         </Card>
