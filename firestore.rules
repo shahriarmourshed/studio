@@ -1,31 +1,11 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // A user can manage their own user document.
-    match /users/{userId} {
-      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
-
-      // A user can manage their own family members.
-      match /familyMembers/{memberId} {
-        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
-      }
-
-      // A user can manage their own products.
-      match /products/{productId} {
-        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
-      }
-
-      // A user can manage their own expenses.
-      match /expenses/{expenseId} {
-        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
-      }
-      
-      // A user can manage their own budget summary.
-      match /budget/{budgetId} {
-        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
-      }
+    // Users can only read, write, and delete documents in their own user folder.
+    // This rule now correctly applies to all subcollections as well.
+    match /users/{userId}/{document=**} {
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
