@@ -6,7 +6,7 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { doc, setDoc, getDoc, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDoc, writeBatch, collection } from 'firebase/firestore';
 import { familyMembers, products, expenses, budget } from '@/lib/data';
 
 interface AuthContextType {
@@ -20,19 +20,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const createInitialUserData = async (userId: string) => {
     const userDocRef = doc(db, 'users', userId);
     
-    // Check if the document already exists. If so, do nothing.
     const userDoc = await getDoc(userDocRef);
     if (userDoc.exists()) {
-        return; // User data already exists.
+        return;
     }
 
-    // Use a batched write to ensure all initial data is set at once.
     const batch = writeBatch(db);
 
-    // Set top-level user doc just to create it
     batch.set(userDocRef, { createdAt: new Date().toISOString(), userId: userId });
 
-    // Set initial documents in subcollections
     familyMembers.forEach(member => {
         const memberRef = doc(collection(userDocRef, 'familyMembers'));
         batch.set(memberRef, { ...member, id: memberRef.id });
@@ -62,14 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // When a user is authenticated, attempt to create their initial data.
-        // The function will gracefully exit if the data already exists.
         try {
             await createInitialUserData(user.uid);
         } catch (error) {
             console.error("Failed to create or check initial user data:", error);
-            // You might want to handle this error, e.g., by signing the user out
-            // or showing a specific error message.
         }
         setUser(user);
       } else {
