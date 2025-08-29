@@ -1,0 +1,71 @@
+import type { FamilyMember, Product, Expense, Budget } from '@/lib/types';
+
+export const familyMembers: FamilyMember[] = [
+  {
+    id: '1',
+    name: 'Alex',
+    avatarUrl: 'https://picsum.photos/100/100?random=1',
+    age: 42,
+    healthConditions: 'High cholesterol',
+    dietaryRestrictions: 'Low-sodium',
+  },
+  {
+    id: '2',
+    name: 'Jane',
+    avatarUrl: 'https://picsum.photos/100/100?random=2',
+    age: 38,
+    healthConditions: 'None',
+    dietaryRestrictions: 'Vegetarian',
+  },
+  {
+    id: '3',
+    name: 'Leo',
+    avatarUrl: 'https://picsum.photos/100/100?random=3',
+    age: 12,
+    healthConditions: 'None',
+    dietaryRestrictions: 'None',
+  },
+  {
+    id: '4',
+    name: 'Mia',
+    avatarUrl: 'https://picsum.photos/100/100?random=4',
+    age: 8,
+    healthConditions: 'Peanut allergy',
+    dietaryRestrictions: 'No peanuts',
+  },
+];
+
+export const products: Product[] = [
+  { id: 'p1', name: 'Basmati Rice', quantity: 25, unit: 'kg', price: 2500, lastUpdated: '2024-07-20' },
+  { id: 'p2', name: 'Whole Wheat Flour', quantity: 10, unit: 'kg', price: 500, lastUpdated: '2024-07-20' },
+  { id: 'p3', name: 'Milk', quantity: 15, unit: 'l', price: 900, lastUpdated: '2024-07-21' },
+  { id: 'p4', name: 'Detergent Powder', quantity: 3, unit: 'kg', price: 650, lastUpdated: '2024-07-15' },
+  { id: 'p5', name: 'Olive Oil', quantity: 2, unit: 'l', price: 1200, lastUpdated: '2024-07-20' },
+  { id: 'p6', name: 'Apples', quantity: 2, unit: 'kg', price: 400, lastUpdated: '2024-07-25' },
+];
+
+export const expenses: Expense[] = [
+  { id: 'e1', description: 'Weekly Groceries', amount: 3500, category: 'Groceries', date: '2024-07-25' },
+  { id: 'e2', description: 'Electricity Bill', amount: 2200, category: 'Bills', date: '2024-07-22' },
+  { id: 'e3', description: 'Movie Tickets', amount: 1200, category: 'Entertainment', date: '2024-07-24' },
+  { id: 'e4', description: 'Fuel for Car', amount: 1500, category: 'Transport', date: '2024-07-23' },
+  { id: 'e5', description: 'Internet Bill', amount: 800, category: 'Bills', date: '2024-07-20' },
+];
+
+export const budget: Budget = {
+  total: 50000,
+  spent: 27850,
+  categories: [
+    { name: 'Groceries', amount: 12000 },
+    { name: 'Bills', amount: 8000 },
+    { name: 'Transport', amount: 5000 },
+    { name: 'Entertainment', amount: 4000 },
+    { name: 'Other', amount: 3000 },
+  ],
+};
+
+export const upcomingBills = [
+    { id: 'b1', name: 'Rent', amount: 25000, dueDate: '2024-08-01' },
+    { id: 'b2', name: 'Water Bill', amount: 500, dueDate: '2024-08-05' },
+    { id: 'b3', name: 'School Fees', amount: 15000, dueDate: '2024-08-10' },
+]

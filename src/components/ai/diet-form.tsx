@@ -1,0 +1,113 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { generateDietChart, DietChartInput, DietChartOutput } from '@/ai/flows/diet-chart-generation';
+import { familyMembers, products } from '@/lib/data';
+import { Loader2, Sparkles } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+export default function DietForm() {
+  const [preferences, setPreferences] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<DietChartOutput | null>(null);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setResult(null);
+
+    const input: DietChartInput = {
+      familyHealthData: familyMembers.map(m => ({
+        memberId: m.id,
+        age: m.age,
+        healthConditions: m.healthConditions,
+        dietaryRestrictions: m.dietaryRestrictions
+      })),
+      monthlyProductNeeds: products.map(p => ({
+        productName: p.name,
+        quantity: p.quantity,
+        unit: p.unit,
+      })),
+      preferences,
+    };
+
+    try {
+      const response = await generateDietChart(input);
+      setResult(response);
+    } catch (error) {
+      console.error("Error generating diet chart:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate diet chart. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Diet Chart Generator</CardTitle>
+        <CardDescription>
+          Based on your family's health data and product list, we'll create a personalized weekly diet plan.
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent>
+          <div className="grid w-full items-center gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="preferences">Dietary Preferences</Label>
+              <Textarea
+                id="preferences"
+                placeholder="e.g., more vegetarian meals, low spice, kids love pasta..."
+                value={preferences}
+                onChange={(e) => setPreferences(e.target.value)}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Note: We are using pre-filled family health data and product needs for this demo.
+            </p>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="mr-2 h-4 w-4" />
+            )}
+            Generate Diet Chart
+          </Button>
+        </CardFooter>
+      </form>
+      {result && (
+        <CardContent>
+            <Card className="mt-4">
+                 <CardHeader>
+                    <CardTitle>Your Weekly Diet Chart</CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                    <pre className="bg-muted p-4 rounded-lg whitespace-pre-wrap font-body text-sm">
+                        {result.weeklyDietChart}
+                    </pre>
+                 </CardContent>
+            </Card>
+        </CardContent>
+      )}
+    </Card>
+  );
+}
