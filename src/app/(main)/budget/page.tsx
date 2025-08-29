@@ -28,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCurrency } from "@/context/currency-context";
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, addDoc, doc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, getDoc, getDocs, query } from 'firebase/firestore';
 import type { Expense, Budget } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -38,6 +38,7 @@ export default function BudgetPage() {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Form state for new expense
   const [newExpenseDesc, setNewExpenseDesc] = useState('');
@@ -45,41 +46,38 @@ export default function BudgetPage() {
   const [newExpenseCategory, setNewExpenseCategory] = useState<Expense['category']>('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-  useEffect(() => {
-    if (user) {
+  const fetchBudgetData = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
       const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
-      const budgetUnsubscribe = onSnapshot(budgetDocRef, (doc) => {
-        setBudget({ id: doc.id, ...doc.data() } as Budget);
-      });
-
-      const expensesColRef = collection(db, 'users', user.uid, 'expenses');
-      const expensesUnsubscribe = onSnapshot(expensesColRef, (snapshot) => {
-        const expensesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
-        setExpenses(expensesData);
-
-        const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
-        // Update budget state and Firestore document
-        setBudget(prevBudget => {
-          if (prevBudget) {
-            const updatedBudget = { ...prevBudget, spent: totalSpent };
-            // Write the update back to Firestore
-            setDoc(budgetDocRef, { spent: totalSpent }, { merge: true });
-            return updatedBudget;
-          }
-          return null;
-        });
-
-      });
+      const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
       
-      Promise.all([getDoc(budgetDocRef), getDoc(collection(db, 'users', user.uid, 'expenses'))]).then(() => {
-          setLoading(false);
-      });
+      const [budgetSnap, expensesSnap] = await Promise.all([
+        getDoc(budgetDocRef),
+        getDocs(expensesQuery)
+      ]);
 
-      return () => {
-        budgetUnsubscribe();
-        expensesUnsubscribe();
+      const expensesData = expensesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
+      const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
+
+      if (budgetSnap.exists()) {
+        const budgetData = { id: budgetSnap.id, ...budgetSnap.data() } as Budget;
+        budgetData.spent = totalSpent;
+        setBudget(budgetData);
       }
+      
+      setExpenses(expensesData);
+
+    } catch (error) {
+      console.error("Error fetching budget data:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchBudgetData();
   }, [user]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
@@ -100,11 +98,14 @@ export default function BudgetPage() {
         setNewExpenseAmount('');
         setNewExpenseCategory('Other');
         setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
+        setIsDialogOpen(false);
+        // Refetch data to show the new expense
+        await fetchBudgetData();
     }
   };
 
   if (loading || !budget) {
-    return <div>Loading budget...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
   }
 
   const spentPercentage = budget.total > 0 ? (budget.spent / budget.total) * 100 : 0;
@@ -112,9 +113,9 @@ export default function BudgetPage() {
   return (
     <div className="container mx-auto">
       <PageHeader title="Family Budget" subtitle="Keep track of your income and expenses.">
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={() => setIsDialogOpen(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Expense
             </Button>

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, addDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, getDocs, query } from 'firebase/firestore';
 import type { FamilyMember } from '@/lib/types';
 import {
   Dialog,
@@ -34,21 +34,27 @@ export default function FamilyPage() {
   const [newMemberAge, setNewMemberAge] = useState('');
   const [newMemberHealth, setNewMemberHealth] = useState('');
   const [newMemberDiet, setNewMemberDiet] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const fetchFamilyMembers = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'users', user.uid, 'familyMembers'));
+      const querySnapshot = await getDocs(q);
+      const membersData = querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as FamilyMember)
+      );
+      setFamilyMembers(membersData);
+    } catch (error) {
+      console.error("Error fetching family members:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (user) {
-      const unsubscribe = onSnapshot(
-        collection(db, 'users', user.uid, 'familyMembers'),
-        (snapshot) => {
-          const membersData = snapshot.docs.map(
-            (doc) => ({ id: doc.id, ...doc.data() } as FamilyMember)
-          );
-          setFamilyMembers(membersData);
-          setLoading(false);
-        }
-      );
-      return () => unsubscribe();
-    }
+    fetchFamilyMembers();
   }, [user]);
 
   const handleAddMember = async (e: React.FormEvent) => {
@@ -66,27 +72,29 @@ export default function FamilyPage() {
         ...newMember, 
         id: docRef.id,
         avatarUrl: `https://picsum.photos/100/100?random=${Math.random()}`
-      });
+      }, { merge: true });
 
       // Reset form
       setNewMemberName('');
       setNewMemberAge('');
       setNewMemberHealth('');
       setNewMemberDiet('');
+      setIsDialogOpen(false);
+      await fetchFamilyMembers(); // Refetch data
     }
   };
 
 
   if (loading) {
-    return <div>Loading family members...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading family members...</div>;
   }
 
   return (
     <div className="container mx-auto">
       <PageHeader title="Family Profiles" subtitle="Manage your family's information.">
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={() => setIsDialogOpen(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Member
             </Button>

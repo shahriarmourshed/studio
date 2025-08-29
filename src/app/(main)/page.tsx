@@ -16,7 +16,7 @@ import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, doc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query } from 'firebase/firestore';
 import type { Product, Budget, Expense } from '@/lib/types';
 
 
@@ -30,36 +30,40 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      const budgetUnsubscribe = onSnapshot(doc(db, 'users', user.uid, 'budget', 'summary'), (doc) => {
-        setBudget(doc.data() as Budget);
-      });
-      
-      const productsUnsubscribe = onSnapshot(collection(db, 'users', user.uid, 'products'), (snapshot) => {
-        setProducts(snapshot.docs.map(doc => doc.data() as Product));
-      });
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
+          const productsQuery = query(collection(db, 'users', user.uid, 'products'));
+          const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
+          
+          const [budgetSnap, productsSnap, expensesSnap] = await Promise.all([
+              getDoc(budgetDocRef),
+              getDocs(productsQuery),
+              getDocs(expensesQuery)
+          ]);
+          
+          // Process Products
+          const productsData = productsSnap.docs.map(doc => doc.data() as Product);
+          setProducts(productsData);
 
-      const expensesUnsubscribe = onSnapshot(collection(db, 'users', user.uid, 'expenses'), (snapshot) => {
-        const expensesData = snapshot.docs.map(doc => doc.data() as Expense);
-        const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
-        setBudget(prevBudget => prevBudget ? { ...prevBudget, spent: totalSpent } : null);
-      });
+          // Process Expenses and Budget
+          const expensesData = expensesSnap.docs.map(doc => doc.data() as Expense);
+          const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
+          
+          if (budgetSnap.exists()) {
+              const budgetData = budgetSnap.data() as Budget;
+              setBudget({ ...budgetData, spent: totalSpent });
+          }
 
-      // A simple way to set loading to false once we have some data
-      const initialLoad = async () => {
-        await Promise.all([
-          onSnapshot(doc(db, 'users', user.uid, 'budget', 'summary'), () => {}),
-          onSnapshot(collection(db, 'users', user.uid, 'products'), () => {}),
-        ]);
-        setLoading(false);
+        } catch (error) {
+          console.error("Failed to fetch dashboard data:", error);
+        } finally {
+          setLoading(false);
+        }
       };
-      
-      initialLoad();
 
-      return () => {
-        budgetUnsubscribe();
-        productsUnsubscribe();
-        expensesUnsubscribe();
-      };
+      fetchData();
     }
   }, [user]);
 

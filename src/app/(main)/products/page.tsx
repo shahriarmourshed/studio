@@ -30,7 +30,7 @@ import { PlusCircle } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, addDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, getDocs, query } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -39,21 +39,30 @@ export default function ProductsPage() {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [newProductName, setNewProductName] = useState('');
   const [newProductQuantity, setNewProductQuantity] = useState('');
   const [newProductUnit, setNewProductUnit] = useState<Product['unit']>('kg');
   const [newProductPrice, setNewProductPrice] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      const unsubscribe = onSnapshot(collection(db, 'users', user.uid, 'products'), (snapshot) => {
-        const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-        setProducts(productsData);
-        setLoading(false);
-      });
-      return () => unsubscribe();
+  const fetchProducts = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'users', user.uid, 'products'));
+      const querySnapshot = await getDocs(q);
+      const productsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      setProducts(productsData);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchProducts();
   }, [user]);
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -75,19 +84,21 @@ export default function ProductsPage() {
       setNewProductQuantity('');
       setNewProductUnit('kg');
       setNewProductPrice('');
+      setIsDialogOpen(false);
+      await fetchProducts(); // Refetch data
     }
   };
   
   if (loading) {
-    return <div>Loading products...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading products...</div>;
   }
 
   return (
     <div className="container mx-auto">
       <PageHeader title="Product Needs" subtitle="Manage your monthly essentials.">
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={() => setIsDialogOpen(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Product
             </Button>
