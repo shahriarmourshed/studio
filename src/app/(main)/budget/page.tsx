@@ -138,7 +138,7 @@ export default function BudgetPage() {
                         <SelectTrigger className="col-span-3">
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           <SelectItem value="Salary">Salary</SelectItem>
                           <SelectItem value="Business">Business</SelectItem>
                           <SelectItem value="Investment">Investment</SelectItem>
@@ -193,7 +193,7 @@ export default function BudgetPage() {
                     <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper">
                         <SelectItem value="Groceries">Groceries</SelectItem>
                         <SelectItem value="Bills">Bills</SelectItem>
                         <SelectItem value="Housing">Housing</SelectItem>
