@@ -7,18 +7,12 @@ export type FamilyMember = {
   dietaryRestrictions: string;
 };
 
-export type PriceHistory = {
-  price: number;
-  date: string;
-};
-
 export type Product = {
   id: string;
   name: string;
   quantity: number;
   unit: 'kg' | 'g' | 'l' | 'ml' | 'piece' | 'pack';
-  priceHistory: PriceHistory[];
-  lastUpdated: string;
+  price: number;
 };
 
 export type ExpenseCategory = 

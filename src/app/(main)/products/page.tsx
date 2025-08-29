@@ -34,20 +34,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit, Trash2, ChevronsUpDown } from "lucide-react";
+import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Product } from '@/lib/types';
-import { format } from 'date-fns';
 
 export default function ProductsPage() {
   const { getSymbol, convert } = useCurrency();
@@ -94,30 +88,19 @@ export default function ProductsPage() {
     setEditProductName(product.name);
     setEditProductQuantity(String(product.quantity));
     setEditProductUnit(product.unit);
-    const latestPrice = product.priceHistory[product.priceHistory.length - 1]?.price || 0;
-    setEditProductPrice(String(latestPrice));
+    setEditProductPrice(String(product.price));
     setIsEditDialogOpen(true);
   };
   
   const handleUpdateProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedProduct && editProductName && editProductQuantity && editProductPrice) {
-        const today = format(new Date(), 'yyyy-MM-dd');
-        const newPrice = parseFloat(editProductPrice);
-        const latestPriceEntry = selectedProduct.priceHistory[selectedProduct.priceHistory.length - 1];
-        
-        let newPriceHistory = [...selectedProduct.priceHistory];
-        if (newPrice !== latestPriceEntry.price) {
-          newPriceHistory.push({ price: newPrice, date: today });
-        }
-
         const updatedProduct: Product = {
             ...selectedProduct,
             name: editProductName,
             quantity: parseFloat(editProductQuantity),
             unit: editProductUnit,
-            priceHistory: newPriceHistory,
-            lastUpdated: today,
+            price: parseFloat(editProductPrice),
         };
         updateProduct(updatedProduct);
         setIsEditDialogOpen(false);
@@ -127,13 +110,6 @@ export default function ProductsPage() {
 
   const handleDeleteProduct = (productId: string) => {
       deleteProduct(productId);
-  }
-  
-  const getLatestPrice = (product: Product) => {
-      if (!product.priceHistory || product.priceHistory.length === 0) {
-          return 0;
-      }
-      return product.priceHistory[product.priceHistory.length - 1].price;
   }
 
   return (
@@ -196,90 +172,50 @@ export default function ProductsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12"></TableHead>
                   <TableHead>Product Name</TableHead>
                   <TableHead className="text-center">Quantity</TableHead>
-                  <TableHead className="text-right">Current Price</TableHead>
-                  <TableHead className="text-right">Last Updated</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products.map((product) => (
-                  <Collapsible asChild key={product.id} >
-                    <>
-                      <TableRow>
-                        <TableCell>
-                          <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <ChevronsUpDown className="h-4 w-4" />
-                              <span className="sr-only">Toggle price history</span>
+                  <TableRow key={product.id}>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell className="text-center">
+                      {product.quantity} <Badge variant="secondary">{product.unit}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{getSymbol()}{convert(product.price).toLocaleString()}</TableCell>
+                    <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(product)}>
+                                <Edit className="h-4 w-4"/>
+                                <span className="sr-only">Edit</span>
                             </Button>
-                          </CollapsibleTrigger>
-                        </TableCell>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell className="text-center">
-                          {product.quantity} <Badge variant="secondary">{product.unit}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">{getSymbol()}{convert(getLatestPrice(product)).toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-muted-foreground">{product.lastUpdated}</TableCell>
-                        <TableCell className="text-right">
-                            <div className="flex gap-2 justify-end">
-                                <Button variant="ghost" size="icon" onClick={() => handleEditClick(product)}>
-                                    <Edit className="h-4 w-4"/>
-                                    <span className="sr-only">Edit</span>
-                                </Button>
 
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon">
-                                            <Trash2 className="h-4 w-4 text-destructive"/>
-                                            <span className="sr-only">Delete</span>
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete the product from your list.
-                                        </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteProduct(product.id)}>Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </div>
-                        </TableCell>
-                      </TableRow>
-                      <CollapsibleContent asChild>
-                        <TableRow>
-                          <TableCell colSpan={6} className="p-0">
-                             <div className="p-4 bg-muted">
-                                <h4 className="font-semibold mb-2">Price History for {product.name}</h4>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead className="text-right">Price</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {product.priceHistory.map((history, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell>{history.date}</TableCell>
-                                                <TableCell className="text-right">{getSymbol()}{convert(history.price).toLocaleString()}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                             </div>
-                          </TableCell>
-                        </TableRow>
-                      </CollapsibleContent>
-                    </>
-                  </Collapsible>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <Trash2 className="h-4 w-4 text-destructive"/>
+                                        <span className="sr-only">Delete</span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the product from your list.
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteProduct(product.id)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </TableCell>
+                  </TableRow>
                 ))}
               </TableBody>
             </Table>

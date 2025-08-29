@@ -36,12 +36,12 @@ export const familyMembers: FamilyMember[] = [
 ];
 
 export const products: Product[] = [
-  { id: 'p1', name: 'Basmati Rice', quantity: 25, unit: 'kg', priceHistory: [{ price: 2500, date: '2024-07-20' }], lastUpdated: '2024-07-20' },
-  { id: 'p2', name: 'Whole Wheat Flour', quantity: 10, unit: 'kg', priceHistory: [{ price: 500, date: '2024-07-20' }], lastUpdated: '2024-07-20' },
-  { id: 'p3', name: 'Milk', quantity: 15, unit: 'l', priceHistory: [{ price: 900, date: '2024-07-21' }], lastUpdated: '2024-07-21' },
-  { id: 'p4', name: 'Detergent Powder', quantity: 3, unit: 'kg', priceHistory: [{ price: 650, date: '2024-07-15' }], lastUpdated: '2024-07-15' },
-  { id: 'p5', name: 'Olive Oil', quantity: 2, unit: 'l', priceHistory: [{ price: 1200, date: '2024-07-20' }], lastUpdated: '2024-07-20' },
-  { id: 'p6', name: 'Apples', quantity: 2, unit: 'kg', priceHistory: [{ price: 400, date: '2024-07-25' }], lastUpdated: '2024-07-25' },
+  { id: 'p1', name: 'Basmati Rice', quantity: 25, unit: 'kg', price: 2500 },
+  { id: 'p2', name: 'Whole Wheat Flour', quantity: 10, unit: 'kg', price: 500 },
+  { id: 'p3', name: 'Milk', quantity: 15, unit: 'l', price: 900 },
+  { id: 'p4', name: 'Detergent Powder', quantity: 3, unit: 'kg', price: 650 },
+  { id: 'p5', name: 'Olive Oil', quantity: 2, unit: 'l', price: 1200 },
+  { id: 'p6', name: 'Apples', quantity: 2, unit: 'kg', price: 400 },
 ];
 
 export const expenses: Expense[] = [
