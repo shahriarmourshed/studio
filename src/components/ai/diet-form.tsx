@@ -41,6 +41,7 @@ export default function DietForm() {
     const input: DietChartInput = {
       familyHealthData: familyMembers.map(m => ({
         memberId: m.id,
+        name: m.name,
         age: m.age,
         healthConditions: m.healthConditions,
         dietaryRestrictions: m.dietaryRestrictions

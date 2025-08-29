@@ -14,6 +14,7 @@ import {z} from 'genkit';
 
 const HealthDataSchema = z.object({
   memberId: z.string().describe('Unique identifier for the family member.'),
+  name: z.string().describe("Name of the family member."),
   age: z.number().describe('Age of the family member.'),
   healthConditions: z
     .string()
@@ -72,7 +73,7 @@ const prompt = ai.definePrompt({
 
   Consider the following health data for each family member:
   {{#each familyHealthData}}
-  - Member ID: {{{memberId}}}, Age: {{{age}}}, Health Conditions: {{{healthConditions}}}, Dietary Restrictions: {{{dietaryRestrictions}}}
+  - Name: {{{name}}}, Age: {{{age}}}, Health Conditions: {{{healthConditions}}}, Dietary Restrictions: {{{dietaryRestrictions}}}
   {{/each}}
 
   Also, consider the following product needs and consumption patterns:
@@ -84,7 +85,7 @@ const prompt = ai.definePrompt({
 
   Generate two things:
   1. A detailed and personalized weekly diet chart in markdown format. It should include breakfast, lunch, dinner, and snacks for each day of the week.
-     - The diet chart must take into account each family member's dietary restrictions.
+     - The diet chart must take into account each family member's dietary restrictions and name.
      - The diet chart should utilize the available products and align with the specified product needs.
      - Optimize the diet to be as healthy as possible.
 
