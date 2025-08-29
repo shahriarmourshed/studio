@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { familyMembers, products, budget as defaultBudget, incomes as defaultIncomes } from '@/lib/data';
+import { format } from 'date-fns';
 
 interface DataContextType {
   budget: Budget | null;
@@ -12,7 +13,7 @@ interface DataContextType {
   incomes: Income[];
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => void;
-  addProduct: (product: Omit<Product, 'id'>) => void;
+  addProduct: (product: Omit<Product, 'id' | 'priceHistory' | 'lastUpdated'> & { price: number }) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
   addIncome: (income: Omit<Income, 'id'>) => void;
@@ -77,8 +78,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setFamilyMembers([...familyMembersData, newMember]);
   };
   
-  const addProduct = (product: Omit<Product, 'id'>) => {
-      const newProduct = { ...product, id: new Date().toISOString() };
+  const addProduct = (product: Omit<Product, 'id' | 'priceHistory' | 'lastUpdated'> & { price: number }) => {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const newProduct: Product = { 
+        ...product, 
+        id: new Date().toISOString(),
+        priceHistory: [{ price: product.price, date: today }],
+        lastUpdated: today
+      };
       setProducts([...productsData, newProduct]);
   };
 
