@@ -13,6 +13,9 @@ export type Product = {
   quantity: number;
   unit: 'kg' | 'g' | 'l' | 'ml' | 'piece' | 'pack' | 'dozen' | 'box' | 'bottle' | 'can' | 'roll';
   price: number;
+  dailyNeed?: number;
+  monthlyNeed?: number;
+  halfMonthlyNeed?: number;
 };
 
 export type ExpenseCategory = 
