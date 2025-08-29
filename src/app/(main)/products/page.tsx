@@ -42,6 +42,7 @@ import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Product } from '@/lib/types';
+import { format } from 'date-fns';
 
 export default function ProductsPage() {
   const { getSymbol, convert } = useCurrency();
@@ -56,6 +57,7 @@ export default function ProductsPage() {
   const [newProductCurrentStock, setNewProductCurrentStock] = useState('');
   const [newProductUnit, setNewProductUnit] = useState<Product['unit']>('kg');
   const [newProductPrice, setNewProductPrice] = useState('');
+  const [newProductPurchaseDate, setNewProductPurchaseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newProductDailyNeed, setNewProductDailyNeed] = useState('');
   const [newProductMonthlyNeed, setNewProductMonthlyNeed] = useState('');
   const [newProductHalfMonthlyNeed, setNewProductHalfMonthlyNeed] = useState('');
@@ -66,6 +68,7 @@ export default function ProductsPage() {
   const [editProductCurrentStock, setEditProductCurrentStock] = useState('');
   const [editProductUnit, setEditProductUnit] = useState<Product['unit']>('kg');
   const [editProductPrice, setEditProductPrice] = useState('');
+  const [editProductPurchaseDate, setEditProductPurchaseDate] = useState('');
   const [editProductDailyNeed, setEditProductDailyNeed] = useState('');
   const [editProductMonthlyNeed, setEditProductMonthlyNeed] = useState('');
   const [editProductHalfMonthlyNeed, setEditProductHalfMonthlyNeed] = useState('');
@@ -80,6 +83,7 @@ export default function ProductsPage() {
         currentStock: parseFloat(newProductCurrentStock),
         unit: newProductUnit,
         price: parseFloat(newProductPrice),
+        purchaseDate: newProductPurchaseDate,
         dailyNeed: newProductDailyNeed ? parseFloat(newProductDailyNeed) : undefined,
         monthlyNeed: newProductMonthlyNeed ? parseFloat(newProductMonthlyNeed) : undefined,
         halfMonthlyNeed: newProductHalfMonthlyNeed ? parseFloat(newProductHalfMonthlyNeed) : undefined,
@@ -94,6 +98,7 @@ export default function ProductsPage() {
       setNewProductCurrentStock('');
       setNewProductUnit('kg');
       setNewProductPrice('');
+      setNewProductPurchaseDate(format(new Date(), 'yyyy-MM-dd'));
       setNewProductDailyNeed('');
       setNewProductMonthlyNeed('');
       setNewProductHalfMonthlyNeed('');
@@ -107,6 +112,7 @@ export default function ProductsPage() {
     setEditProductCurrentStock(String(product.currentStock));
     setEditProductUnit(product.unit);
     setEditProductPrice(String(product.price));
+    setEditProductPurchaseDate(product.purchaseDate);
     setEditProductDailyNeed(product.dailyNeed?.toString() ?? '');
     setEditProductMonthlyNeed(product.monthlyNeed?.toString() ?? '');
     setEditProductHalfMonthlyNeed(product.halfMonthlyNeed?.toString() ?? '');
@@ -123,6 +129,7 @@ export default function ProductsPage() {
             currentStock: parseFloat(editProductCurrentStock),
             unit: editProductUnit,
             price: parseFloat(editProductPrice),
+            purchaseDate: editProductPurchaseDate,
             dailyNeed: editProductDailyNeed ? parseFloat(editProductDailyNeed) : undefined,
             monthlyNeed: editProductMonthlyNeed ? parseFloat(editProductMonthlyNeed) : undefined,
             halfMonthlyNeed: editProductHalfMonthlyNeed ? parseFloat(editProductHalfMonthlyNeed) : undefined,
@@ -194,6 +201,10 @@ export default function ProductsPage() {
                 <Input id="price" type="number" placeholder="e.g., 2500" className="col-span-3" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} required />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="purchaseDate" className="text-right">Purchase Date</Label>
+                <Input id="purchaseDate" type="date" className="col-span-3" value={newProductPurchaseDate} onChange={e => setNewProductPurchaseDate(e.target.value)} required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="dailyNeed" className="text-right">Daily Need</Label>
                 <Input id="dailyNeed" type="number" placeholder="(Optional)" className="col-span-3" value={newProductDailyNeed} onChange={e => setNewProductDailyNeed(e.target.value)} />
               </div>
@@ -221,6 +232,7 @@ export default function ProductsPage() {
                   <TableHead>Product Name</TableHead>
                   <TableHead className="text-center">Current Stock</TableHead>
                   <TableHead className="text-center">Last Purchase</TableHead>
+                  <TableHead className="text-center">Purchase Date</TableHead>
                   <TableHead className="text-center">Daily Need</TableHead>
                   <TableHead className="text-center">Half-monthly</TableHead>
                   <TableHead className="text-center">Monthly Need</TableHead>
@@ -238,6 +250,7 @@ export default function ProductsPage() {
                     <TableCell className="text-center">
                       {product.quantity} <Badge variant="secondary">{product.unit}</Badge>
                     </TableCell>
+                    <TableCell className="text-center">{product.purchaseDate}</TableCell>
                      <TableCell className="text-center">{product.dailyNeed ?? 'N/A'}</TableCell>
                     <TableCell className="text-center">{product.halfMonthlyNeed ?? 'N/A'}</TableCell>
                     <TableCell className="text-center">{product.monthlyNeed ?? 'N/A'}</TableCell>
@@ -326,6 +339,10 @@ export default function ProductsPage() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-price" className="text-right">Price ({getSymbol()})</Label>
                 <Input id="edit-price" type="number" className="col-span-3" value={editProductPrice} onChange={e => setEditProductPrice(e.target.value)} required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-purchaseDate" className="text-right">Purchase Date</Label>
+                <Input id="edit-purchaseDate" type="date" className="col-span-3" value={editProductPurchaseDate} onChange={e => setEditProductPurchaseDate(e.target.value)} required />
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-dailyNeed" className="text-right">Daily Need</Label>

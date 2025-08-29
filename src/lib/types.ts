@@ -14,6 +14,7 @@ export type Product = {
   currentStock: number;
   unit: 'kg' | 'g' | 'l' | 'ml' | 'piece' | 'pack' | 'dozen' | 'box' | 'bottle' | 'can' | 'roll';
   price: number;
+  purchaseDate: string;
   dailyNeed?: number;
   monthlyNeed?: number;
   halfMonthlyNeed?: number;

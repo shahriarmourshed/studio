@@ -35,15 +35,16 @@ export const familyMembers: FamilyMember[] = [
   },
 ];
 
-const now = new Date().toISOString();
+const now = new Date();
+const today = now.toISOString().split('T')[0]; // YYYY-MM-DD format
 
 export const products: Product[] = [
-  { id: 'p1', name: 'Basmati Rice', quantity: 25, currentStock: 20, unit: 'kg', price: 2500, lastUpdated: now, dailyNeed: 0.5 },
-  { id: 'p2', name: 'Whole Wheat Flour', quantity: 10, currentStock: 8, unit: 'kg', price: 500, lastUpdated: now, monthlyNeed: 5 },
-  { id: 'p3', name: 'Milk', quantity: 15, currentStock: 2, unit: 'l', price: 900, lastUpdated: now, dailyNeed: 1 },
-  { id: 'p4', name: 'Detergent Powder', quantity: 3, currentStock: 2.5, unit: 'kg', price: 650, lastUpdated: now, monthlyNeed: 1 },
-  { id: 'p5', name: 'Olive Oil', quantity: 2, currentStock: 1, unit: 'l', price: 1200, lastUpdated: now, halfMonthlyNeed: 0.5 },
-  { id: 'p6', name: 'Apples', quantity: 2, currentStock: 1, unit: 'kg', price: 400, lastUpdated: now, dailyNeed: 0.2 },
+  { id: 'p1', name: 'Basmati Rice', quantity: 25, currentStock: 20, unit: 'kg', price: 2500, purchaseDate: today, lastUpdated: now.toISOString(), dailyNeed: 0.5 },
+  { id: 'p2', name: 'Whole Wheat Flour', quantity: 10, currentStock: 8, unit: 'kg', price: 500, purchaseDate: today, lastUpdated: now.toISOString(), monthlyNeed: 5 },
+  { id: 'p3', name: 'Milk', quantity: 15, currentStock: 2, unit: 'l', price: 900, purchaseDate: today, lastUpdated: now.toISOString(), dailyNeed: 1 },
+  { id: 'p4', name: 'Detergent Powder', quantity: 3, currentStock: 2.5, unit: 'kg', price: 650, purchaseDate: today, lastUpdated: now.toISOString(), monthlyNeed: 1 },
+  { id: 'p5', name: 'Olive Oil', quantity: 2, currentStock: 1, unit: 'l', price: 1200, purchaseDate: today, lastUpdated: now.toISOString(), halfMonthlyNeed: 0.5 },
+  { id: 'p6', name: 'Apples', quantity: 2, currentStock: 1, unit: 'kg', price: 400, purchaseDate: today, lastUpdated: now.toISOString(), dailyNeed: 0.2 },
 ];
 
 export const expenses: Expense[] = [
