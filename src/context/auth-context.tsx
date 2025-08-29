@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -6,7 +5,8 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, writeBatch } from 'firebase/firestore';
+import { familyMembers, products, budget as defaultBudget } from '@/lib/data';
 
 interface AuthContextType {
   user: User | null;
@@ -22,12 +22,32 @@ const createInitialUserData = async (userId: string) => {
     const userDoc = await getDoc(userDocRef);
     // Only create data if the user document doesn't exist
     if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
+        const batch = writeBatch(db);
+
+        // 1. Set the main user document
+        batch.set(userDocRef, {
             createdAt: new Date().toISOString(),
             userId: userId,
         });
-        // In a real app, you might create subcollections here
-        // For now, we just create the user document to establish their "space"
+
+        // 2. Set initial budget
+        const budgetDocRef = doc(db, 'users', userId, 'budget', 'summary');
+        batch.set(budgetDocRef, defaultBudget);
+
+        // 3. Add initial family members
+        familyMembers.forEach(member => {
+            const memberDocRef = doc(collection(db, 'users', userId, 'familyMembers'));
+            batch.set(memberDocRef, { ...member, id: memberDocRef.id, avatarUrl: `https://picsum.photos/100/100?random=${Math.random()}`});
+        });
+
+        // 4. Add initial products
+        products.forEach(product => {
+            const productDocRef = doc(collection(db, 'users', userId, 'products'));
+            batch.set(productDocRef, { ...product, id: productDocRef.id });
+        });
+        
+        // Commit the batch
+        await batch.commit();
     }
 };
 
