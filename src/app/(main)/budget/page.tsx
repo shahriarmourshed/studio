@@ -297,7 +297,7 @@ export default function BudgetPage() {
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label className="text-right pt-2">Category</Label>
                     <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
-                        <RadioGroup value={newExpenseCategory} onValueChange={(v: ExpenseCategory) => setNewExpenseCategory(v)} className="p-4">
+                        <RadioGroup value={newExpenseCategory} onValueChange={(v: ExpenseCategory) => setNewExpenseCategory(v as ExpenseCategory)} className="p-4">
                             {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
                                 <div key={category} className="flex items-center space-x-2">
                                     <RadioGroupItem value={category} id={`expense-${category}`} />
@@ -534,7 +534,7 @@ export default function BudgetPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Expense</DialogTitle>
-            </DialogHeader>
+            </Header>
             <form onSubmit={handleUpdateExpense}>
             <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -548,7 +548,7 @@ export default function BudgetPage() {
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label className="text-right pt-2">Category</Label>
                     <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
-                        <RadioGroup value={editExpenseCategory} onValueChange={(v: ExpenseCategory) => setEditExpenseCategory(v)} className="p-4">
+                        <RadioGroup value={editExpenseCategory} onValueChange={(v: ExpenseCategory) => setEditExpenseCategory(v as ExpenseCategory)} className="p-4">
                             {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
                                 <div key={category} className="flex items-center space-x-2">
                                     <RadioGroupItem value={category} id={`edit-expense-${category}`} />
@@ -578,5 +578,3 @@ export default function BudgetPage() {
     </div>
   );
 }
-
-    
