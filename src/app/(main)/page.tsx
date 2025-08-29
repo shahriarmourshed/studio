@@ -16,7 +16,7 @@ import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, doc, getDoc, query } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query } from 'firebase/firestore';
 import type { Product, Budget, Expense } from '@/lib/types';
 
 
@@ -30,30 +30,36 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
-      const productsQuery = query(collection(db, 'users', user.uid, 'products'));
-      const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
-      
-      const unsubscribes = [
-        onSnapshot(productsQuery, (snapshot) => {
-          const productsData = snapshot.docs.map(doc => doc.data() as Product);
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
+          const productsQuery = query(collection(db, 'users', user.uid, 'products'));
+          const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
+          
+          const [budgetSnap, productsSnap, expensesSnap] = await Promise.all([
+            getDoc(budgetDocRef),
+            getDocs(productsQuery),
+            getDocs(expensesQuery)
+          ]);
+
+          const productsData = productsSnap.docs.map(doc => doc.data() as Product);
           setProducts(productsData);
-        }),
-        onSnapshot(expensesQuery, (expensesSnap) => {
+
           const expensesData = expensesSnap.docs.map(doc => doc.data() as Expense);
           const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
 
-          getDoc(budgetDocRef).then(budgetSnap => {
-            if (budgetSnap.exists()) {
-                const budgetData = budgetSnap.data() as Budget;
-                setBudget({ ...budgetData, spent: totalSpent });
-            }
-            setLoading(false);
-          });
-        })
-      ];
-
-      return () => unsubscribes.forEach(unsub => unsub());
+          if (budgetSnap.exists()) {
+              const budgetData = budgetSnap.data() as Budget;
+              setBudget({ ...budgetData, spent: totalSpent });
+          }
+        } catch (error) {
+          console.error("Error fetching dashboard data:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchData();
     } else {
       setLoading(false);
     }

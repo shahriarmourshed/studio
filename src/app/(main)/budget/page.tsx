@@ -28,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCurrency } from "@/context/currency-context";
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, setDoc, getDoc, onSnapshot, query } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, getDoc, getDocs, query } from 'firebase/firestore';
 import type { Expense, Budget } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -45,37 +45,38 @@ export default function BudgetPage() {
   const [newExpenseAmount, setNewExpenseAmount] = useState('');
   const [newExpenseCategory, setNewExpenseCategory] = useState<Expense['category']>('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  
+  const fetchBudgetData = async () => {
+      if (!user) {
+          setLoading(false);
+          return;
+      }
+      setLoading(true);
+      try {
+        const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
+        const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
 
-  useEffect(() => {
-    if (!user) {
-        setLoading(false);
-        return;
-    }
-
-    setLoading(true);
-    const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
-    const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
-
-    // Fetch the static budget details once
-    getDoc(budgetDocRef).then(budgetSnap => {
+        const [budgetSnap, expensesSnap] = await Promise.all([
+          getDoc(budgetDocRef),
+          getDocs(expensesQuery),
+        ]);
+        
         if (budgetSnap.exists()) {
             setBudget(budgetSnap.data() as Omit<Budget, 'spent'>);
         }
-    });
-
-    // Listen for real-time updates on expenses
-    const unsubscribeExpenses = onSnapshot(expensesQuery, (expensesSnap) => {
+        
         const expensesData = expensesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
         setExpenses(expensesData);
-        setLoading(false);
-    }, (error) => {
-        console.error("Error fetching expenses:", error);
-        setLoading(false);
-    });
 
-    return () => {
-        unsubscribeExpenses();
-    };
+      } catch (error) {
+        console.error("Error fetching budget data:", error);
+      } finally {
+        setLoading(false);
+      }
+  };
+
+  useEffect(() => {
+    fetchBudgetData();
   }, [user]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
@@ -91,12 +92,13 @@ export default function BudgetPage() {
         const docRef = await addDoc(collection(db, 'users', user.uid, 'expenses'), newExpense);
         await setDoc(doc(db, 'users', user.uid, 'expenses', docRef.id), { ...newExpense, id: docRef.id }, { merge: true });
         
-        // Reset form
+        // Reset form and refetch data
         setNewExpenseDesc('');
         setNewExpenseAmount('');
         setNewExpenseCategory('Other');
         setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
         setIsDialogOpen(false);
+        fetchBudgetData(); // Refetch to show the new expense
     }
   };
 

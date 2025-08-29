@@ -30,7 +30,7 @@ import { PlusCircle } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, setDoc, onSnapshot, query } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, getDocs, query } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -46,23 +46,26 @@ export default function ProductsPage() {
   const [newProductUnit, setNewProductUnit] = useState<Product['unit']>('kg');
   const [newProductPrice, setNewProductPrice] = useState('');
 
-  useEffect(() => {
+  const fetchProducts = async () => {
     if (!user) {
       setLoading(false);
       return;
     };
     setLoading(true);
-    const q = query(collection(db, 'users', user.uid, 'products'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    try {
+      const q = query(collection(db, 'users', user.uid, 'products'));
+      const querySnapshot = await getDocs(q);
       const productsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setProducts(productsData);
-      setLoading(false);
-    }, (error) => {
+    } catch (error) {
       console.error("Error fetching products:", error);
+    } finally {
       setLoading(false);
-    });
+    }
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    fetchProducts();
   }, [user]);
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -79,12 +82,13 @@ export default function ProductsPage() {
       const docRef = await addDoc(collection(db, 'users', user.uid, 'products'), newProduct);
       await setDoc(doc(db, 'users', user.uid, 'products', docRef.id), { ...newProduct, id: docRef.id }, { merge: true });
 
-      // Reset form
+      // Reset form and refetch
       setNewProductName('');
       setNewProductQuantity('');
       setNewProductUnit('kg');
       setNewProductPrice('');
       setIsDialogOpen(false);
+      fetchProducts();
     }
   };
   

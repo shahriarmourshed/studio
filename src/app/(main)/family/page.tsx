@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, setDoc, onSnapshot, query } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, getDocs, query } from 'firebase/firestore';
 import type { FamilyMember } from '@/lib/types';
 import {
   Dialog,
@@ -36,25 +36,28 @@ export default function FamilyPage() {
   const [newMemberDiet, setNewMemberDiet] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchFamilyMembers = async () => {
     if (!user) {
       setLoading(false);
       return;
     }
     setLoading(true);
-    const q = query(collection(db, 'users', user.uid, 'familyMembers'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    try {
+      const q = query(collection(db, 'users', user.uid, 'familyMembers'));
+      const querySnapshot = await getDocs(q);
       const membersData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as FamilyMember)
       );
       setFamilyMembers(membersData);
-      setLoading(false);
-    }, (error) => {
+    } catch (error) {
       console.error("Error fetching family members:", error);
+    } finally {
       setLoading(false);
-    });
+    }
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    fetchFamilyMembers();
   }, [user]);
 
   const handleAddMember = async (e: React.FormEvent) => {
@@ -74,12 +77,13 @@ export default function FamilyPage() {
         avatarUrl: `https://picsum.photos/100/100?random=${Math.random()}`
       }, { merge: true });
 
-      // Reset form
+      // Reset form and refetch
       setNewMemberName('');
       setNewMemberAge('');
       setNewMemberHealth('');
       setNewMemberDiet('');
       setIsDialogOpen(false);
+      fetchFamilyMembers();
     }
   };
 
