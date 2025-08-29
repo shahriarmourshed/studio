@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -12,11 +13,15 @@ interface DataContextType {
   products: Product[];
   incomes: Income[];
   addExpense: (expense: Omit<Expense, 'id'>) => void;
+  updateExpense: (expense: Expense) => void;
+  deleteExpense: (expenseId: string) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => void;
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
   addIncome: (income: Omit<Income, 'id'>) => void;
+  updateIncome: (income: Income) => void;
+  deleteIncome: (incomeId: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -97,8 +102,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addExpense = (expense: Omit<Expense, 'id'>) => {
     const newExpense = { ...expense, id: new Date().toISOString() };
-    setExpenses([...expenses, newExpense]);
+    setExpenses([...expenses, newExpense].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
+  
+  const updateExpense = (updatedExpense: Expense) => {
+    setExpenses(expenses.map(e => e.id === updatedExpense.id ? updatedExpense : e).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  };
+  
+  const deleteExpense = (expenseId: string) => {
+    setExpenses(expenses.filter(e => e.id !== expenseId));
+  };
+
 
   const addFamilyMember = (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => {
     const newMember = { 
@@ -128,18 +142,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addIncome = (income: Omit<Income, 'id'>) => {
       const newIncome = { ...income, id: new Date().toISOString() };
-      setIncomes([...incomesData, newIncome]);
+      setIncomes([...incomesData, newIncome].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  };
+
+  const updateIncome = (updatedIncome: Income) => {
+    setIncomes(incomesData.map(i => i.id === updatedIncome.id ? updatedIncome : i).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  };
+
+  const deleteIncome = (incomeId: string) => {
+    setIncomes(incomesData.filter(i => i.id !== incomeId));
   };
 
   // Recalculate spent amount whenever expenses change
   useEffect(() => {
     const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-    setBudget({ ...budget, spent: totalSpent });
+    const totalIncome = incomesData.reduce((sum, inc) => sum + inc.amount, 0);
+    setBudget({ ...budget, spent: totalSpent, total: totalIncome });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expenses]);
+  }, [expenses, incomesData]);
   
 
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, addExpense, addFamilyMember, addProduct, updateProduct, deleteProduct, addIncome };
+  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, addExpense, updateExpense, deleteExpense, addFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome };
 
   if (!isMounted) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -159,3 +182,5 @@ export function useData() {
   }
   return context;
 }
+
+    

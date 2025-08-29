@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -9,11 +10,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import ExpenseChart from "@/components/budget/expense-chart";
-import TransactionsList from "@/components/budget/transactions-list";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, DollarSign } from "lucide-react";
+import { PlusCircle, DollarSign, Edit, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +30,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -29,72 +49,160 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
-import type { Expense, Income, IncomeCategory } from '@/lib/types';
+import type { Expense, Income, IncomeCategory, ExpenseCategory } from '@/lib/types';
 import { format } from 'date-fns';
 
 export default function BudgetPage() {
   const { getSymbol, convert } = useCurrency();
-  const { budget, expenses, addExpense, incomes, addIncome } = useData();
+  const { 
+    budget, 
+    expenses, 
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    incomes, 
+    addIncome,
+    updateIncome,
+    deleteIncome
+  } = useData();
+
+  // Dialog states
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isIncomeDialogOpen, setIsIncomeDialogOpen] = useState(false);
+  const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false);
+  const [isEditIncomeDialogOpen, setIsEditIncomeDialogOpen] = useState(false);
 
-  // Form state for new expense
+  // Selected items for editing
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedIncome, setSelectedIncome] = useState<Income | null>(null);
+
+  // Add Expense form state
   const [newExpenseDesc, setNewExpenseDesc] = useState('');
   const [newExpenseAmount, setNewExpenseAmount] = useState('');
-  const [newExpenseCategory, setNewExpenseCategory] = useState<Expense['category']>('Other');
+  const [newExpenseCategory, setNewExpenseCategory] = useState<ExpenseCategory>('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newExpenseRecurrent, setNewExpenseRecurrent] = useState(false);
 
-  // Form state for new income
+  // Add Income form state
   const [newIncomeDesc, setNewIncomeDesc] = useState('');
   const [newIncomeAmount, setNewIncomeAmount] = useState('');
   const [newIncomeCategory, setNewIncomeCategory] = useState<IncomeCategory>('Other');
   const [newIncomeDate, setNewIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newIncomeRecurrent, setNewIncomeRecurrent] = useState(false);
   
-  const handleAddExpense = async (e: React.FormEvent) => {
+  // Edit Expense form state
+  const [editExpenseDesc, setEditExpenseDesc] = useState('');
+  const [editExpenseAmount, setEditExpenseAmount] = useState('');
+  const [editExpenseCategory, setEditExpenseCategory] = useState<ExpenseCategory>('Other');
+  const [editExpenseDate, setEditExpenseDate] = useState('');
+  const [editExpenseRecurrent, setEditExpenseRecurrent] = useState(false);
+  
+  // Edit Income form state
+  const [editIncomeDesc, setEditIncomeDesc] = useState('');
+  const [editIncomeAmount, setEditIncomeAmount] = useState('');
+  const [editIncomeCategory, setEditIncomeCategory] = useState<IncomeCategory>('Other');
+  const [editIncomeDate, setEditIncomeDate] = useState('');
+  const [editIncomeRecurrent, setEditIncomeRecurrent] = useState(false);
+
+
+  const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
     if (newExpenseDesc && newExpenseAmount && newExpenseCategory && newExpenseDate) {
-        const newExpense: Omit<Expense, 'id'> = {
+        addExpense({
             description: newExpenseDesc,
             amount: parseFloat(newExpenseAmount),
             category: newExpenseCategory,
             date: newExpenseDate,
             recurrent: newExpenseRecurrent,
-        };
-        addExpense(newExpense);
-        
-        // Reset form and close dialog
-        setNewExpenseDesc('');
-        setNewExpenseAmount('');
-        setNewExpenseCategory('Other');
-        setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
-        setNewExpenseRecurrent(false);
-        setIsExpenseDialogOpen(false);
+        });
+        resetAddExpenseForm();
     }
   };
 
-  const handleAddIncome = async (e: React.FormEvent) => {
+  const resetAddExpenseForm = () => {
+    setNewExpenseDesc('');
+    setNewExpenseAmount('');
+    setNewExpenseCategory('Other');
+    setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
+    setNewExpenseRecurrent(false);
+    setIsExpenseDialogOpen(false);
+  }
+
+  const handleAddIncome = (e: React.FormEvent) => {
     e.preventDefault();
     if (newIncomeDesc && newIncomeAmount && newIncomeDate) {
-        const newIncome: Omit<Income, 'id'> = {
+        addIncome({
             description: newIncomeDesc,
             amount: parseFloat(newIncomeAmount),
             category: newIncomeCategory,
             date: newIncomeDate,
             recurrent: newIncomeRecurrent,
-        };
-        addIncome(newIncome);
-        
-        // Reset form and close dialog
-        setNewIncomeDesc('');
-        setNewIncomeAmount('');
-        setNewIncomeCategory('Other');
-        setNewIncomeDate(format(new Date(), 'yyyy-MM-dd'));
-        setNewIncomeRecurrent(false);
-        setIsIncomeDialogOpen(false);
+        });
+        resetAddIncomeForm();
     }
   };
+
+  const resetAddIncomeForm = () => {
+     setNewIncomeDesc('');
+    setNewIncomeAmount('');
+    setNewIncomeCategory('Other');
+    setNewIncomeDate(format(new Date(), 'yyyy-MM-dd'));
+    setNewIncomeRecurrent(false);
+    setIsIncomeDialogOpen(false);
+  }
+
+  const handleEditExpenseClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setEditExpenseDesc(expense.description);
+    setEditExpenseAmount(String(expense.amount));
+    setEditExpenseCategory(expense.category);
+    setEditExpenseDate(expense.date);
+    setEditExpenseRecurrent(expense.recurrent);
+    setIsEditExpenseDialogOpen(true);
+  }
+  
+  const handleUpdateExpense = (e: React.FormEvent) => {
+      e.preventDefault();
+      if(selectedExpense) {
+          updateExpense({
+              ...selectedExpense,
+              description: editExpenseDesc,
+              amount: parseFloat(editExpenseAmount),
+              category: editExpenseCategory,
+              date: editExpenseDate,
+              recurrent: editExpenseRecurrent,
+          });
+          setIsEditExpenseDialogOpen(false);
+          setSelectedExpense(null);
+      }
+  }
+
+  const handleEditIncomeClick = (income: Income) => {
+    setSelectedIncome(income);
+    setEditIncomeDesc(income.description);
+    setEditIncomeAmount(String(income.amount));
+    setEditIncomeCategory(income.category);
+    setEditIncomeDate(income.date);
+    setEditIncomeRecurrent(income.recurrent);
+    setIsEditIncomeDialogOpen(true);
+  }
+  
+  const handleUpdateIncome = (e: React.FormEvent) => {
+      e.preventDefault();
+      if(selectedIncome) {
+          updateIncome({
+              ...selectedIncome,
+              description: editIncomeDesc,
+              amount: parseFloat(editIncomeAmount),
+              category: editIncomeCategory,
+              date: editIncomeDate,
+              recurrent: editIncomeRecurrent,
+          });
+          setIsEditIncomeDialogOpen(false);
+          setSelectedIncome(null);
+      }
+  }
+
 
   if (!budget) {
      return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
@@ -189,8 +297,8 @@ export default function BudgetPage() {
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label className="text-right pt-2">Category</Label>
                     <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
-                        <RadioGroup value={newExpenseCategory} onValueChange={(v: Expense['category']) => setNewExpenseCategory(v)} className="p-4">
-                            {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as Expense['category'][]).map(category => (
+                        <RadioGroup value={newExpenseCategory} onValueChange={(v: ExpenseCategory) => setNewExpenseCategory(v)} className="p-4">
+                            {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
                                 <div key={category} className="flex items-center space-x-2">
                                     <RadioGroupItem value={category} id={`expense-${category}`} />
                                     <Label htmlFor={`expense-${category}`}>{category}</Label>
@@ -244,7 +352,7 @@ export default function BudgetPage() {
           </CardContent>
         </Card>
         
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Expense Breakdown</CardTitle>
             <CardDescription>How your money is being spent across categories.</CardDescription>
@@ -254,16 +362,221 @@ export default function BudgetPage() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Your latest logged expenses.</CardDescription>
+            <CardTitle>Incomes</CardTitle>
           </CardHeader>
           <CardContent>
-            <TransactionsList expenses={expenses} />
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Recurrent</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {incomes.map((income) => (
+                        <TableRow key={income.id}>
+                            <TableCell className="font-medium">{income.description}</TableCell>
+                            <TableCell>{income.category}</TableCell>
+                            <TableCell>{income.date}</TableCell>
+                            <TableCell>{income.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-right">{getSymbol()}{convert(income.amount).toLocaleString()}</TableCell>
+                            <TableCell className="text-right">
+                                <div className="flex gap-2 justify-end">
+                                    <Button variant="ghost" size="icon" onClick={() => handleEditIncomeClick(income)}>
+                                        <Edit className="h-4 w-4"/>
+                                        <span className="sr-only">Edit</span>
+                                    </Button>
+
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <Trash2 className="h-4 w-4 text-destructive"/>
+                                                <span className="sr-only">Delete</span>
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete this income record.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => deleteIncome(income.id)}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Expenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+             <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Recurrent</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {expenses.map((expense) => (
+                        <TableRow key={expense.id}>
+                            <TableCell className="font-medium">{expense.description}</TableCell>
+                            <TableCell>{expense.category}</TableCell>
+                            <TableCell>{expense.date}</TableCell>
+                            <TableCell>{expense.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-right">{getSymbol()}{convert(expense.amount).toLocaleString()}</TableCell>
+                            <TableCell className="text-right">
+                                <div className="flex gap-2 justify-end">
+                                    <Button variant="ghost" size="icon" onClick={() => handleEditExpenseClick(expense)}>
+                                        <Edit className="h-4 w-4"/>
+                                        <span className="sr-only">Edit</span>
+                                    </Button>
+
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <Trash2 className="h-4 w-4 text-destructive"/>
+                                                <span className="sr-only">Delete</span>
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete this expense record.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => deleteExpense(expense.id)}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
+
+       {selectedIncome && (
+        <Dialog open={isEditIncomeDialogOpen} onOpenChange={setIsEditIncomeDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Income</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleUpdateIncome}>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-description" className="text-right">Description</Label>
+                <Input id="edit-income-description" className="col-span-3" value={editIncomeDesc} onChange={e=>setEditIncomeDesc(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-amount" className="text-right">Amount ({getSymbol()})</Label>
+                <Input id="edit-income-amount" type="number" className="col-span-3" value={editIncomeAmount} onChange={e=>setEditIncomeAmount(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label className="text-right pt-2">Category</Label>
+                    <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
+                        <RadioGroup value={editIncomeCategory} onValueChange={(v: IncomeCategory) => setEditIncomeCategory(v)} className="p-4">
+                            {(['Salary', 'Business', 'Investment', 'Gift', 'Other'] as IncomeCategory[]).map(category => (
+                                <div key={category} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category} id={`edit-income-${category}`} />
+                                    <Label htmlFor={`edit-income-${category}`}>{category}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </ScrollArea>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-date" className="text-right">Date</Label>
+                <Input id="edit-income-date" type="date" className="col-span-3" value={editIncomeDate} onChange={e=>setEditIncomeDate(e.target.value)} required/>
+                </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-income-recurrent" className="text-right">Recurrent</Label>
+                    <div className="col-span-3">
+                        <Switch id="edit-income-recurrent" checked={editIncomeRecurrent} onCheckedChange={setEditIncomeRecurrent} />
+                    </div>
+                </div>
+                <Button type="submit" className="w-full">Save Changes</Button>
+            </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {selectedExpense && (
+        <Dialog open={isEditExpenseDialogOpen} onOpenChange={setIsEditExpenseDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Expense</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleUpdateExpense}>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-description" className="text-right">Description</Label>
+                    <Input id="edit-exp-description" className="col-span-3" value={editExpenseDesc} onChange={e=>setEditExpenseDesc(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-amount" className="text-right">Amount ({getSymbol()})</Label>
+                    <Input id="edit-exp-amount" type="number" className="col-span-3" value={editExpenseAmount} onChange={e=>setEditExpenseAmount(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label className="text-right pt-2">Category</Label>
+                    <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
+                        <RadioGroup value={editExpenseCategory} onValueChange={(v: ExpenseCategory) => setEditExpenseCategory(v)} className="p-4">
+                            {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
+                                <div key={category} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category} id={`edit-expense-${category}`} />
+                                    <Label htmlFor={`edit-expense-${category}`}>{category}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </ScrollArea>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-date" className="text-right">Date</Label>
+                    <Input id="edit-exp-date" type="date" className="col-span-3" value={editExpenseDate} onChange={e=>setEditExpenseDate(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-recurrent" className="text-right">Recurrent</Label>
+                    <div className="col-span-3">
+                        <Switch id="edit-exp-recurrent" checked={editExpenseRecurrent} onCheckedChange={setEditExpenseRecurrent} />
+                    </div>
+                </div>
+                <Button type="submit" className="w-full">Save Changes</Button>
+            </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
     </div>
   );
 }
+
+    
