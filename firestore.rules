@@ -2,7 +2,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{documents=**} {
+    match /users/{userId}/{document=**} {
+      // A user can read (get, list) and write (create, update, delete) 
+      // their own documents and any documents in subcollections.
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
