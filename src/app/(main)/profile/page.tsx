@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import PageHeader from '@/components/common/page-header';
 import {
@@ -9,16 +11,32 @@ import {
 } from '@/components/ui/card';
 import { familyMembers } from '@/lib/data';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, LogOut } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
+
   return (
     <div className="container mx-auto">
       <PageHeader title="Family Profiles" subtitle="Manage your family's information.">
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Member
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Member
+          </Button>
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
       </PageHeader>
       
       <div className="px-4 sm:px-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
