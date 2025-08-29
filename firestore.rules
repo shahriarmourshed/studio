@@ -1,10 +1,28 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    //
+    // Rules for user-specific data
+    //
+    match /users/{userId} {
+      // A user can create their own user document
+      allow create: if request.auth.uid == userId;
+
+      // A user can read their own document if it exists
+      allow get: if request.auth.uid == userId;
+
+      // A user can update their own document
+      allow update: if request.auth.uid == userId;
+
+      // Users cannot delete their own main document
+      allow delete: if false;
+
+      // Rules for all subcollections within a user's document
+      match /{document=**} {
+        // A user can read and write to any document in their own subcollections
+        allow read, write: if request.auth.uid == userId;
+      }
     }
   }
 }
