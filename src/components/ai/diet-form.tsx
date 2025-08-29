@@ -27,7 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function DietForm() {
   const [preferences, setPreferences] = useState('');
-  const [shoppingListPeriod, setShoppingListPeriod] = useState<'daily' | 'weekly' | 'half-monthly' | 'monthly'>('weekly');
+  const [dietType, setDietType] = useState<'cost-optimized' | 'standard' | 'as-per-products'>('standard');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DietChartOutput | null>(null);
   const { toast } = useToast();
@@ -55,7 +55,7 @@ export default function DietForm() {
         monthlyNeed: p.monthlyNeed,
       })),
       preferences,
-      shoppingListPeriod,
+      dietType,
     };
 
     try {
@@ -76,9 +76,9 @@ export default function DietForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Diet & Shopping List Generator</CardTitle>
+        <CardTitle>Diet Chart Generator</CardTitle>
         <CardDescription>
-          Based on your family's health data and product list, we'll create a personalized weekly diet plan and a shopping list.
+          Based on your family's health data and product list, we'll create a personalized weekly diet plan.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -93,21 +93,20 @@ export default function DietForm() {
             />
           </div>
           <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="shopping-period">Shopping List Period</Label>
-             <Select value={shoppingListPeriod} onValueChange={(v: any) => setShoppingListPeriod(v)}>
-              <SelectTrigger id="shopping-period">
-                <SelectValue placeholder="Select period" />
+            <Label htmlFor="diet-type">Diet Type</Label>
+             <Select value={dietType} onValueChange={(v: any) => setDietType(v)}>
+              <SelectTrigger id="diet-type">
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="half-monthly">Half-monthly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="standard">Standard</SelectItem>
+                <SelectItem value="cost-optimized">Cost Optimized</SelectItem>
+                <SelectItem value="as-per-products">As Per Products</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <p className="text-sm text-muted-foreground">
-            Note: The AI will use your current family health data and product needs list, including consumption patterns.
+            Note: The AI will use your current family health data and product needs list.
           </p>
         </CardContent>
         <CardFooter>
@@ -117,7 +116,7 @@ export default function DietForm() {
             ) : (
               <Sparkles className="mr-2 h-4 w-4" />
             )}
-            Generate
+            Generate Diet Chart
           </Button>
         </CardFooter>
       </form>
@@ -130,16 +129,6 @@ export default function DietForm() {
                  <CardContent>
                     <pre className="bg-muted p-4 rounded-lg whitespace-pre-wrap font-body text-sm">
                         {result.weeklyDietChart}
-                    </pre>
-                 </CardContent>
-            </Card>
-            <Card className="mt-4">
-                 <CardHeader>
-                    <CardTitle>Your {shoppingListPeriod} Shopping List</CardTitle>
-                 </CardHeader>
-                 <CardContent>
-                    <pre className="bg-muted p-4 rounded-lg whitespace-pre-wrap font-body text-sm">
-                        {result.shoppingList}
                     </pre>
                  </CardContent>
             </Card>
