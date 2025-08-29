@@ -1,32 +1,30 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Match any document in the 'users' collection
+    // A user can manage their own user document.
     match /users/{userId} {
-      // Allow a user to read and write their own user document.
-      // This is crucial for creating the document on signup and for any
-      // top-level fields you might add later.
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
 
-      // Allow access to the 'familyMembers' subcollection
+      // A user can manage their own family members.
       match /familyMembers/{memberId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
 
-      // Allow access to the 'products' subcollection
+      // A user can manage their own products.
       match /products/{productId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
 
-      // Allow access to the 'expenses' subcollection
+      // A user can manage their own expenses.
       match /expenses/{expenseId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
-
-      // Allow access to the 'budget' subcollection
+      
+      // A user can manage their own budget summary.
       match /budget/{budgetId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
     }
   }
