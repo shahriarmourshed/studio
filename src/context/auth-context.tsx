@@ -1,10 +1,12 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
+import type { User } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { familyMembers, products, expenses, budget } from '@/lib/data';
 
 interface AuthContextType {
@@ -19,32 +21,35 @@ const createInitialUserData = async (userId: string) => {
     const userDocRef = doc(db, 'users', userId);
     const userDoc = await getDoc(userDocRef);
 
+    // Only create data if the user document doesn't exist at all
     if (!userDoc.exists()) {
-        const initialData = {
-            familyMembers,
-            products,
-            expenses,
-            budget,
-        };
-        await setDoc(userDocRef, initialData);
+        const batch = writeBatch(db);
 
-        // Set individual documents in subcollections
+        // Set top-level user doc just to create it
+        batch.set(userDocRef, { createdAt: new Date().toISOString() });
+
+        // Set initial documents in subcollections
         for (const member of familyMembers) {
-            await setDoc(doc(db, 'users', userId, 'familyMembers', member.id), member);
+            const memberRef = doc(db, 'users', userId, 'familyMembers', member.id);
+            batch.set(memberRef, member);
         }
         for (const product of products) {
-            await setDoc(doc(db, 'users', userId, 'products', product.id), product);
+            const productRef = doc(db, 'users', userId, 'products', product.id);
+            batch.set(productRef, product);
         }
         for (const expense of expenses) {
-            await setDoc(doc(db, 'users', userId, 'expenses', expense.id), expense);
+            const expenseRef = doc(db, 'users', userId, 'expenses', expense.id);
+            batch.set(expenseRef, expense);
         }
-        await setDoc(doc(db, 'users', userId, 'budget', 'summary'), budget);
+        const budgetRef = doc(db, 'users', userId, 'budget', 'summary');
+        batch.set(budgetRef, budget);
 
+        await batch.commit();
     }
 };
 
 
-export function AuthProvider({ children }: { children: React.Node }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -53,9 +58,12 @@ export function AuthProvider({ children }: { children: React.Node }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        // Create data for new user, idempotent for existing users
         await createInitialUserData(user.uid);
+        setUser(user);
+      } else {
+        setUser(null);
       }
-      setUser(user);
       setLoading(false);
     });
 
@@ -79,14 +87,14 @@ export function AuthProvider({ children }: { children: React.Node }) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
   
-  // Prevent flashing of auth pages when user is logged in or vice versa
   const isAuthPage = pathname === '/login' || pathname === '/signup';
-  if ((user && isAuthPage) || (!user && !isAuthPage)) {
+  if (loading || (user && isAuthPage) || (!user && !isAuthPage)) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading: false }}>
       {children}
     </AuthContext.Provider>
   );
