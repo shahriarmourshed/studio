@@ -1,21 +1,24 @@
 "use client"
 
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts"
-import { budget, expenses } from "@/lib/data"
+import { expenses } from "@/lib/data"
+import { useCurrency } from "@/context/currency-context"
 
-const categoryTotals = expenses.reduce((acc, expense) => {
+const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
+
+export default function ExpenseChart() {
+  const { convert, getSymbol } = useCurrency();
+
+  const categoryTotals = expenses.reduce((acc, expense) => {
     if (!acc[expense.category]) {
         acc[expense.category] = 0;
     }
     acc[expense.category] += expense.amount;
     return acc;
-}, {} as Record<string, number>);
+  }, {} as Record<string, number>);
 
-const chartData = Object.entries(categoryTotals).map(([name, value]) => ({ name, value }));
+  const chartData = Object.entries(categoryTotals).map(([name, value]) => ({ name, value: convert(value) }));
 
-const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
-
-export default function ExpenseChart() {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
@@ -26,6 +29,7 @@ export default function ExpenseChart() {
             borderColor: "hsl(var(--border))",
             borderRadius: "var(--radius)"
           }}
+          formatter={(value: number) => `${getSymbol()}${value.toLocaleString()}`}
         />
         <Pie
           data={chartData}

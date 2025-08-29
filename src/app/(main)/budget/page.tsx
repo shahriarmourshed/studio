@@ -1,3 +1,5 @@
+'use client';
+
 import PageHeader from "@/components/common/page-header";
 import {
   Card,
@@ -23,59 +25,65 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCurrency } from "@/context/currency-context";
+import CurrencySwitcher from "@/components/common/currency-switcher";
 
 export default function BudgetPage() {
+  const { getSymbol, convert } = useCurrency();
   const spentPercentage = (budget.spent / budget.total) * 100;
   
   return (
     <div className="container mx-auto">
       <PageHeader title="Family Budget" subtitle="Keep track of your income and expenses.">
-         <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Expense
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Expense</DialogTitle>
-              <DialogDescription>
-                Log a new transaction to keep your budget up to date.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">Description</Label>
-                <Input id="description" placeholder="e.g., Weekly Groceries" className="col-span-3" />
+        <div className="flex items-center gap-4">
+          <CurrencySwitcher />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Expense
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Expense</DialogTitle>
+                <DialogDescription>
+                  Log a new transaction to keep your budget up to date.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="description" className="text-right">Description</Label>
+                  <Input id="description" placeholder="e.g., Weekly Groceries" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="amount" className="text-right">Amount ({getSymbol()})</Label>
+                  <Input id="amount" type="number" placeholder="e.g., 3500" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="category" className="text-right">Category</Label>
+                  <Select>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="groceries">Groceries</SelectItem>
+                      <SelectItem value="bills">Bills</SelectItem>
+                      <SelectItem value="transport">Transport</SelectItem>
+                      <SelectItem value="entertainment">Entertainment</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="date" className="text-right">Date</Label>
+                  <Input id="date" type="date" className="col-span-3" />
+                </div>
+                <Button type="submit" className="w-full">Save Expense</Button>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="amount" className="text-right">Amount ($)</Label>
-                <Input id="amount" type="number" placeholder="e.g., 3500" className="col-span-3" />
-              </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="category" className="text-right">Category</Label>
-                 <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="groceries">Groceries</SelectItem>
-                    <SelectItem value="bills">Bills</SelectItem>
-                    <SelectItem value="transport">Transport</SelectItem>
-                    <SelectItem value="entertainment">Entertainment</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="date" className="text-right">Date</Label>
-                <Input id="date" type="date" className="col-span-3" />
-              </div>
-              <Button type="submit" className="w-full">Save Expense</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </PageHeader>
       
       <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -83,14 +91,14 @@ export default function BudgetPage() {
           <CardHeader>
             <CardTitle>Monthly Progress</CardTitle>
             <CardDescription>
-              ${budget.spent.toLocaleString()} / ${budget.total.toLocaleString()}
+              {getSymbol()}{convert(budget.spent).toLocaleString()} / {getSymbol()}{convert(budget.total).toLocaleString()}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Progress value={spentPercentage} className="w-full" />
              <div className="mt-4 flex justify-between text-sm text-muted-foreground">
-                <span>Total Spent: ${budget.spent.toLocaleString()}</span>
-                <span>Remaining: ${(budget.total - budget.spent).toLocaleString()}</span>
+                <span>Total Spent: {getSymbol()}{convert(budget.spent).toLocaleString()}</span>
+                <span>Remaining: {getSymbol()}{convert(budget.total - budget.spent).toLocaleString()}</span>
              </div>
           </CardContent>
         </Card>

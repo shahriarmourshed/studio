@@ -1,3 +1,4 @@
+'use client';
 import { expenses } from '@/lib/data';
 import {
   Utensils,
@@ -6,6 +7,7 @@ import {
   Ticket,
   MoreHorizontal,
 } from 'lucide-react';
+import { useCurrency } from '@/context/currency-context';
 
 const categoryIcons = {
   Groceries: <Utensils className="h-5 w-5 text-muted-foreground" />,
@@ -16,6 +18,8 @@ const categoryIcons = {
 };
 
 export default function TransactionsList() {
+  const { getSymbol, convert } = useCurrency();
+
   return (
     <ul className="space-y-4">
       {expenses.map((expense) => (
@@ -27,7 +31,7 @@ export default function TransactionsList() {
             <p className="font-medium">{expense.description}</p>
             <p className="text-sm text-muted-foreground">{expense.date}</p>
           </div>
-          <p className="font-semibold text-right">-${expense.amount.toLocaleString()}</p>
+          <p className="font-semibold text-right">-{getSymbol()}{convert(expense.amount).toLocaleString()}</p>
         </li>
       ))}
     </ul>

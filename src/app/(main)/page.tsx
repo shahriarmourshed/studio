@@ -1,3 +1,4 @@
+'use client';
 import Link from 'next/link';
 import {
   Card,
@@ -11,8 +12,10 @@ import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
 import BudgetOverviewChart from '@/components/dashboard/budget-overview-chart';
 import { budget, products, upcomingBills } from '@/lib/data';
 import PageHeader from '@/components/common/page-header';
+import { useCurrency } from '@/context/currency-context';
 
 export default function DashboardPage() {
+  const { getSymbol, convert } = useCurrency();
   const remainingBudget = budget.total - budget.spent;
 
   return (
@@ -24,7 +27,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Budget Overview</CardTitle>
             <CardDescription>
-              You have spent ${budget.spent.toLocaleString()} of ${budget.total.toLocaleString()} this month.
+              You have spent {getSymbol()}{convert(budget.spent).toLocaleString()} of {getSymbol()}{convert(budget.total).toLocaleString()} this month.
             </CardDescription>
           </CardHeader>
           <CardContent className="h-60">
@@ -62,7 +65,7 @@ export default function DashboardPage() {
                     <p className="font-medium">{bill.name}</p>
                     <p className="text-sm text-muted-foreground">Due: {new Date(bill.dueDate).toLocaleDateString()}</p>
                   </div>
-                  <p className="font-semibold text-lg">${bill.amount.toLocaleString()}</p>
+                  <p className="font-semibold text-lg">{getSymbol()}{convert(bill.amount).toLocaleString()}</p>
                 </li>
               ))}
             </ul>
