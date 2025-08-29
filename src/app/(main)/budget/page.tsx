@@ -28,16 +28,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCurrency } from "@/context/currency-context";
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, setDoc, getDoc, getDocs, query } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, getDoc, getDocs, query, onSnapshot } from 'firebase/firestore';
 import type { Expense, Budget } from '@/lib/types';
 import { format } from 'date-fns';
 
 export default function BudgetPage() {
   const { getSymbol, convert } = useCurrency();
-  const { user, isInitialDataCreated } = useAuth();
+  const { user } = useAuth();
   const [budget, setBudget] = useState<Omit<Budget, 'spent'> | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Form state for new expense
@@ -46,42 +45,28 @@ export default function BudgetPage() {
   const [newExpenseCategory, setNewExpenseCategory] = useState<Expense['category']>('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   
-  const fetchBudgetData = async () => {
-      if (!user) {
-          setLoading(false);
-          return;
-      }
-      setLoading(true);
-      try {
-        const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
-        const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
-
-        const [budgetSnap, expensesSnap] = await Promise.all([
-          getDoc(budgetDocRef),
-          getDocs(expensesQuery),
-        ]);
-        
-        if (budgetSnap.exists()) {
-            setBudget(budgetSnap.data() as Omit<Budget, 'spent'>);
-        }
-        
-        const expensesData = expensesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
-        setExpenses(expensesData);
-
-      } catch (error) {
-        console.error("Error fetching budget data:", error);
-      } finally {
-        setLoading(false);
-      }
-  };
-
   useEffect(() => {
-    if (user && isInitialDataCreated) {
-        fetchBudgetData();
-    } else {
-        setLoading(!user || !isInitialDataCreated);
-    }
-  }, [user, isInitialDataCreated]);
+    if (!user) return;
+
+    // Fetch budget summary once
+    const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
+    getDoc(budgetDocRef).then(docSnap => {
+      if (docSnap.exists()) {
+        setBudget(docSnap.data() as Omit<Budget, 'spent'>);
+      }
+    });
+
+    // Listen for real-time expense updates
+    const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
+    const unsubscribe = onSnapshot(expensesQuery, (querySnapshot) => {
+      const expensesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
+      setExpenses(expensesData);
+    }, (error) => {
+      console.error("Error fetching expenses in real-time: ", error);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,22 +81,17 @@ export default function BudgetPage() {
         const docRef = await addDoc(collection(db, 'users', user.uid, 'expenses'), newExpense);
         await setDoc(doc(db, 'users', user.uid, 'expenses', docRef.id), { ...newExpense, id: docRef.id }, { merge: true });
         
-        // Reset form and refetch data
+        // Reset form and close dialog
         setNewExpenseDesc('');
         setNewExpenseAmount('');
         setNewExpenseCategory('Other');
         setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
         setIsDialogOpen(false);
-        fetchBudgetData(); // Refetch to show the new expense
     }
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
-  }
-  
   if (!budget) {
-     return <div className="flex items-center justify-center h-screen">Could not load budget data.</div>;
+     return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
   }
 
   const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);

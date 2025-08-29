@@ -16,60 +16,62 @@ import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc, query } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, query } from 'firebase/firestore';
 import type { Product, Budget, Expense } from '@/lib/types';
 
 
 export default function DashboardPage() {
   const { getSymbol, convert } = useCurrency();
-  const { user, isInitialDataCreated } = useAuth();
+  const { user } = useAuth();
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   useEffect(() => {
-    if (user && isInitialDataCreated) {
-      const fetchData = async () => {
-        setLoading(true);
-        try {
-          const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
-          const productsQuery = query(collection(db, 'users', user.uid, 'products'));
-          const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
-          
-          const [budgetSnap, productsSnap, expensesSnap] = await Promise.all([
-            getDoc(budgetDocRef),
-            getDocs(productsQuery),
-            getDocs(expensesQuery)
-          ]);
+    if (!user) return;
 
-          const productsData = productsSnap.docs.map(doc => doc.data() as Product);
-          setProducts(productsData);
+    // Fetch budget summary once
+    const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
+    getDoc(budgetDocRef).then(docSnap => {
+      if (docSnap.exists()) {
+        const budgetData = docSnap.data() as Omit<Budget, 'spent'>;
+        const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        setBudget({ ...budgetData, spent: totalSpent });
+      }
+    });
 
-          const expensesData = expensesSnap.docs.map(doc => doc.data() as Expense);
-          const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
+    // Listen for products
+    const productsQuery = query(collection(db, 'users', user.uid, 'products'));
+    const unsubProducts = onSnapshot(productsQuery, (snapshot) => {
+        const productsData = snapshot.docs.map(doc => doc.data() as Product);
+        setProducts(productsData);
+    });
 
-          if (budgetSnap.exists()) {
-              const budgetData = budgetSnap.data() as Budget;
-              setBudget({ ...budgetData, spent: totalSpent });
-          }
-        } catch (error) {
-          console.error("Error fetching dashboard data:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData();
-    } else {
-      setLoading(!user || !isInitialDataCreated);
+    // Listen for expenses
+    const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
+    const unsubExpenses = onSnapshot(expensesQuery, (snapshot) => {
+        const expensesData = snapshot.docs.map(doc => doc.data() as Expense);
+        setExpenses(expensesData);
+    });
+    
+    return () => {
+      unsubProducts();
+      unsubExpenses();
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (budget) {
+      const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+      setBudget(prevBudget => prevBudget ? { ...prevBudget, spent: totalSpent } : null);
     }
-  }, [user, isInitialDataCreated]);
+  }, [expenses]);
 
-  if (loading || !budget) {
+
+  if (!budget) {
     return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;
   }
-
-  const remainingBudget = budget.total - budget.spent;
 
   return (
     <div className="container mx-auto px-0 sm:px-4">

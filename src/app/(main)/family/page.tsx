@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, setDoc, getDocs, query } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, onSnapshot, query } from 'firebase/firestore';
 import type { FamilyMember } from '@/lib/types';
 import {
   Dialog,
@@ -27,42 +27,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function FamilyPage() {
-  const { user, isInitialDataCreated } = useAuth();
+  const { user } = useAuth();
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
-  const [loading, setLoading] = useState(true);
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberAge, setNewMemberAge] = useState('');
   const [newMemberHealth, setNewMemberHealth] = useState('');
   const [newMemberDiet, setNewMemberDiet] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const fetchFamilyMembers = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const q = query(collection(db, 'users', user.uid, 'familyMembers'));
-      const querySnapshot = await getDocs(q);
+  useEffect(() => {
+    if (!user) return;
+
+    const q = query(collection(db, 'users', user.uid, 'familyMembers'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const membersData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as FamilyMember)
       );
       setFamilyMembers(membersData);
-    } catch (error) {
+    }, (error) => {
       console.error("Error fetching family members:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    });
 
-  useEffect(() => {
-    if (user && isInitialDataCreated) {
-        fetchFamilyMembers();
-    } else {
-        setLoading(!user || !isInitialDataCreated);
-    }
-  }, [user, isInitialDataCreated]);
+    return () => unsubscribe();
+  }, [user]);
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,14 +74,8 @@ export default function FamilyPage() {
       setNewMemberHealth('');
       setNewMemberDiet('');
       setIsDialogOpen(false);
-      fetchFamilyMembers();
     }
   };
-
-
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading family members...</div>;
-  }
 
   return (
     <div className="container mx-auto">

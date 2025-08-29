@@ -10,67 +10,59 @@ import { familyMembers, products, budget as defaultBudget } from '@/lib/data';
 
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
-  isInitialDataCreated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// This function will run once when a new user signs up
 const createInitialUserData = async (userId: string) => {
     const userDocRef = doc(db, 'users', userId);
     
     const userDoc = await getDoc(userDocRef);
-    // Only create data if the user document doesn't exist
-    if (!userDoc.exists()) {
+    if (userDoc.exists()) {
+        return; // Data already exists, do nothing.
+    }
+    
+    try {
         const batch = writeBatch(db);
 
-        // 1. Set the main user document
         batch.set(userDocRef, {
             createdAt: new Date().toISOString(),
             userId: userId,
         });
 
-        // 2. Set initial budget
         const budgetDocRef = doc(db, 'users', userId, 'budget', 'summary');
         batch.set(budgetDocRef, defaultBudget);
 
-        // 3. Add initial family members
         familyMembers.forEach(member => {
             const memberDocRef = doc(collection(db, 'users', userId, 'familyMembers'));
             batch.set(memberDocRef, { ...member, id: memberDocRef.id, avatarUrl: `https://picsum.photos/100/100?random=${Math.random()}`});
         });
 
-        // 4. Add initial products
         products.forEach(product => {
             const productDocRef = doc(collection(db, 'users', userId, 'products'));
             batch.set(productDocRef, { ...product, id: productDocRef.id });
         });
         
-        // Commit the batch
         await batch.commit();
-        return true;
+    } catch (error) {
+        console.error("Failed to create initial user data:", error);
     }
-    return true; // Data already exists
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isInitialDataCreated, setIsInitialDataCreated] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
       if (user) {
-        // When a user logs in, we ensure their initial data structure exists
-        const dataReady = await createInitialUserData(user.uid);
+        await createInitialUserData(user.uid);
         setUser(user);
-        setIsInitialDataCreated(dataReady);
       } else {
         setUser(null);
-        setIsInitialDataCreated(false);
       }
       setLoading(false);
     });
@@ -90,24 +82,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loading, pathname, router]);
 
-
   if (loading) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
   
-  // This logic prevents screen flicker during redirects
   const isAuthPage = pathname === '/login' || pathname === '/signup';
   if ((user && isAuthPage) || (!user && !isAuthPage)) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
-  // Prevent rendering child components until initial data is confirmed to be ready
-  if (user && !isInitialDataCreated) {
-    return <div className="flex items-center justify-center h-screen">Setting up your account...</div>;
-  }
-
   return (
-    <AuthContext.Provider value={{ user, loading: false, isInitialDataCreated }}>
+    <AuthContext.Provider value={{ user }}>
       {children}
     </AuthContext.Provider>
   );
