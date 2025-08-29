@@ -11,7 +11,7 @@ export type Product = {
   id: string;
   name: string;
   quantity: number;
-  unit: 'kg' | 'g' | 'l' | 'ml' | 'piece' | 'pack';
+  unit: 'kg' | 'g' | 'l' | 'ml' | 'piece' | 'pack' | 'dozen' | 'box' | 'bottle' | 'can' | 'roll';
   price: number;
 };
 

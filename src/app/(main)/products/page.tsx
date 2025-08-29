@@ -152,6 +152,11 @@ export default function ProductsPage() {
                     <SelectItem value="ml">ml</SelectItem>
                     <SelectItem value="piece">piece</SelectItem>
                     <SelectItem value="pack">pack</SelectItem>
+                    <SelectItem value="dozen">dozen</SelectItem>
+                    <SelectItem value="box">box</SelectItem>
+                    <SelectItem value="bottle">bottle</SelectItem>
+                    <SelectItem value="can">can</SelectItem>
+                    <SelectItem value="roll">roll</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -255,6 +260,11 @@ export default function ProductsPage() {
                     <SelectItem value="ml">ml</SelectItem>
                     <SelectItem value="piece">piece</SelectItem>
                     <SelectItem value="pack">pack</SelectItem>
+                    <SelectItem value="dozen">dozen</SelectItem>
+                    <SelectItem value="box">box</SelectItem>
+                    <SelectItem value="bottle">bottle</SelectItem>
+                    <SelectItem value="can">can</SelectItem>
+                    <SelectItem value="roll">roll</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
