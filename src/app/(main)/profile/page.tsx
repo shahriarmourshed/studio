@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import CurrencySwitcher from '@/components/common/currency-switcher';
 import ThemeSwitcher from '@/components/common/theme-switcher';
 
 export default function ProfilePage() {
@@ -26,10 +25,6 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between">
               <p className="font-medium">Theme</p>
               <ThemeSwitcher />
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="font-medium">Currency</p>
-              <CurrencySwitcher />
             </div>
           </CardContent>
         </Card>

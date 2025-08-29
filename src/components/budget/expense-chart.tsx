@@ -17,7 +17,7 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
     return acc;
   }, {} as Record<string, number>);
 
-  const chartData = Object.entries(categoryTotals).map(([name, value]) => ({ name, value: convert(value) }));
+  const chartData = Object.entries(categoryTotals).map(([name, value]) => ({ name, value: value }));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
