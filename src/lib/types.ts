@@ -30,6 +30,7 @@ export type Income = {
   description: string;
   amount: number;
   date: string;
+  recurrent: boolean;
 };
 
 export type Budget = {

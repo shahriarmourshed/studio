@@ -52,7 +52,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('familyverse-expenses', []);
   const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('familyverse-family', familyMembers);
   const [productsData, setProducts] = useLocalStorage<Product[]>('familyverse-products', products);
-  const [incomesData, setIncomes] = useLocalStorage<Income[]>('familyverse-incomes', [{ id: 'inc1', description: 'Monthly Salary', amount: 50000, date: '2024-07-01' }]);
+  const [incomesData, setIncomes] = useLocalStorage<Income[]>('familyverse-incomes', [{ id: 'inc1', description: 'Monthly Salary', amount: 50000, date: '2024-07-01', recurrent: true }]);
 
 
   const [isMounted, setIsMounted] = useState(false);

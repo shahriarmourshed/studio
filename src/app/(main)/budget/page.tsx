@@ -48,6 +48,7 @@ export default function BudgetPage() {
   const [newIncomeDesc, setNewIncomeDesc] = useState('');
   const [newIncomeAmount, setNewIncomeAmount] = useState('');
   const [newIncomeDate, setNewIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [newIncomeRecurrent, setNewIncomeRecurrent] = useState(false);
   
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +79,7 @@ export default function BudgetPage() {
             description: newIncomeDesc,
             amount: parseFloat(newIncomeAmount),
             date: newIncomeDate,
+            recurrent: newIncomeRecurrent,
         };
         addIncome(newIncome);
         
@@ -85,6 +87,7 @@ export default function BudgetPage() {
         setNewIncomeDesc('');
         setNewIncomeAmount('');
         setNewIncomeDate(format(new Date(), 'yyyy-MM-dd'));
+        setNewIncomeRecurrent(false);
         setIsIncomeDialogOpen(false);
     }
   };
@@ -129,6 +132,12 @@ export default function BudgetPage() {
                     <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="income-date" className="text-right">Date</Label>
                     <Input id="income-date" type="date" className="col-span-3" value={newIncomeDate} onChange={e=>setNewIncomeDate(e.target.value)} required/>
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="income-recurrent" className="text-right">Recurrent</Label>
+                        <div className="col-span-3">
+                            <Switch id="income-recurrent" checked={newIncomeRecurrent} onCheckedChange={setNewIncomeRecurrent} />
+                        </div>
                     </div>
                     <Button type="submit" className="w-full">Save Income</Button>
                 </div>
