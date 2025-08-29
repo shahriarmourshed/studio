@@ -5,6 +5,10 @@ import {
   Car,
   Ticket,
   MoreHorizontal,
+  Home,
+  HeartPulse,
+  BookOpen,
+  Sparkles,
 } from 'lucide-react';
 import { useCurrency } from '@/context/currency-context';
 import type { Expense } from '@/lib/types';
@@ -12,8 +16,12 @@ import type { Expense } from '@/lib/types';
 const categoryIcons = {
   Groceries: <Utensils className="h-5 w-5 text-muted-foreground" />,
   Bills: <Receipt className="h-5 w-5 text-muted-foreground" />,
+  Housing: <Home className="h-5 w-5 text-muted-foreground" />,
   Transport: <Car className="h-5 w-5 text-muted-foreground" />,
+  Health: <HeartPulse className="h-5 w-5 text-muted-foreground" />,
+  Education: <BookOpen className="h-5 w-5 text-muted-foreground" />,
   Entertainment: <Ticket className="h-5 w-5 text-muted-foreground" />,
+  'Personal Care': <Sparkles className="h-5 w-5 text-muted-foreground" />,
   Other: <MoreHorizontal className="h-5 w-5 text-muted-foreground" />,
 };
 

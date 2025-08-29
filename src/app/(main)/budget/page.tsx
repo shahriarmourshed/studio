@@ -28,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
-import type { Expense, Income } from '@/lib/types';
+import type { Expense, Income, IncomeCategory } from '@/lib/types';
 import { format } from 'date-fns';
 
 export default function BudgetPage() {
@@ -47,6 +47,7 @@ export default function BudgetPage() {
   // Form state for new income
   const [newIncomeDesc, setNewIncomeDesc] = useState('');
   const [newIncomeAmount, setNewIncomeAmount] = useState('');
+  const [newIncomeCategory, setNewIncomeCategory] = useState<IncomeCategory>('Other');
   const [newIncomeDate, setNewIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newIncomeRecurrent, setNewIncomeRecurrent] = useState(false);
   
@@ -78,6 +79,7 @@ export default function BudgetPage() {
         const newIncome: Omit<Income, 'id'> = {
             description: newIncomeDesc,
             amount: parseFloat(newIncomeAmount),
+            category: newIncomeCategory,
             date: newIncomeDate,
             recurrent: newIncomeRecurrent,
         };
@@ -86,6 +88,7 @@ export default function BudgetPage() {
         // Reset form and close dialog
         setNewIncomeDesc('');
         setNewIncomeAmount('');
+        setNewIncomeCategory('Other');
         setNewIncomeDate(format(new Date(), 'yyyy-MM-dd'));
         setNewIncomeRecurrent(false);
         setIsIncomeDialogOpen(false);
@@ -128,6 +131,21 @@ export default function BudgetPage() {
                     <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="income-amount" className="text-right">Amount ({getSymbol()})</Label>
                     <Input id="income-amount" type="number" placeholder="e.g., 50000" className="col-span-3" value={newIncomeAmount} onChange={e=>setNewIncomeAmount(e.target.value)} required/>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="income-category" className="text-right">Category</Label>
+                      <Select value={newIncomeCategory} onValueChange={(v: IncomeCategory) => setNewIncomeCategory(v)}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Salary">Salary</SelectItem>
+                          <SelectItem value="Business">Business</SelectItem>
+                          <SelectItem value="Investment">Investment</SelectItem>
+                          <SelectItem value="Gift">Gift</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="income-date" className="text-right">Date</Label>
@@ -178,8 +196,12 @@ export default function BudgetPage() {
                     <SelectContent>
                         <SelectItem value="Groceries">Groceries</SelectItem>
                         <SelectItem value="Bills">Bills</SelectItem>
+                        <SelectItem value="Housing">Housing</SelectItem>
                         <SelectItem value="Transport">Transport</SelectItem>
+                        <SelectItem value="Health">Health</SelectItem>
+                        <SelectItem value="Education">Education</SelectItem>
                         <SelectItem value="Entertainment">Entertainment</SelectItem>
+                        <SelectItem value="Personal Care">Personal Care</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                     </Select>

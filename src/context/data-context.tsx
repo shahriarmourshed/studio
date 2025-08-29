@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
-import { familyMembers, products, budget as defaultBudget } from '@/lib/data';
+import { familyMembers, products, budget as defaultBudget, incomes as defaultIncomes } from '@/lib/data';
 
 interface DataContextType {
   budget: Budget | null;
@@ -52,7 +52,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('familyverse-expenses', []);
   const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('familyverse-family', familyMembers);
   const [productsData, setProducts] = useLocalStorage<Product[]>('familyverse-products', products);
-  const [incomesData, setIncomes] = useLocalStorage<Income[]>('familyverse-incomes', [{ id: 'inc1', description: 'Monthly Salary', amount: 50000, date: '2024-07-01', recurrent: true }]);
+  const [incomesData, setIncomes] = useLocalStorage<Income[]>('familyverse-incomes', defaultIncomes);
 
 
   const [isMounted, setIsMounted] = useState(false);

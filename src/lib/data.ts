@@ -1,4 +1,4 @@
-import type { FamilyMember, Product, Expense, Budget } from '@/lib/types';
+import type { FamilyMember, Product, Expense, Budget, Income } from '@/lib/types';
 
 export const familyMembers: FamilyMember[] = [
   {
@@ -45,11 +45,15 @@ export const products: Product[] = [
 ];
 
 export const expenses: Expense[] = [
-  { id: 'e1', description: 'Weekly Groceries', amount: 3500, category: 'Groceries', date: '2024-07-25' },
-  { id: 'e2', description: 'Electricity Bill', amount: 2200, category: 'Bills', date: '2024-07-22' },
-  { id: 'e3', description: 'Movie Tickets', amount: 1200, category: 'Entertainment', date: '2024-07-24' },
-  { id: 'e4', description: 'Fuel for Car', amount: 1500, category: 'Transport', date: '2024-07-23' },
-  { id: 'e5', description: 'Internet Bill', amount: 800, category: 'Bills', date: '2024-07-20' },
+  { id: 'e1', description: 'Weekly Groceries', amount: 3500, category: 'Groceries', date: '2024-07-25', recurrent: false },
+  { id: 'e2', description: 'Electricity Bill', amount: 2200, category: 'Bills', date: '2024-07-22', recurrent: true },
+  { id: 'e3', description: 'Movie Tickets', amount: 1200, category: 'Entertainment', date: '2024-07-24', recurrent: false },
+  { id: 'e4', description: 'Fuel for Car', amount: 1500, category: 'Transport', date: '2024-07-23', recurrent: true },
+  { id: 'e5', description: 'Internet Bill', amount: 800, category: 'Bills', date: '2024-07-20', recurrent: true },
+];
+
+export const incomes: Income[] = [
+    { id: 'inc1', description: 'Monthly Salary', amount: 50000, category: 'Salary', date: '2024-07-01', recurrent: true }
 ];
 
 export const budget: Budget = {
@@ -58,8 +62,12 @@ export const budget: Budget = {
   categories: [
     { name: 'Groceries', amount: 12000 },
     { name: 'Bills', amount: 8000 },
+    { name: 'Housing', amount: 15000 },
     { name: 'Transport', amount: 5000 },
+    { name: 'Health', amount: 3000 },
+    { name: 'Education', amount: 6000 },
     { name: 'Entertainment', amount: 4000 },
+    { name: 'Personal Care', amount: 2000 },
     { name: 'Other', amount: 3000 },
   ],
 };

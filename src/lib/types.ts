@@ -16,19 +16,33 @@ export type Product = {
   lastUpdated: string;
 };
 
+export type ExpenseCategory = 
+  | 'Groceries' 
+  | 'Bills' 
+  | 'Housing' 
+  | 'Transport' 
+  | 'Health'
+  | 'Education'
+  | 'Entertainment' 
+  | 'Personal Care'
+  | 'Other';
+
 export type Expense = {
   id: string;
   description: string;
   amount: number;
-  category: 'Groceries' | 'Bills' | 'Transport' | 'Entertainment' | 'Other';
+  category: ExpenseCategory;
   date: string;
   recurrent: boolean;
 };
 
+export type IncomeCategory = 'Salary' | 'Business' | 'Investment' | 'Gift' | 'Other';
+
 export type Income = {
-  id: string;
+  id:string;
   description: string;
   amount: number;
+  category: IncomeCategory;
   date: string;
   recurrent: boolean;
 };
@@ -37,7 +51,7 @@ export type Budget = {
   total: number;
   spent: number;
   categories: {
-    name: 'Groceries' | 'Bills' | 'Transport' | 'Entertainment' | 'Other';
+    name: ExpenseCategory;
     amount: number;
   }[];
 };
