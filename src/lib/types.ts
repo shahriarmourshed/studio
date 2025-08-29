@@ -10,12 +10,14 @@ export type FamilyMember = {
 export type Product = {
   id: string;
   name: string;
-  quantity: number;
+  quantity: number; // Represents the last purchased quantity
+  currentStock: number;
   unit: 'kg' | 'g' | 'l' | 'ml' | 'piece' | 'pack' | 'dozen' | 'box' | 'bottle' | 'can' | 'roll';
   price: number;
   dailyNeed?: number;
   monthlyNeed?: number;
   halfMonthlyNeed?: number;
+  lastUpdated: string; // ISO string to track when stock was last updated
 };
 
 export type ExpenseCategory = 

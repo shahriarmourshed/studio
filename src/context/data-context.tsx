@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { familyMembers, products as defaultProducts, budget as defaultBudget, incomes as defaultIncomes } from '@/lib/data';
+import { differenceInDays, differenceInWeeks, differenceInMonths } from 'date-fns';
 
 interface DataContextType {
   budget: Budget | null;
@@ -12,7 +13,7 @@ interface DataContextType {
   incomes: Income[];
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => void;
-  addProduct: (product: Omit<Product, 'id'>) => void;
+  addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
   addIncome: (income: Omit<Income, 'id'>) => void;
@@ -59,8 +60,39 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    if (!isMounted) {
+      setIsMounted(true);
+      // Run stock calculation only once on mount
+      const calculatedProducts = productsData.map(product => {
+        const today = new Date();
+        const lastUpdatedDate = new Date(product.lastUpdated);
+        let stockUsed = 0;
+
+        if (product.dailyNeed) {
+          const daysPassed = differenceInDays(today, lastUpdatedDate);
+          stockUsed += daysPassed * product.dailyNeed;
+        }
+        if (product.halfMonthlyNeed) {
+           const weeksPassed = differenceInWeeks(today, lastUpdatedDate);
+           stockUsed += (weeksPassed / 2) * product.halfMonthlyNeed;
+        }
+        if (product.monthlyNeed) {
+          const monthsPassed = differenceInMonths(today, lastUpdatedDate);
+          stockUsed += monthsPassed * product.monthlyNeed;
+        }
+
+        const newStock = Math.max(0, product.currentStock - stockUsed);
+
+        // Only update if stock has changed to avoid unnecessary re-renders
+        if (newStock !== product.currentStock) {
+          return { ...product, currentStock: newStock, lastUpdated: today.toISOString() };
+        }
+        return product;
+      });
+      setProducts(calculatedProducts);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted]);
 
 
   const addExpense = (expense: Omit<Expense, 'id'>) => {
@@ -77,16 +109,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setFamilyMembers([...familyMembersData, newMember]);
   };
   
-  const addProduct = (product: Omit<Product, 'id'>) => {
+  const addProduct = (product: Omit<Product, 'id' | 'lastUpdated'>) => {
       const newProduct: Product = { 
         ...product, 
         id: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
       };
       setProducts([...productsData, newProduct]);
   };
 
   const updateProduct = (updatedProduct: Product) => {
-    setProducts(productsData.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    setProducts(productsData.map(p => p.id === updatedProduct.id ? {...updatedProduct, lastUpdated: new Date().toISOString()} : p));
   };
 
   const deleteProduct = (productId: string) => {

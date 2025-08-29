@@ -53,6 +53,7 @@ export default function ProductsPage() {
   // Add form state
   const [newProductName, setNewProductName] = useState('');
   const [newProductQuantity, setNewProductQuantity] = useState('');
+  const [newProductCurrentStock, setNewProductCurrentStock] = useState('');
   const [newProductUnit, setNewProductUnit] = useState<Product['unit']>('kg');
   const [newProductPrice, setNewProductPrice] = useState('');
   const [newProductDailyNeed, setNewProductDailyNeed] = useState('');
@@ -62,6 +63,7 @@ export default function ProductsPage() {
   // Edit form state
   const [editProductName, setEditProductName] = useState('');
   const [editProductQuantity, setEditProductQuantity] = useState('');
+  const [editProductCurrentStock, setEditProductCurrentStock] = useState('');
   const [editProductUnit, setEditProductUnit] = useState<Product['unit']>('kg');
   const [editProductPrice, setEditProductPrice] = useState('');
   const [editProductDailyNeed, setEditProductDailyNeed] = useState('');
@@ -71,10 +73,11 @@ export default function ProductsPage() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newProductName && newProductQuantity && newProductPrice) {
+    if (newProductName && newProductQuantity && newProductCurrentStock && newProductPrice) {
       addProduct({
         name: newProductName,
         quantity: parseFloat(newProductQuantity),
+        currentStock: parseFloat(newProductCurrentStock),
         unit: newProductUnit,
         price: parseFloat(newProductPrice),
         dailyNeed: newProductDailyNeed ? parseFloat(newProductDailyNeed) : undefined,
@@ -88,6 +91,7 @@ export default function ProductsPage() {
   const resetAddForm = () => {
       setNewProductName('');
       setNewProductQuantity('');
+      setNewProductCurrentStock('');
       setNewProductUnit('kg');
       setNewProductPrice('');
       setNewProductDailyNeed('');
@@ -100,6 +104,7 @@ export default function ProductsPage() {
     setSelectedProduct(product);
     setEditProductName(product.name);
     setEditProductQuantity(String(product.quantity));
+    setEditProductCurrentStock(String(product.currentStock));
     setEditProductUnit(product.unit);
     setEditProductPrice(String(product.price));
     setEditProductDailyNeed(product.dailyNeed?.toString() ?? '');
@@ -110,11 +115,12 @@ export default function ProductsPage() {
   
   const handleUpdateProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedProduct && editProductName && editProductQuantity && editProductPrice) {
+    if (selectedProduct && editProductName && editProductQuantity && editProductCurrentStock && editProductPrice) {
         const updatedProduct: Product = {
             ...selectedProduct,
             name: editProductName,
             quantity: parseFloat(editProductQuantity),
+            currentStock: parseFloat(editProductCurrentStock),
             unit: editProductUnit,
             price: parseFloat(editProductPrice),
             dailyNeed: editProductDailyNeed ? parseFloat(editProductDailyNeed) : undefined,
@@ -155,8 +161,12 @@ export default function ProductsPage() {
                 <Input id="name" placeholder="e.g., Basmati Rice" className="col-span-3" value={newProductName} onChange={e => setNewProductName(e.target.value)} required />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="quantity" className="text-right">Quantity</Label>
+                <Label htmlFor="quantity" className="text-right">Purchased</Label>
                 <Input id="quantity" type="number" placeholder="e.g., 25" className="col-span-3" value={newProductQuantity} onChange={e => setNewProductQuantity(e.target.value)} required/>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="currentStock" className="text-right">Current Stock</Label>
+                <Input id="currentStock" type="number" placeholder="e.g., 20" className="col-span-3" value={newProductCurrentStock} onChange={e => setNewProductCurrentStock(e.target.value)} required/>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="unit" className="text-right">Unit</Label>
@@ -209,7 +219,8 @@ export default function ProductsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product Name</TableHead>
-                  <TableHead className="text-center">Quantity</TableHead>
+                  <TableHead className="text-center">Current Stock</TableHead>
+                  <TableHead className="text-center">Last Purchase</TableHead>
                   <TableHead className="text-center">Daily Need</TableHead>
                   <TableHead className="text-center">Half-monthly</TableHead>
                   <TableHead className="text-center">Monthly Need</TableHead>
@@ -221,6 +232,9 @@ export default function ProductsPage() {
                 {products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell className="text-center">
+                      {product.currentStock.toFixed(2)} <Badge variant="outline">{product.unit}</Badge>
+                    </TableCell>
                     <TableCell className="text-center">
                       {product.quantity} <Badge variant="secondary">{product.unit}</Badge>
                     </TableCell>
@@ -281,8 +295,12 @@ export default function ProductsPage() {
                 <Input id="edit-name" className="col-span-3" value={editProductName} onChange={e => setEditProductName(e.target.value)} required />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-quantity" className="text-right">Quantity</Label>
+                <Label htmlFor="edit-quantity" className="text-right">Last Purchase</Label>
                 <Input id="edit-quantity" type="number" className="col-span-3" value={editProductQuantity} onChange={e => setEditProductQuantity(e.target.value)} required/>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-currentStock" className="text-right">Current Stock</Label>
+                <Input id="edit-currentStock" type="number" className="col-span-3" value={editProductCurrentStock} onChange={e => setEditProductCurrentStock(e.target.value)} required/>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-unit" className="text-right">Unit</Label>
