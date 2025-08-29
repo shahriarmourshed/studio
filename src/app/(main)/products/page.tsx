@@ -36,7 +36,7 @@ import { format } from 'date-fns';
 
 export default function ProductsPage() {
   const { getSymbol, convert } = useCurrency();
-  const { user } = useAuth();
+  const { user, isInitialDataCreated } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -65,8 +65,12 @@ export default function ProductsPage() {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, [user]);
+    if (user && isInitialDataCreated) {
+        fetchProducts();
+    } else {
+        setLoading(!user || !isInitialDataCreated);
+    }
+  }, [user, isInitialDataCreated]);
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();

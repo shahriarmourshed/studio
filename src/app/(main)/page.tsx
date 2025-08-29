@@ -22,14 +22,14 @@ import type { Product, Budget, Expense } from '@/lib/types';
 
 export default function DashboardPage() {
   const { getSymbol, convert } = useCurrency();
-  const { user } = useAuth();
+  const { user, isInitialDataCreated } = useAuth();
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user && isInitialDataCreated) {
       const fetchData = async () => {
         setLoading(true);
         try {
@@ -61,9 +61,9 @@ export default function DashboardPage() {
       };
       fetchData();
     } else {
-      setLoading(false);
+      setLoading(!user || !isInitialDataCreated);
     }
-  }, [user]);
+  }, [user, isInitialDataCreated]);
 
   if (loading || !budget) {
     return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;

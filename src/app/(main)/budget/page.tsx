@@ -34,7 +34,7 @@ import { format } from 'date-fns';
 
 export default function BudgetPage() {
   const { getSymbol, convert } = useCurrency();
-  const { user } = useAuth();
+  const { user, isInitialDataCreated } = useAuth();
   const [budget, setBudget] = useState<Omit<Budget, 'spent'> | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,8 +76,12 @@ export default function BudgetPage() {
   };
 
   useEffect(() => {
-    fetchBudgetData();
-  }, [user]);
+    if (user && isInitialDataCreated) {
+        fetchBudgetData();
+    } else {
+        setLoading(!user || !isInitialDataCreated);
+    }
+  }, [user, isInitialDataCreated]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();

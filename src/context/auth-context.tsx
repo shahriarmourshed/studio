@@ -11,6 +11,7 @@ import { familyMembers, products, budget as defaultBudget } from '@/lib/data';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isInitialDataCreated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,12 +49,15 @@ const createInitialUserData = async (userId: string) => {
         
         // Commit the batch
         await batch.commit();
+        return true;
     }
+    return true; // Data already exists
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialDataCreated, setIsInitialDataCreated] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -61,10 +65,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         // When a user logs in, we ensure their initial data structure exists
-        await createInitialUserData(user.uid);
+        const dataReady = await createInitialUserData(user.uid);
         setUser(user);
+        setIsInitialDataCreated(dataReady);
       } else {
         setUser(null);
+        setIsInitialDataCreated(false);
       }
       setLoading(false);
     });
@@ -95,8 +101,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
+  // Prevent rendering child components until initial data is confirmed to be ready
+  if (user && !isInitialDataCreated) {
+    return <div className="flex items-center justify-center h-screen">Setting up your account...</div>;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading: false }}>
+    <AuthContext.Provider value={{ user, loading: false, isInitialDataCreated }}>
       {children}
     </AuthContext.Provider>
   );

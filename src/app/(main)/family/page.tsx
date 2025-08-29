@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function FamilyPage() {
-  const { user } = useAuth();
+  const { user, isInitialDataCreated } = useAuth();
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [newMemberName, setNewMemberName] = useState('');
@@ -57,8 +57,12 @@ export default function FamilyPage() {
   };
 
   useEffect(() => {
-    fetchFamilyMembers();
-  }, [user]);
+    if (user && isInitialDataCreated) {
+        fetchFamilyMembers();
+    } else {
+        setLoading(!user || !isInitialDataCreated);
+    }
+  }, [user, isInitialDataCreated]);
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
