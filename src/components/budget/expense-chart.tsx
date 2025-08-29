@@ -1,10 +1,35 @@
+
 "use client"
 
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts"
 import { useCurrency } from "@/context/currency-context"
 import type { Expense } from "@/lib/types"
 
-const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
+const COLORS = [
+    "hsl(var(--chart-1))", 
+    "hsl(var(--chart-2))", 
+    "hsl(var(--chart-3))", 
+    "hsl(var(--chart-4))", 
+    "hsl(var(--chart-5))",
+    "hsl(22, 82%, 60%)",
+    "hsl(30, 82%, 60%)",
+    "hsl(40, 82%, 60%)",
+    "hsl(50, 82%, 60%)",
+];
+
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+      {`${name} (${(percent * 100).toFixed(0)}%)`}
+    </text>
+  );
+};
+
 
 export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
   const { convert, getSymbol } = useCurrency();
@@ -29,18 +54,18 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
             borderColor: "hsl(var(--border))",
             borderRadius: "var(--radius)"
           }}
-          formatter={(value: number) => `${getSymbol()}${value.toLocaleString()}`}
+          formatter={(value: number, name: string) => [`${getSymbol()}${value.toLocaleString()}`, name]}
         />
         <Pie
           data={chartData}
           cx="50%"
           cy="50%"
           labelLine={false}
-          outerRadius={80}
-          innerRadius={60}
+          label={renderCustomizedLabel}
+          outerRadius={120}
           fill="#8884d8"
           dataKey="value"
-          paddingAngle={5}
+          paddingAngle={2}
         >
           {chartData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
