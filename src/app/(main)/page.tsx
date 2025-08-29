@@ -17,11 +17,14 @@ import { useData } from '@/context/data-context';
 
 export default function DashboardPage() {
   const { getSymbol, convert } = useCurrency();
-  const { budget, products } = useData();
+  const { budget, products, expenses, incomes } = useData();
 
   if (!budget) {
     return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;
   }
+
+  const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
+  const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   return (
     <div className="container mx-auto px-0 sm:px-4">
@@ -32,7 +35,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Budget Overview</CardTitle>
             <CardDescription>
-              You have spent {getSymbol()}{convert(budget.spent).toLocaleString()} of {getSymbol()}{convert(budget.total).toLocaleString()} this month.
+              You have spent {getSymbol()}{convert(totalSpent).toLocaleString()} of your {getSymbol()}{convert(totalIncome).toLocaleString()} income this month.
             </CardDescription>
           </CardHeader>
           <CardContent className="h-60">

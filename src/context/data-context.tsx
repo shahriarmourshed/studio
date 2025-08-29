@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { Budget, Expense, FamilyMember, Product } from '@/lib/types';
+import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { familyMembers, products, budget as defaultBudget } from '@/lib/data';
 
 interface DataContextType {
@@ -9,9 +9,11 @@ interface DataContextType {
   expenses: Expense[];
   familyMembers: FamilyMember[];
   products: Product[];
+  incomes: Income[];
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => void;
   addProduct: (product: Omit<Product, 'id'>) => void;
+  addIncome: (income: Omit<Income, 'id'>) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -50,6 +52,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('familyverse-expenses', []);
   const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('familyverse-family', familyMembers);
   const [productsData, setProducts] = useLocalStorage<Product[]>('familyverse-products', products);
+  const [incomesData, setIncomes] = useLocalStorage<Income[]>('familyverse-incomes', [{ id: 'inc1', description: 'Monthly Salary', amount: 50000, date: '2024-07-01' }]);
+
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
@@ -76,14 +80,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setProducts([...productsData, newProduct]);
   };
 
+  const addIncome = (income: Omit<Income, 'id'>) => {
+      const newIncome = { ...income, id: new Date().toISOString() };
+      setIncomes([...incomesData, newIncome]);
+  };
+
   // Recalculate spent amount whenever expenses change
   useEffect(() => {
     const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
     setBudget({ ...budget, spent: totalSpent });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expenses]);
   
 
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, addExpense, addFamilyMember, addProduct };
+  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, addExpense, addFamilyMember, addProduct, addIncome };
 
   if (!isMounted) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
