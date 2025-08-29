@@ -126,7 +126,7 @@ export default function BudgetPage() {
     setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
     setNewExpenseRecurrent(false);
     setIsExpenseDialogOpen(false);
-  }
+  };
 
   const handleAddIncome = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +149,7 @@ export default function BudgetPage() {
     setNewIncomeDate(format(new Date(), 'yyyy-MM-dd'));
     setNewIncomeRecurrent(false);
     setIsIncomeDialogOpen(false);
-  }
+  };
 
   const handleEditExpenseClick = (expense: Expense) => {
     setSelectedExpense(expense);
@@ -159,7 +159,7 @@ export default function BudgetPage() {
     setEditExpenseDate(expense.date);
     setEditExpenseRecurrent(expense.recurrent);
     setIsEditExpenseDialogOpen(true);
-  }
+  };
   
   const handleUpdateExpense = (e: React.FormEvent) => {
       e.preventDefault();
@@ -175,7 +175,7 @@ export default function BudgetPage() {
           setIsEditExpenseDialogOpen(false);
           setSelectedExpense(null);
       }
-  }
+  };
 
   const handleEditIncomeClick = (income: Income) => {
     setSelectedIncome(income);
@@ -185,23 +185,23 @@ export default function BudgetPage() {
     setEditIncomeDate(income.date);
     setEditIncomeRecurrent(income.recurrent);
     setIsEditIncomeDialogOpen(true);
-  }
+  };
   
   const handleUpdateIncome = (e: React.FormEvent) => {
-      e.preventDefault();
-      if(selectedIncome) {
-          updateIncome({
-              ...selectedIncome,
-              description: editIncomeDesc,
-              amount: parseFloat(editIncomeAmount),
-              category: editIncomeCategory,
-              date: editIncomeDate,
-              recurrent: editIncomeRecurrent,
-          });
-          setIsEditIncomeDialogOpen(false);
-          setSelectedIncome(null);
-      }
-  }
+    e.preventDefault();
+    if(selectedIncome) {
+        updateIncome({
+            ...selectedIncome,
+            description: editIncomeDesc,
+            amount: parseFloat(editIncomeAmount),
+            category: editIncomeCategory,
+            date: editIncomeDate,
+            recurrent: editIncomeRecurrent,
+        });
+        setIsEditIncomeDialogOpen(false);
+        setSelectedIncome(null);
+    }
+  };
 
 
   if (!budget) {
