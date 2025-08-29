@@ -47,25 +47,33 @@ export default function BudgetPage() {
 
   useEffect(() => {
     if (user) {
-      const budgetUnsubscribe = onSnapshot(doc(db, 'users', user.uid, 'budget', 'summary'), (doc) => {
+      const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
+      const budgetUnsubscribe = onSnapshot(budgetDocRef, (doc) => {
         setBudget({ id: doc.id, ...doc.data() } as Budget);
       });
-      const expensesUnsubscribe = onSnapshot(collection(db, 'users', user.uid, 'expenses'), (snapshot) => {
+
+      const expensesColRef = collection(db, 'users', user.uid, 'expenses');
+      const expensesUnsubscribe = onSnapshot(expensesColRef, (snapshot) => {
         const expensesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
         setExpenses(expensesData);
 
-        // Calculate spent amount
         const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
-        if (budget) {
-          setBudget(prevBudget => ({ ...prevBudget!, spent: totalSpent }));
-        }
+        // Update budget state and Firestore document
+        setBudget(prevBudget => {
+          if (prevBudget) {
+            const updatedBudget = { ...prevBudget, spent: totalSpent };
+            // Write the update back to Firestore
+            setDoc(budgetDocRef, { spent: totalSpent }, { merge: true });
+            return updatedBudget;
+          }
+          return null;
+        });
+
       });
       
-      Promise.all([getDoc(doc(db, 'users', user.uid, 'budget', 'summary')), 
-                   onSnapshot(collection(db, 'users', user.uid, 'expenses'), ()=>{})]).then(() => {
+      Promise.all([getDoc(budgetDocRef), getDoc(collection(db, 'users', user.uid, 'expenses'))]).then(() => {
           setLoading(false);
       });
-
 
       return () => {
         budgetUnsubscribe();
@@ -73,15 +81,6 @@ export default function BudgetPage() {
       }
     }
   }, [user]);
-
-  useEffect(() => {
-      if(user && expenses.length > 0) {
-          const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-          const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
-          setDoc(budgetDocRef, { spent: totalSpent }, { merge: true });
-      }
-  }, [expenses, user]);
-
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +107,7 @@ export default function BudgetPage() {
     return <div>Loading budget...</div>;
   }
 
-  const spentPercentage = (budget.spent / budget.total) * 100;
+  const spentPercentage = budget.total > 0 ? (budget.spent / budget.total) * 100 : 0;
   
   return (
     <div className="container mx-auto">
