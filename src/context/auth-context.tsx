@@ -20,7 +20,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const createInitialUserData = async (userId: string) => {
     const userDocRef = doc(db, 'users', userId);
     
-    // Use a transaction or batched write to ensure atomicity
+    // Check if the document already exists. If so, do nothing.
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+        return; // User data already exists.
+    }
+
+    // Use a batched write to ensure all initial data is set at once.
     const batch = writeBatch(db);
 
     // Set top-level user doc just to create it
@@ -28,18 +34,19 @@ const createInitialUserData = async (userId: string) => {
 
     // Set initial documents in subcollections
     familyMembers.forEach(member => {
-        const memberRef = doc(db, 'users', userId, 'familyMembers', member.id);
-        batch.set(memberRef, member);
+        const memberRef = doc(collection(userDocRef, 'familyMembers'));
+        batch.set(memberRef, { ...member, id: memberRef.id });
     });
     products.forEach(product => {
-        const productRef = doc(db, 'users', userId, 'products', product.id);
-        batch.set(productRef, product);
+        const productRef = doc(collection(userDocRef, 'products'));
+        batch.set(productRef, { ...product, id: productRef.id });
     });
     expenses.forEach(expense => {
-        const expenseRef = doc(db, 'users', userId, 'expenses', expense.id);
-        batch.set(expenseRef, expense);
+        const expenseRef = doc(collection(userDocRef, 'expenses'));
+        batch.set(expenseRef, { ...expense, id: expenseRef.id });
     });
-    const budgetRef = doc(db, 'users', userId, 'budget', 'summary');
+    
+    const budgetRef = doc(userDocRef, 'budget', 'summary');
     batch.set(budgetRef, budget);
 
     await batch.commit();
@@ -55,15 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Check if user data exists, if not, create it.
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-            try {
-                await createInitialUserData(user.uid);
-            } catch (error) {
-                console.error("Failed to create initial user data:", error);
-            }
+        // When a user is authenticated, attempt to create their initial data.
+        // The function will gracefully exit if the data already exists.
+        try {
+            await createInitialUserData(user.uid);
+        } catch (error) {
+            console.error("Failed to create or check initial user data:", error);
+            // You might want to handle this error, e.g., by signing the user out
+            // or showing a specific error message.
         }
         setUser(user);
       } else {
