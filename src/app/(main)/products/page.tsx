@@ -206,7 +206,7 @@ export default function ProductsPage() {
               </TableHeader>
               <TableBody>
                 {products.map((product) => (
-                  <Collapsible asChild key={product.id} tag="tr">
+                  <Collapsible asChild key={product.id}>
                     <>
                       <TableRow>
                         <TableCell>
