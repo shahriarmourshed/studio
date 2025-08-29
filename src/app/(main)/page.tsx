@@ -1,5 +1,4 @@
 'use client';
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Card,
@@ -14,60 +13,11 @@ import BudgetOverviewChart from '@/components/dashboard/budget-overview-chart';
 import { upcomingBills } from '@/lib/data';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
-import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { collection, onSnapshot, doc, getDoc, query } from 'firebase/firestore';
-import type { Product, Budget, Expense } from '@/lib/types';
-
+import { useData } from '@/context/data-context';
 
 export default function DashboardPage() {
   const { getSymbol, convert } = useCurrency();
-  const { user } = useAuth();
-
-  const [budget, setBudget] = useState<Budget | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    // Fetch budget summary once
-    const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
-    getDoc(budgetDocRef).then(docSnap => {
-      if (docSnap.exists()) {
-        const budgetData = docSnap.data() as Omit<Budget, 'spent'>;
-        const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-        setBudget({ ...budgetData, spent: totalSpent });
-      }
-    });
-
-    // Listen for products
-    const productsQuery = query(collection(db, 'users', user.uid, 'products'));
-    const unsubProducts = onSnapshot(productsQuery, (snapshot) => {
-        const productsData = snapshot.docs.map(doc => doc.data() as Product);
-        setProducts(productsData);
-    });
-
-    // Listen for expenses
-    const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
-    const unsubExpenses = onSnapshot(expensesQuery, (snapshot) => {
-        const expensesData = snapshot.docs.map(doc => doc.data() as Expense);
-        setExpenses(expensesData);
-    });
-    
-    return () => {
-      unsubProducts();
-      unsubExpenses();
-    };
-  }, [user]);
-
-  useEffect(() => {
-    if (budget) {
-      const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-      setBudget(prevBudget => prevBudget ? { ...prevBudget, spent: totalSpent } : null);
-    }
-  }, [expenses]);
-
+  const { budget, products } = useData();
 
   if (!budget) {
     return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;

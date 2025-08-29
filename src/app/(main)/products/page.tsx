@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PageHeader from "@/components/common/page-header";
 import {
   Table,
@@ -28,16 +28,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
-import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, setDoc, onSnapshot, query } from 'firebase/firestore';
+import { useData } from '@/context/data-context';
 import type { Product } from '@/lib/types';
 import { format } from 'date-fns';
 
 export default function ProductsPage() {
   const { getSymbol, convert } = useCurrency();
-  const { user } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { products, addProduct } = useData();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [newProductName, setNewProductName] = useState('');
@@ -45,23 +42,9 @@ export default function ProductsPage() {
   const [newProductUnit, setNewProductUnit] = useState<Product['unit']>('kg');
   const [newProductPrice, setNewProductPrice] = useState('');
 
-  useEffect(() => {
-    if (!user) return;
-    
-    const q = query(collection(db, 'users', user.uid, 'products'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const productsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-      setProducts(productsData);
-    }, (error) => {
-      console.error("Error fetching products:", error);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (user && newProductName && newProductQuantity && newProductPrice) {
+    if (newProductName && newProductQuantity && newProductPrice) {
       const newProduct: Omit<Product, 'id'> = {
         name: newProductName,
         quantity: parseFloat(newProductQuantity),
@@ -69,9 +52,7 @@ export default function ProductsPage() {
         price: parseFloat(newProductPrice),
         lastUpdated: format(new Date(), 'yyyy-MM-dd'),
       };
-      
-      const docRef = await addDoc(collection(db, 'users', user.uid, 'products'), newProduct);
-      await setDoc(doc(db, 'users', user.uid, 'products', docRef.id), { ...newProduct, id: docRef.id }, { merge: true });
+      addProduct(newProduct);
 
       // Reset form and close dialog
       setNewProductName('');

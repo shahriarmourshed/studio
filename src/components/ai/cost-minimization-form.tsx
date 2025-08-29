@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { costMinimizationSuggestions, CostMinimizationInput, CostMinimizationOutput } from '@/ai/flows/cost-minimization-suggestions';
-import { products } from '@/lib/data';
+import { useData } from '@/context/data-context';
 import { Loader2, Lightbulb } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,6 +22,7 @@ export default function CostMinimizationForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CostMinimizationOutput | null>(null);
   const { toast } = useToast();
+  const { products } = useData();
 
   const productNeedsText = products.map(p => `${p.name} ${p.quantity}${p.unit}`).join(', ');
 
@@ -70,7 +71,7 @@ export default function CostMinimizationForm() {
             />
           </div>
            <p className="text-sm text-muted-foreground">
-              Note: We are using your pre-filled product needs list for this demo.
+              Note: The AI will use your current product needs list.
             </p>
         </CardContent>
         <CardFooter>

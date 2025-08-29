@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { generateDietChart, DietChartInput, DietChartOutput } from '@/ai/flows/diet-chart-generation';
-import { familyMembers, products } from '@/lib/data';
+import { useData } from '@/context/data-context';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,6 +22,7 @@ export default function DietForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DietChartOutput | null>(null);
   const { toast } = useToast();
+  const { familyMembers, products } = useData();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +80,7 @@ export default function DietForm() {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              Note: We are using pre-filled family health data and product needs for this demo.
+              Note: The AI will use your current family health data and product needs list.
             </p>
           </div>
         </CardContent>

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import PageHeader from '@/components/common/page-header';
 import {
@@ -11,9 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { useAuth } from '@/context/auth-context';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, setDoc, onSnapshot, query } from 'firebase/firestore';
+import { useData } from '@/context/data-context';
 import type { FamilyMember } from '@/lib/types';
 import {
   Dialog,
@@ -27,48 +25,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function FamilyPage() {
-  const { user } = useAuth();
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const { familyMembers, addFamilyMember } = useData();
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberAge, setNewMemberAge] = useState('');
   const [newMemberHealth, setNewMemberHealth] = useState('');
   const [newMemberDiet, setNewMemberDiet] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const q = query(collection(db, 'users', user.uid, 'familyMembers'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const membersData = querySnapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() } as FamilyMember)
-      );
-      setFamilyMembers(membersData);
-    }, (error) => {
-      console.error("Error fetching family members:", error);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (user && newMemberName && newMemberAge) {
+    if (newMemberName && newMemberAge) {
       const newMember: Omit<FamilyMember, 'id' | 'avatarUrl'> = {
         name: newMemberName,
         age: parseInt(newMemberAge, 10),
         healthConditions: newMemberHealth,
         dietaryRestrictions: newMemberDiet,
       };
-      
-      const docRef = await addDoc(collection(db, 'users', user.uid, 'familyMembers'), newMember);
-      await setDoc(doc(db, 'users', user.uid, 'familyMembers', docRef.id), { 
-        ...newMember, 
-        id: docRef.id,
-        avatarUrl: `https://picsum.photos/100/100?random=${Math.random()}`
-      }, { merge: true });
+      addFamilyMember(newMember);
 
-      // Reset form and refetch
+      // Reset form and close dialog
       setNewMemberName('');
       setNewMemberAge('');
       setNewMemberHealth('');
