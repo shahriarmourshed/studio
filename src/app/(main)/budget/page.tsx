@@ -24,7 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
@@ -132,20 +133,18 @@ export default function BudgetPage() {
                     <Label htmlFor="income-amount" className="text-right">Amount ({getSymbol()})</Label>
                     <Input id="income-amount" type="number" placeholder="e.g., 50000" className="col-span-3" value={newIncomeAmount} onChange={e=>setNewIncomeAmount(e.target.value)} required/>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="income-category" className="text-right">Category</Label>
-                      <Select value={newIncomeCategory} onValueChange={(v: IncomeCategory) => setNewIncomeCategory(v)}>
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent position="popper">
-                          <SelectItem value="Salary">Salary</SelectItem>
-                          <SelectItem value="Business">Business</SelectItem>
-                          <SelectItem value="Investment">Investment</SelectItem>
-                          <SelectItem value="Gift">Gift</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Category</Label>
+                        <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
+                            <RadioGroup value={newIncomeCategory} onValueChange={(v: IncomeCategory) => setNewIncomeCategory(v)} className="p-4">
+                                {(['Salary', 'Business', 'Investment', 'Gift', 'Other'] as IncomeCategory[]).map(category => (
+                                    <div key={category} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={category} id={`income-${category}`} />
+                                        <Label htmlFor={`income-${category}`}>{category}</Label>
+                                    </div>
+                                ))}
+                            </RadioGroup>
+                        </ScrollArea>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="income-date" className="text-right">Date</Label>
@@ -187,24 +186,18 @@ export default function BudgetPage() {
                     <Label htmlFor="amount" className="text-right">Amount ({getSymbol()})</Label>
                     <Input id="amount" type="number" placeholder="e.g., 3500" className="col-span-3" value={newExpenseAmount} onChange={e=>setNewExpenseAmount(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="category" className="text-right">Category</Label>
-                    <Select value={newExpenseCategory} onValueChange={(v: Expense['category']) => setNewExpenseCategory(v)}>
-                    <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                        <SelectItem value="Groceries">Groceries</SelectItem>
-                        <SelectItem value="Bills">Bills</SelectItem>
-                        <SelectItem value="Housing">Housing</SelectItem>
-                        <SelectItem value="Transport">Transport</SelectItem>
-                        <SelectItem value="Health">Health</SelectItem>
-                        <SelectItem value="Education">Education</SelectItem>
-                        <SelectItem value="Entertainment">Entertainment</SelectItem>
-                        <SelectItem value="Personal Care">Personal Care</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                    </Select>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label className="text-right pt-2">Category</Label>
+                    <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
+                        <RadioGroup value={newExpenseCategory} onValueChange={(v: Expense['category']) => setNewExpenseCategory(v)} className="p-4">
+                            {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as Expense['category'][]).map(category => (
+                                <div key={category} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category} id={`expense-${category}`} />
+                                    <Label htmlFor={`expense-${category}`}>{category}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </ScrollArea>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="date" className="text-right">Date</Label>
