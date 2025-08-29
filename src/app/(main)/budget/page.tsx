@@ -28,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCurrency } from "@/context/currency-context";
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, setDoc, getDoc, getDocs, query } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, getDoc, onSnapshot, query } from 'firebase/firestore';
 import type { Expense, Budget } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -46,38 +46,38 @@ export default function BudgetPage() {
   const [newExpenseCategory, setNewExpenseCategory] = useState<Expense['category']>('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-  const fetchBudgetData = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
-      const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
-      
-      const [budgetSnap, expensesSnap] = await Promise.all([
-        getDoc(budgetDocRef),
-        getDocs(expensesQuery)
-      ]);
-
-      const expensesData = expensesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
-      const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
-
-      if (budgetSnap.exists()) {
-        const budgetData = { id: budgetSnap.id, ...budgetSnap.data() } as Budget;
-        budgetData.spent = totalSpent;
-        setBudget(budgetData);
-      }
-      
-      setExpenses(expensesData);
-
-    } catch (error) {
-      console.error("Error fetching budget data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchBudgetData();
+    if (!user) {
+        setLoading(false);
+        return;
+    }
+
+    setLoading(true);
+    const budgetDocRef = doc(db, 'users', user.uid, 'budget', 'summary');
+    const expensesQuery = query(collection(db, 'users', user.uid, 'expenses'));
+
+    const unsubscribeExpenses = onSnapshot(expensesQuery, (expensesSnap) => {
+        const expensesData = expensesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
+        setExpenses(expensesData);
+
+        const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
+
+        if (budget) {
+            setBudget(prevBudget => ({ ...prevBudget!, spent: totalSpent }));
+        }
+    });
+
+    const unsubscribeBudget = onSnapshot(budgetDocRef, (budgetSnap) => {
+        if (budgetSnap.exists()) {
+            setBudget(budgetSnap.data() as Budget);
+        }
+        setLoading(false);
+    });
+
+    return () => {
+        unsubscribeExpenses();
+        unsubscribeBudget();
+    };
   }, [user]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
@@ -99,13 +99,15 @@ export default function BudgetPage() {
         setNewExpenseCategory('Other');
         setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
         setIsDialogOpen(false);
-        // Refetch data to show the new expense
-        await fetchBudgetData();
     }
   };
 
-  if (loading || !budget) {
+  if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
+  }
+  
+  if (!budget) {
+     return <div className="flex items-center justify-center h-screen">Could not load budget data.</div>;
   }
 
   const spentPercentage = budget.total > 0 ? (budget.spent / budget.total) * 100 : 0;
