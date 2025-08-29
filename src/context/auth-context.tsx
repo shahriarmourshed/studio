@@ -2,8 +2,10 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { familyMembers, products, expenses, budget } from '@/lib/data';
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +14,36 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Function to create initial data for a new user
+const createInitialUserData = async (userId: string) => {
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+        const initialData = {
+            familyMembers,
+            products,
+            expenses,
+            budget,
+        };
+        await setDoc(userDocRef, initialData);
+
+        // Set individual documents in subcollections
+        for (const member of familyMembers) {
+            await setDoc(doc(db, 'users', userId, 'familyMembers', member.id), member);
+        }
+        for (const product of products) {
+            await setDoc(doc(db, 'users', userId, 'products', product.id), product);
+        }
+        for (const expense of expenses) {
+            await setDoc(doc(db, 'users', userId, 'expenses', expense.id), expense);
+        }
+        await setDoc(doc(db, 'users', userId, 'budget', 'summary'), budget);
+
+    }
+};
+
+
 export function AuthProvider({ children }: { children: React.Node }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +51,10 @@ export function AuthProvider({ children }: { children: React.Node }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        await createInitialUserData(user.uid);
+      }
       setUser(user);
       setLoading(false);
     });

@@ -25,6 +25,7 @@ export type Expense = {
 };
 
 export type Budget = {
+  id?: string;
   total: number;
   spent: number;
   categories: {

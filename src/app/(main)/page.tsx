@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Card,
@@ -10,12 +11,62 @@ import {
 import { Button } from '@/components/ui/button';
 import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
 import BudgetOverviewChart from '@/components/dashboard/budget-overview-chart';
-import { budget, products, upcomingBills } from '@/lib/data';
+import { upcomingBills } from '@/lib/data';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
+import { useAuth } from '@/context/auth-context';
+import { db } from '@/lib/firebase';
+import { collection, onSnapshot, doc } from 'firebase/firestore';
+import type { Product, Budget, Expense } from '@/lib/types';
+
 
 export default function DashboardPage() {
   const { getSymbol, convert } = useCurrency();
+  const { user } = useAuth();
+
+  const [budget, setBudget] = useState<Budget | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      const budgetUnsubscribe = onSnapshot(doc(db, 'users', user.uid, 'budget', 'summary'), (doc) => {
+        setBudget(doc.data() as Budget);
+      });
+      
+      const productsUnsubscribe = onSnapshot(collection(db, 'users', user.uid, 'products'), (snapshot) => {
+        setProducts(snapshot.docs.map(doc => doc.data() as Product));
+      });
+
+      const expensesUnsubscribe = onSnapshot(collection(db, 'users', user.uid, 'expenses'), (snapshot) => {
+        const expensesData = snapshot.docs.map(doc => doc.data() as Expense);
+        const totalSpent = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
+        setBudget(prevBudget => prevBudget ? { ...prevBudget, spent: totalSpent } : null);
+      });
+
+      // A simple way to set loading to false once we have some data
+      const initialLoad = async () => {
+        await Promise.all([
+          onSnapshot(doc(db, 'users', user.uid, 'budget', 'summary'), () => {}),
+          onSnapshot(collection(db, 'users', user.uid, 'products'), () => {}),
+        ]);
+        setLoading(false);
+      };
+      
+      initialLoad();
+
+      return () => {
+        budgetUnsubscribe();
+        productsUnsubscribe();
+        expensesUnsubscribe();
+      };
+    }
+  }, [user]);
+
+  if (loading || !budget) {
+    return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;
+  }
+
   const remainingBudget = budget.total - budget.spent;
 
   return (
@@ -31,7 +82,7 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="h-60">
-            <BudgetOverviewChart />
+            <BudgetOverviewChart budget={budget}/>
           </CardContent>
         </Card>
 

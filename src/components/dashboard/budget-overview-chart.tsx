@@ -1,15 +1,14 @@
 "use client"
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
-import { budget } from "@/lib/data"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import type { Budget } from "@/lib/types";
 
-const chartData = budget.categories.map(cat => ({
-  name: cat.name,
-  total: cat.amount
-}));
+export default function BudgetOverviewChart({ budget }: { budget: Budget }) {
+  const chartData = budget.categories.map(cat => ({
+    name: cat.name,
+    total: cat.amount
+  }));
 
-export default function BudgetOverviewChart() {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>

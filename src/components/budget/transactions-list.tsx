@@ -1,5 +1,4 @@
 'use client';
-import { expenses } from '@/lib/data';
 import {
   Utensils,
   Receipt,
@@ -8,6 +7,7 @@ import {
   MoreHorizontal,
 } from 'lucide-react';
 import { useCurrency } from '@/context/currency-context';
+import type { Expense } from '@/lib/types';
 
 const categoryIcons = {
   Groceries: <Utensils className="h-5 w-5 text-muted-foreground" />,
@@ -17,12 +17,12 @@ const categoryIcons = {
   Other: <MoreHorizontal className="h-5 w-5 text-muted-foreground" />,
 };
 
-export default function TransactionsList() {
+export default function TransactionsList({ expenses }: { expenses: Expense[] }) {
   const { getSymbol, convert } = useCurrency();
 
   return (
     <ul className="space-y-4">
-      {expenses.map((expense) => (
+      {expenses.slice(0, 5).map((expense) => (
         <li key={expense.id} className="flex items-center space-x-4">
           <div className="p-2 bg-muted rounded-full">
             {categoryIcons[expense.category]}

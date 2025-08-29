@@ -1,12 +1,12 @@
 "use client"
 
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts"
-import { expenses } from "@/lib/data"
 import { useCurrency } from "@/context/currency-context"
+import type { Expense } from "@/lib/types"
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
-export default function ExpenseChart() {
+export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
   const { convert, getSymbol } = useCurrency();
 
   const categoryTotals = expenses.reduce((acc, expense) => {

@@ -1,6 +1,6 @@
 'use client';
+import { useState, useEffect } from 'react';
 import PageHeader from "@/components/common/page-header";
-import { products } from "@/lib/data";
 import {
   Table,
   TableBody,
@@ -28,9 +28,59 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
+import { useAuth } from '@/context/auth-context';
+import { db } from '@/lib/firebase';
+import { collection, onSnapshot, addDoc, doc, setDoc } from 'firebase/firestore';
+import type { Product } from '@/lib/types';
+import { format } from 'date-fns';
 
 export default function ProductsPage() {
   const { getSymbol, convert } = useCurrency();
+  const { user } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductQuantity, setNewProductQuantity] = useState('');
+  const [newProductUnit, setNewProductUnit] = useState<Product['unit']>('kg');
+  const [newProductPrice, setNewProductPrice] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      const unsubscribe = onSnapshot(collection(db, 'users', user.uid, 'products'), (snapshot) => {
+        const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        setProducts(productsData);
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    }
+  }, [user]);
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (user && newProductName && newProductQuantity && newProductPrice) {
+      const newProduct: Omit<Product, 'id'> = {
+        name: newProductName,
+        quantity: parseFloat(newProductQuantity),
+        unit: newProductUnit,
+        price: parseFloat(newProductPrice),
+        lastUpdated: format(new Date(), 'yyyy-MM-dd'),
+      };
+      
+      const docRef = await addDoc(collection(db, 'users', user.uid, 'products'), newProduct);
+      await setDoc(doc(db, 'users', user.uid, 'products', docRef.id), { ...newProduct, id: docRef.id }, { merge: true });
+
+      // Reset form
+      setNewProductName('');
+      setNewProductQuantity('');
+      setNewProductUnit('kg');
+      setNewProductPrice('');
+    }
+  };
+  
+  if (loading) {
+    return <div>Loading products...</div>;
+  }
 
   return (
     <div className="container mx-auto">
@@ -49,18 +99,19 @@ export default function ProductsPage() {
                 Enter the details of the new product you need to track.
               </DialogDescription>
             </DialogHeader>
+            <form onSubmit={handleAddProduct}>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">Name</Label>
-                <Input id="name" placeholder="e.g., Basmati Rice" className="col-span-3" />
+                <Input id="name" placeholder="e.g., Basmati Rice" className="col-span-3" value={newProductName} onChange={e => setNewProductName(e.target.value)} required />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="quantity" className="text-right">Quantity</Label>
-                <Input id="quantity" type="number" placeholder="e.g., 25" className="col-span-3" />
+                <Input id="quantity" type="number" placeholder="e.g., 25" className="col-span-3" value={newProductQuantity} onChange={e => setNewProductQuantity(e.target.value)} required/>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="unit" className="text-right">Unit</Label>
-                <Select>
+                <Select value={newProductUnit} onValueChange={(value: Product['unit']) => setNewProductUnit(value)}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select a unit" />
                   </SelectTrigger>
@@ -76,10 +127,11 @@ export default function ProductsPage() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="price" className="text-right">Price ({getSymbol()})</Label>
-                <Input id="price" type="number" placeholder="e.g., 2500" className="col-span-3" />
+                <Input id="price" type="number" placeholder="e.g., 2500" className="col-span-3" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} required />
               </div>
               <Button type="submit" className="w-full">Save Product</Button>
             </div>
+            </form>
           </DialogContent>
         </Dialog>
       </PageHeader>
