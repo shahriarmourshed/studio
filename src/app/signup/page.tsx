@@ -27,8 +27,21 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  }
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateEmail(email)) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address.',
+      });
+      return;
+    }
     if (password !== confirmPassword) {
       toast({
         variant: 'destructive',
