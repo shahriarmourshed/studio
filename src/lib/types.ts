@@ -22,6 +22,7 @@ export type Expense = {
   amount: number;
   category: 'Groceries' | 'Bills' | 'Transport' | 'Entertainment' | 'Other';
   date: string;
+  recurrent: boolean;
 };
 
 export type Budget = {

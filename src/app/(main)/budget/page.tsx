@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Expense } from '@/lib/types';
@@ -40,6 +41,7 @@ export default function BudgetPage() {
   const [newExpenseAmount, setNewExpenseAmount] = useState('');
   const [newExpenseCategory, setNewExpenseCategory] = useState<Expense['category']>('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [newExpenseRecurrent, setNewExpenseRecurrent] = useState(false);
   
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +51,7 @@ export default function BudgetPage() {
             amount: parseFloat(newExpenseAmount),
             category: newExpenseCategory,
             date: newExpenseDate,
+            recurrent: newExpenseRecurrent,
         };
         addExpense(newExpense);
         
@@ -57,6 +60,7 @@ export default function BudgetPage() {
         setNewExpenseAmount('');
         setNewExpenseCategory('Other');
         setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
+        setNewExpenseRecurrent(false);
         setIsDialogOpen(false);
     }
   };
@@ -112,6 +116,12 @@ export default function BudgetPage() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="date" className="text-right">Date</Label>
                 <Input id="date" type="date" className="col-span-3" value={newExpenseDate} onChange={e=>setNewExpenseDate(e.target.value)} required/>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="recurrent" className="text-right">Recurrent</Label>
+                <div className="col-span-3">
+                    <Switch id="recurrent" checked={newExpenseRecurrent} onCheckedChange={setNewExpenseRecurrent} />
+                </div>
               </div>
               <Button type="submit" className="w-full">Save Expense</Button>
             </div>
