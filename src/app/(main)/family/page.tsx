@@ -11,25 +11,16 @@ import {
 } from '@/components/ui/card';
 import { familyMembers } from '@/lib/data';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, User } from 'lucide-react';
-import Link from 'next/link';
+import { PlusCircle } from 'lucide-react';
 
 export default function FamilyPage() {
   return (
     <div className="container mx-auto">
       <PageHeader title="Family Profiles" subtitle="Manage your family's information.">
-        <div className="flex items-center gap-2">
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Member
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/profile">
-              <User className="mr-2 h-4 w-4" />
-              Profile Settings
-            </Link>
-          </Button>
-        </div>
+        <Button>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add Member
+        </Button>
       </PageHeader>
 
       <div className="px-4 sm:px-0 space-y-4">

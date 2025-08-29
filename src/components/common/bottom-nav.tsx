@@ -8,6 +8,7 @@ import {
   Wallet,
   Sparkles,
   Users,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -15,8 +16,9 @@ const navItems = [
   { href: '/', label: 'Home', icon: LayoutGrid },
   { href: '/products', label: 'Products', icon: ShoppingBasket },
   { href: '/budget', label: 'Budget', icon: Wallet },
-  { href: '/ai', label: 'AI/Diet', icon: Sparkles },
+  { href: '/ai', label: 'AI', icon: Sparkles },
   { href: '/family', label: 'Family', icon: Users },
+  { href: '/profile', label: 'Profile', icon: User },
 ];
 
 export default function BottomNav() {
