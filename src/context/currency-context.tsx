@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 type Currency = 'USD' | 'BDT';
 
@@ -19,8 +19,20 @@ interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currency, setCurrency] = useState<Currency>('USD');
+  const [currency, setCurrencyState] = useState<Currency>('USD');
 
+  useEffect(() => {
+    const storedCurrency = localStorage.getItem('familyverse-currency') as Currency;
+    if (storedCurrency && (storedCurrency === 'USD' || storedCurrency === 'BDT')) {
+      setCurrencyState(storedCurrency);
+    }
+  }, []);
+
+  const setCurrency = (newCurrency: Currency) => {
+    localStorage.setItem('familyverse-currency', newCurrency);
+    setCurrencyState(newCurrency);
+  };
+  
   const getSymbol = () => {
     switch (currency) {
       case 'USD':
@@ -33,6 +45,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   };
 
   const convert = (amount: number) => {
+    if (typeof amount !== 'number') return 0;
     return amount * exchangeRates[currency];
   };
 
