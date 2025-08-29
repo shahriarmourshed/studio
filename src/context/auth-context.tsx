@@ -19,33 +19,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Function to create initial data for a new user
 const createInitialUserData = async (userId: string) => {
     const userDocRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userDocRef);
+    
+    // Use a transaction or batched write to ensure atomicity
+    const batch = writeBatch(db);
 
-    // Only create data if the user document doesn't exist at all
-    if (!userDoc.exists()) {
-        const batch = writeBatch(db);
+    // Set top-level user doc just to create it
+    batch.set(userDocRef, { createdAt: new Date().toISOString(), userId: userId });
 
-        // Set top-level user doc just to create it
-        batch.set(userDocRef, { createdAt: new Date().toISOString() });
+    // Set initial documents in subcollections
+    familyMembers.forEach(member => {
+        const memberRef = doc(db, 'users', userId, 'familyMembers', member.id);
+        batch.set(memberRef, member);
+    });
+    products.forEach(product => {
+        const productRef = doc(db, 'users', userId, 'products', product.id);
+        batch.set(productRef, product);
+    });
+    expenses.forEach(expense => {
+        const expenseRef = doc(db, 'users', userId, 'expenses', expense.id);
+        batch.set(expenseRef, expense);
+    });
+    const budgetRef = doc(db, 'users', userId, 'budget', 'summary');
+    batch.set(budgetRef, budget);
 
-        // Set initial documents in subcollections
-        for (const member of familyMembers) {
-            const memberRef = doc(db, 'users', userId, 'familyMembers', member.id);
-            batch.set(memberRef, member);
-        }
-        for (const product of products) {
-            const productRef = doc(db, 'users', userId, 'products', product.id);
-            batch.set(productRef, product);
-        }
-        for (const expense of expenses) {
-            const expenseRef = doc(db, 'users', userId, 'expenses', expense.id);
-            batch.set(expenseRef, expense);
-        }
-        const budgetRef = doc(db, 'users', userId, 'budget', 'summary');
-        batch.set(budgetRef, budget);
-
-        await batch.commit();
-    }
+    await batch.commit();
 };
 
 
@@ -58,8 +55,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Create data for new user, idempotent for existing users
-        await createInitialUserData(user.uid);
+        // Check if user data exists, if not, create it.
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+            try {
+                await createInitialUserData(user.uid);
+            } catch (error) {
+                console.error("Failed to create initial user data:", error);
+            }
+        }
         setUser(user);
       } else {
         setUser(null);
@@ -88,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
   
   const isAuthPage = pathname === '/login' || pathname === '/signup';
-  if (loading || (user && isAuthPage) || (!user && !isAuthPage)) {
+  if ((user && isAuthPage) || (!user && !isAuthPage)) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
