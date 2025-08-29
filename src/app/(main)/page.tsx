@@ -1,30 +1,44 @@
+
 'use client';
 import Link from 'next/link';
+import { useState } from 'react';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
-import BudgetOverviewChart from '@/components/dashboard/budget-overview-chart';
+import { ArrowRight, PlusCircle, Lightbulb, Utensils, Target, Edit } from 'lucide-react';
+import SavingsPieChart from '@/components/dashboard/savings-pie-chart';
 import { upcomingBills } from '@/lib/data';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function DashboardPage() {
   const { getSymbol, convert } = useCurrency();
-  const { budget, products, expenses, incomes } = useData();
+  const { budget, products, expenses, incomes, savingGoal, setSavingGoal } = useData();
+  const [newSavingGoal, setNewSavingGoal] = useState(savingGoal ? String(savingGoal) : '');
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
 
   if (!budget) {
     return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;
   }
 
+  const handleGoalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingGoal(parseFloat(newSavingGoal));
+    setIsEditingGoal(false);
+  };
+
   const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const savings = totalIncome - totalSpent;
 
   return (
     <div className="container mx-auto px-0 sm:px-4">
@@ -33,14 +47,53 @@ export default function DashboardPage() {
       <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Budget Overview</CardTitle>
-            <CardDescription>
-              You have spent {getSymbol()}{convert(totalSpent).toLocaleString()} of your {getSymbol()}{convert(totalIncome).toLocaleString()} income this month.
+            <CardTitle>Financial Summary</CardTitle>
+             <CardDescription>
+              A visual breakdown of your income, expenses, and savings this month.
             </CardDescription>
           </CardHeader>
           <CardContent className="h-60">
-            <BudgetOverviewChart budget={budget}/>
+            <SavingsPieChart income={totalIncome} expenses={totalSpent} />
           </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                    <span>Savings Goal</span>
+                    <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)}>
+                        <Edit className="h-4 w-4"/>
+                        <span className="sr-only">Edit Goal</span>
+                    </Button>
+                </CardTitle>
+                <CardDescription>Set and track your monthly savings target.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isEditingGoal ? (
+                    <form onSubmit={handleGoalSubmit}>
+                        <div className="space-y-2">
+                            <Label htmlFor="saving-goal">New Goal ({getSymbol()})</Label>
+                            <Input 
+                                id="saving-goal"
+                                type="number" 
+                                value={newSavingGoal}
+                                onChange={(e) => setNewSavingGoal(e.target.value)}
+                                placeholder="e.g., 15000"
+                            />
+                            <Button type="submit" size="sm" className="w-full">Set Goal</Button>
+                        </div>
+                    </form>
+                ) : (
+                    <div className="text-center">
+                        <p className="text-3xl font-bold text-primary">{getSymbol()}{convert(savingGoal).toLocaleString()}</p>
+                        {savingGoal > 0 && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {Math.max(0, (savings / savingGoal) * 100).toFixed(0)}% of your goal reached
+                            </p>
+                        )}
+                    </div>
+                )}
+            </CardContent>
         </Card>
 
         <Card className="flex flex-col">
@@ -82,7 +135,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle>Shopping List</CardTitle>
+            <CardTitle>Product Inventory</CardTitle>
              <Link href="/products" className="text-sm text-primary hover:underline flex items-center">
               View All <ArrowRight className="h-4 w-4 ml-1" />
             </Link>
@@ -92,27 +145,13 @@ export default function DashboardPage() {
               {products.slice(0, 4).map((product) => (
                 <li key={product.id} className="flex justify-between text-sm">
                   <span>{product.name}</span>
-                  <span className="text-muted-foreground">{product.quantity}{product.unit}</span>
+                  <span className="text-muted-foreground">{product.currentStock}{product.unit}</span>
                 </li>
               ))}
             </ul>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Diet Summary</CardTitle>
-            <CardDescription>A quick look at your family's health plan.</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-muted-foreground mb-2">Today's Focus</p>
-            <p className="text-2xl font-bold text-primary">Balanced Meal Day</p>
-            <p className="text-sm mt-2">Low-sodium for Alex, vegetarian for Jane.</p>
-            <Button asChild variant="link" className="mt-2">
-              <Link href="/ai">View Full Diet Plan <ArrowRight className="h-4 w-4 ml-1" /></Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

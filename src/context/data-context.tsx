@@ -12,6 +12,8 @@ interface DataContextType {
   familyMembers: FamilyMember[];
   products: Product[];
   incomes: Income[];
+  savingGoal: number;
+  setSavingGoal: (goal: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
@@ -61,6 +63,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('familyverse-family', familyMembers);
   const [productsData, setProducts] = useLocalStorage<Product[]>('familyverse-products', defaultProducts);
   const [incomesData, setIncomes] = useLocalStorage<Income[]>('familyverse-incomes', defaultIncomes);
+  const [savingGoal, setSavingGoal] = useLocalStorage<number>('familyverse-saving-goal', 10000);
 
 
   const [isMounted, setIsMounted] = useState(false);
@@ -155,14 +158,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // Recalculate spent amount whenever expenses change
   useEffect(() => {
-    const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const totalIncome = incomesData.reduce((sum, inc) => sum + inc.amount, 0);
-    setBudget({ ...budget, spent: totalSpent, total: totalIncome });
+    if(budget) {
+      const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+      const totalIncome = incomesData.reduce((sum, inc) => sum + inc.amount, 0);
+      setBudget({ ...budget, spent: totalSpent, total: totalIncome });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expenses, incomesData]);
   
 
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, addExpense, updateExpense, deleteExpense, addFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome };
+  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, addExpense, updateExpense, deleteExpense, addFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome };
 
   if (!isMounted) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -182,5 +187,3 @@ export function useData() {
   }
   return context;
 }
-
-    
