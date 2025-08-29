@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -12,6 +13,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { generateDietChart, DietChartInput, DietChartOutput } from '@/ai/flows/diet-chart-generation';
 import { useData } from '@/context/data-context';
 import { Loader2, Sparkles } from 'lucide-react';
@@ -19,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function DietForm() {
   const [preferences, setPreferences] = useState('');
+  const [shoppingListPeriod, setShoppingListPeriod] = useState<'daily' | 'weekly' | 'half-monthly' | 'monthly'>('weekly');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DietChartOutput | null>(null);
   const { toast } = useToast();
@@ -40,8 +49,12 @@ export default function DietForm() {
         productName: p.name,
         quantity: p.quantity,
         unit: p.unit,
+        dailyNeed: p.dailyNeed,
+        halfMonthlyNeed: p.halfMonthlyNeed,
+        monthlyNeed: p.monthlyNeed,
       })),
       preferences,
+      shoppingListPeriod,
     };
 
     try {
@@ -62,27 +75,39 @@ export default function DietForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Diet Chart Generator</CardTitle>
+        <CardTitle>Diet & Shopping List Generator</CardTitle>
         <CardDescription>
-          Based on your family's health data and product list, we'll create a personalized weekly diet plan.
+          Based on your family's health data and product list, we'll create a personalized weekly diet plan and a shopping list.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent>
-          <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="preferences">Dietary Preferences</Label>
-              <Textarea
-                id="preferences"
-                placeholder="e.g., more vegetarian meals, low spice, kids love pasta..."
-                value={preferences}
-                onChange={(e) => setPreferences(e.target.value)}
-              />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Note: The AI will use your current family health data and product needs list.
-            </p>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="preferences">Dietary Preferences</Label>
+            <Textarea
+              id="preferences"
+              placeholder="e.g., more vegetarian meals, low spice, kids love pasta..."
+              value={preferences}
+              onChange={(e) => setPreferences(e.target.value)}
+            />
           </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="shopping-period">Shopping List Period</Label>
+             <Select value={shoppingListPeriod} onValueChange={(v: any) => setShoppingListPeriod(v)}>
+              <SelectTrigger id="shopping-period">
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="half-monthly">Half-monthly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Note: The AI will use your current family health data and product needs list, including consumption patterns.
+          </p>
         </CardContent>
         <CardFooter>
           <Button type="submit" disabled={loading} className="w-full">
@@ -91,12 +116,12 @@ export default function DietForm() {
             ) : (
               <Sparkles className="mr-2 h-4 w-4" />
             )}
-            Generate Diet Chart
+            Generate
           </Button>
         </CardFooter>
       </form>
       {result && (
-        <CardContent>
+        <CardContent className="space-y-4">
             <Card className="mt-4">
                  <CardHeader>
                     <CardTitle>Your Weekly Diet Chart</CardTitle>
@@ -104,6 +129,16 @@ export default function DietForm() {
                  <CardContent>
                     <pre className="bg-muted p-4 rounded-lg whitespace-pre-wrap font-body text-sm">
                         {result.weeklyDietChart}
+                    </pre>
+                 </CardContent>
+            </Card>
+            <Card className="mt-4">
+                 <CardHeader>
+                    <CardTitle>Your {shoppingListPeriod} Shopping List</CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                    <pre className="bg-muted p-4 rounded-lg whitespace-pre-wrap font-body text-sm">
+                        {result.shoppingList}
                     </pre>
                  </CardContent>
             </Card>

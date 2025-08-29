@@ -1,9 +1,10 @@
+
 'use server';
 
 /**
- * @fileOverview Generates a personalized weekly diet chart based on family health data and product needs.
+ * @fileOverview Generates a personalized weekly diet chart and shopping list based on family health data and product needs.
  *
- * - generateDietChart - A function that generates the diet chart.
+ * - generateDietChart - A function that generates the diet chart and shopping list.
  * - DietChartInput - The input type for the generateDietChart function.
  * - DietChartOutput - The return type for the generateDietChart function.
  */
@@ -24,8 +25,11 @@ const HealthDataSchema = z.object({
 
 const ProductNeedSchema = z.object({
   productName: z.string().describe('Name of the product (e.g., rice).'),
-  quantity: z.number().describe('Quantity of the product needed (e.g., 25).'),
+  quantity: z.number().describe('Quantity of the product available (e.g., 25).'),
   unit: z.string().describe('Unit of measurement (e.g., kg).'),
+  dailyNeed: z.number().optional().describe('The daily need for this product per unit.'),
+  halfMonthlyNeed: z.number().optional().describe('The half-monthly need for this product per unit.'),
+  monthlyNeed: z.number().optional().describe('The monthly need for this product per unit.'),
 });
 
 const DietChartInputSchema = z.object({
@@ -34,8 +38,11 @@ const DietChartInputSchema = z.object({
     .describe('Health data for each family member.'),
   monthlyProductNeeds: z
     .array(ProductNeedSchema)
-    .describe('List of monthly product needs.'),
+    .describe('List of monthly product needs, including consumption patterns.'),
   preferences: z.string().describe('Dietary Preferences'),
+  shoppingListPeriod: z
+    .enum(['daily', 'weekly', 'half-monthly', 'monthly'])
+    .describe('The desired period for the shopping list.'),
 });
 
 export type DietChartInput = z.infer<typeof DietChartInputSchema>;
@@ -44,6 +51,11 @@ const DietChartOutputSchema = z.object({
   weeklyDietChart: z
     .string()
     .describe('A personalized weekly diet chart in markdown format.'),
+  shoppingList: z
+    .string()
+    .describe(
+      'A shopping list in markdown format for the specified period, based on the diet chart and product needs.'
+    ),
 });
 
 export type DietChartOutput = z.infer<typeof DietChartOutputSchema>;
@@ -56,26 +68,31 @@ const prompt = ai.definePrompt({
   name: 'dietChartPrompt',
   input: {schema: DietChartInputSchema},
   output: {schema: DietChartOutputSchema},
-  prompt: `You are a nutritionist creating a weekly diet chart for a family.
+  prompt: `You are a nutritionist and a financial planner creating a weekly diet chart and a shopping list for a family.
 
   Consider the following health data for each family member:
   {{#each familyHealthData}}
   - Member ID: {{{memberId}}}, Age: {{{age}}}, Health Conditions: {{{healthConditions}}}, Dietary Restrictions: {{{dietaryRestrictions}}}
   {{/each}}
 
-  Also, consider the following monthly product needs:
+  Also, consider the following product needs and consumption patterns:
   {{#each monthlyProductNeeds}}
-  - Product: {{{productName}}}, Quantity: {{{quantity}}}, Unit: {{{unit}}}
+  - Product: {{{productName}}}, Available: {{{quantity}}}{{{unit}}}, Daily Need: {{#if dailyNeed}}{{{dailyNeed}}}{{else}}N/A{{/if}}, Half-monthly Need: {{#if halfMonthlyNeed}}{{{halfMonthlyNeed}}}{{else}}N/A{{/if}}, Monthly Need: {{#if monthlyNeed}}{{{monthlyNeed}}}{{else}}N/A{{/if}}
   {{/each}}
 
   Dietary Preferences: {{{preferences}}}
 
-  Generate a detailed and personalized weekly diet chart in markdown format, suggesting healthy food items.
-  The diet chart should include breakfast, lunch, dinner and snacks for each day of the week.
-  Each family member has different dietary restrictions which you must take into account.
-  The diet chart should use only the monthly products available, as specified above. Therefore, it should align with the product needs.
-  Optimize the diet to be as healthy as possible given the products available and family preferences.
-  `,config: {
+  Generate two things:
+  1. A detailed and personalized weekly diet chart in markdown format. It should include breakfast, lunch, dinner, and snacks for each day of the week.
+     - The diet chart must take into account each family member's dietary restrictions.
+     - The diet chart should utilize the available products and align with the specified product needs.
+     - Optimize the diet to be as healthy as possible.
+
+  2. A shopping list in markdown format for the '{{{shoppingListPeriod}}}' period.
+     - This shopping list should be based on the generated diet chart and the product consumption needs provided (daily, weekly, half-monthly, monthly).
+     - Calculate the items and quantities needed for the specified period.
+  `,
+  config: {
     safetySettings: [
       {
         category: 'HARM_CATEGORY_HATE_SPEECH',

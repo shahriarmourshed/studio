@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -24,8 +25,6 @@ export default function CostMinimizationForm() {
   const { toast } = useToast();
   const { products } = useData();
 
-  const productNeedsText = products.map(p => `${p.name} ${p.quantity}${p.unit}`).join(', ');
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -33,7 +32,15 @@ export default function CostMinimizationForm() {
 
     const input: CostMinimizationInput = {
       spendingHabits,
-      productNeeds: productNeedsText,
+      productNeeds: products.map(p => ({
+        name: p.name,
+        quantity: p.quantity,
+        unit: p.unit,
+        price: p.price,
+        dailyNeed: p.dailyNeed,
+        halfMonthlyNeed: p.halfMonthlyNeed,
+        monthlyNeed: p.monthlyNeed,
+      })),
     };
 
     try {
@@ -71,7 +78,7 @@ export default function CostMinimizationForm() {
             />
           </div>
            <p className="text-sm text-muted-foreground">
-              Note: The AI will use your current product needs list.
+              Note: The AI will use your current product needs list, including consumption patterns.
             </p>
         </CardContent>
         <CardFooter>
@@ -92,7 +99,7 @@ export default function CostMinimizationForm() {
                     <CardTitle>Here are some suggestions to save money:</CardTitle>
                  </CardHeader>
                  <CardContent>
-                    <p className="text-sm">{result.suggestions}</p>
+                    <p className="text-sm whitespace-pre-wrap font-body">{result.suggestions}</p>
                  </CardContent>
             </Card>
         </CardContent>
