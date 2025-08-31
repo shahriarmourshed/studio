@@ -40,6 +40,7 @@ export type Expense = {
   recurrent: boolean;
   notes?: string;
   status: 'planned' | 'completed' | 'cancelled';
+  plannedAmount?: number;
 };
 
 export type IncomeCategory = 'Salary' | 'Business' | 'Investment' | 'Gift' | 'Other';
@@ -53,6 +54,7 @@ export type Income = {
   recurrent: boolean;
   notes?: string;
   status: 'planned' | 'completed' | 'cancelled';
+  plannedAmount?: number;
 };
 
 export type Budget = {

@@ -138,10 +138,22 @@ export default function TransactionsPage() {
   const handleStatusChange = (id: string, type: 'income' | 'expense', status: 'completed' | 'cancelled') => {
     if (type === 'income') {
       const income = incomes.find(i => i.id === id);
-      if (income) updateIncome({ ...income, status });
+      if (income) {
+        const updatedIncome = { ...income, status };
+        if (status === 'completed' && income.status === 'planned') {
+          updatedIncome.plannedAmount = income.amount;
+        }
+        updateIncome(updatedIncome);
+      }
     } else {
       const expense = expenses.find(e => e.id === id);
-      if (expense) updateExpense({ ...expense, status });
+      if (expense) {
+        const updatedExpense = { ...expense, status };
+        if (status === 'completed' && expense.status === 'planned') {
+          updatedExpense.plannedAmount = expense.amount;
+        }
+        updateExpense(updatedExpense);
+      }
     }
   };
 
@@ -168,28 +180,30 @@ export default function TransactionsPage() {
   const handleUpdateTransaction = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingTransaction) {
-      const updatedStatus = editingTransaction.status === 'planned' ? 'completed' : editingTransaction.status;
+      const isPlanned = editingTransaction.status === 'planned';
+      const updatedStatus = isPlanned ? 'completed' : editingTransaction.status;
+      
+      const commonUpdates = {
+        description: editDesc,
+        amount: parseFloat(editAmount),
+        date: editDate,
+        recurrent: editRecurrent,
+        notes: editNotes,
+        status: updatedStatus,
+        plannedAmount: isPlanned ? editingTransaction.amount : editingTransaction.plannedAmount,
+      };
+
       if (isExpense) {
         updateExpense({
           ...(editingTransaction as Expense),
-          description: editDesc,
-          amount: parseFloat(editAmount),
+          ...commonUpdates,
           category: editCategory as ExpenseCategory,
-          date: editDate,
-          recurrent: editRecurrent,
-          notes: editNotes,
-          status: updatedStatus,
         });
       } else {
         updateIncome({
           ...(editingTransaction as Income),
-          description: editDesc,
-          amount: parseFloat(editAmount),
+          ...commonUpdates,
           category: editCategory as IncomeCategory,
-          date: editDate,
-          recurrent: editRecurrent,
-          notes: editNotes,
-          status: updatedStatus,
         });
       }
       setIsEditDialogOpen(false);
