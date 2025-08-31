@@ -12,7 +12,7 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FamilyVerse",
+  title: "Family Manager",
   description: "A smart family management app for budgeting, grocery planning, and health tracking.",
 };
 

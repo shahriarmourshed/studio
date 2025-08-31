@@ -15,7 +15,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light');
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('familyverse-theme') as Theme;
+    const storedTheme = localStorage.getItem('family-manager-theme') as Theme;
     const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initialTheme = storedTheme || preferredTheme;
     setThemeState(initialTheme);
@@ -27,7 +27,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    localStorage.setItem('familyverse-theme', theme);
+    localStorage.setItem('family-manager-theme', theme);
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {

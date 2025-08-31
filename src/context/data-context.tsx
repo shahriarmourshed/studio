@@ -36,7 +36,7 @@ const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T) => vo
     try {
       const item = window.localStorage.getItem(key);
       // Attempt to migrate old data structure
-      if (key === 'familyverse-products' && item) {
+      if (key === 'family-manager-products' && item) {
         const parsed = JSON.parse(item);
         if (Array.isArray(parsed) && parsed.length > 0 && ('dailyNeed' in parsed[0] || 'monthlyNeed' in parsed[0])) {
           const migrated = parsed.map((p: any) => {
@@ -82,12 +82,12 @@ const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T) => vo
 };
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [budget, setBudget] = useLocalStorage<Budget>('familyverse-budget', defaultBudget);
-  const [expenses, setExpenses] = useLocalStorage<Expense[]>('familyverse-expenses', []);
-  const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('familyverse-family', familyMembers);
-  const [productsData, setProducts] = useLocalStorage<Product[]>('familyverse-products', defaultProducts);
-  const [incomesData, setIncomes] = useLocalStorage<Income[]>('familyverse-incomes', defaultIncomes);
-  const [savingGoal, setSavingGoal] = useLocalStorage<number>('familyverse-saving-goal', 10000);
+  const [budget, setBudget] = useLocalStorage<Budget>('family-manager-budget', defaultBudget);
+  const [expenses, setExpenses] = useLocalStorage<Expense[]>('family-manager-expenses', []);
+  const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('family-manager-family', familyMembers);
+  const [productsData, setProducts] = useLocalStorage<Product[]>('family-manager-products', defaultProducts);
+  const [incomesData, setIncomes] = useLocalStorage<Income[]>('family-manager-incomes', defaultIncomes);
+  const [savingGoal, setSavingGoal] = useLocalStorage<number>('family-manager-saving-goal', 10000);
 
 
   const [isMounted, setIsMounted] = useState(false);

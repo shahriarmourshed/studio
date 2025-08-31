@@ -1,6 +1,6 @@
-# FamilyVerse: Your Smart Family Management App
+# Family Manager: Your Smart Family Management App
 
-FamilyVerse is a comprehensive application designed to be your family's central command center. It helps you manage finances, track product inventory, plan meals, and maintain health profiles, all powered by an intelligent AI assistant.
+Family Manager is a comprehensive application designed to be your family's central command center. It helps you manage finances, track product inventory, plan meals, and maintain health profiles, all powered by an intelligent AI assistant.
 
 ---
 
