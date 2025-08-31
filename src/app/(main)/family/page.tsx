@@ -45,6 +45,7 @@ export default function FamilyPage() {
   const [newMemberAge, setNewMemberAge] = useState('');
   const [newMemberHealth, setNewMemberHealth] = useState('');
   const [newMemberDiet, setNewMemberDiet] = useState('');
+  const [newMemberAvatarUrl, setNewMemberAvatarUrl] = useState('');
 
   // Edit dialog state
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -53,15 +54,17 @@ export default function FamilyPage() {
   const [editMemberAge, setEditMemberAge] = useState('');
   const [editMemberHealth, setEditMemberHealth] = useState('');
   const [editMemberDiet, setEditMemberDiet] = useState('');
+  const [editMemberAvatarUrl, setEditMemberAvatarUrl] = useState('');
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMemberName && newMemberAge) {
-      const newMember: Omit<FamilyMember, 'id' | 'avatarUrl'> = {
+      const newMember: Omit<FamilyMember, 'id'> = {
         name: newMemberName,
         age: parseInt(newMemberAge, 10),
         healthConditions: newMemberHealth,
         dietaryRestrictions: newMemberDiet,
+        avatarUrl: newMemberAvatarUrl,
       };
       addFamilyMember(newMember);
       resetAddForm();
@@ -73,6 +76,7 @@ export default function FamilyPage() {
     setNewMemberAge('');
     setNewMemberHealth('');
     setNewMemberDiet('');
+    setNewMemberAvatarUrl('');
     setIsAddDialogOpen(false);
   }
 
@@ -82,6 +86,7 @@ export default function FamilyPage() {
     setEditMemberAge(String(member.age));
     setEditMemberHealth(member.healthConditions);
     setEditMemberDiet(member.dietaryRestrictions);
+    setEditMemberAvatarUrl(member.avatarUrl);
     setIsEditDialogOpen(true);
   };
 
@@ -94,6 +99,7 @@ export default function FamilyPage() {
         age: parseInt(editMemberAge, 10),
         healthConditions: editMemberHealth,
         dietaryRestrictions: editMemberDiet,
+        avatarUrl: editMemberAvatarUrl,
       });
       setIsEditDialogOpen(false);
       setSelectedMember(null);
@@ -124,6 +130,10 @@ export default function FamilyPage() {
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="age" className="text-right">Age</Label>
                   <Input id="age" type="number" value={newMemberAge} onChange={(e) => setNewMemberAge(e.target.value)} className="col-span-3" required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="avatarUrl" className="text-right">Avatar URL</Label>
+                  <Input id="avatarUrl" value={newMemberAvatarUrl} onChange={(e) => setNewMemberAvatarUrl(e.target.value)} className="col-span-3" placeholder="https://example.com/image.png" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="health" className="text-right">Health Conditions</Label>
@@ -215,6 +225,10 @@ export default function FamilyPage() {
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-age" className="text-right">Age</Label>
                   <Input id="edit-age" type="number" value={editMemberAge} onChange={(e) => setEditMemberAge(e.target.value)} className="col-span-3" required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-avatarUrl" className="text-right">Avatar URL</Label>
+                  <Input id="edit-avatarUrl" value={editMemberAvatarUrl} onChange={(e) => setEditMemberAvatarUrl(e.target.value)} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-health" className="text-right">Health Conditions</Label>

@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
-import { familyMembers, products as defaultProducts, budget as defaultBudget, incomes as defaultIncomes, expenses as defaultExpenses } from '@/lib/data';
+import { familyMembers as defaultFamilyMembers, products as defaultProducts, budget as defaultBudget, incomes as defaultIncomes, expenses as defaultExpenses } from '@/lib/data';
 import { differenceInDays, differenceInWeeks, differenceInMonths, format, getYear } from 'date-fns';
 
 interface DataContextType {
@@ -19,7 +19,7 @@ interface DataContextType {
   addExpense: (expense: Omit<Expense, 'id' | 'status'>, status?: Expense['status']) => void;
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
-  addFamilyMember: (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => void;
+  addFamilyMember: (member: Omit<FamilyMember, 'id'>) => void;
   updateFamilyMember: (member: FamilyMember) => void;
   deleteFamilyMember: (memberId: string) => void;
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
@@ -88,7 +88,7 @@ const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T) => vo
 export function DataProvider({ children }: { children: ReactNode }) {
   const [budget, setBudget] = useLocalStorage<Budget>('family-manager-budget', defaultBudget);
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('family-manager-expenses', defaultExpenses);
-  const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('family-manager-family', familyMembers);
+  const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('family-manager-family', defaultFamilyMembers);
   const [productsData, setProducts] = useLocalStorage<Product[]>('family-manager-products', defaultProducts);
   const [incomesData, setIncomes] = useLocalStorage<Income[]>('family-manager-incomes', defaultIncomes);
   const [savingGoal, setSavingGoal] = useLocalStorage<number>('family-manager-saving-goal', 10000);
@@ -153,11 +153,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
 
-  const addFamilyMember = (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => {
+  const addFamilyMember = (member: Omit<FamilyMember, 'id'>) => {
     const newMember = { 
       ...member, 
       id: new Date().toISOString(),
-      avatarUrl: `https://picsum.photos/100/100?random=${Math.random()}`
+      avatarUrl: member.avatarUrl || `https://picsum.photos/100/100?random=${Math.random()}`
     };
     setFamilyMembers([...familyMembersData, newMember]);
   };
