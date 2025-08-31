@@ -30,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ExpenseCategory } from '@/lib/types';
+import PlanVsActuals from '@/components/dashboard/plan-vs-actuals';
 
 
 export default function DashboardPage() {
@@ -252,6 +253,10 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        
+        <div className="lg:col-span-4">
+          <PlanVsActuals />
+        </div>
       </div>
     </div>
   );
