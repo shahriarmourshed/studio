@@ -99,9 +99,9 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleEditClick = (transaction: (Income | Expense) & { type: 'income' | 'expense' }) => {
-    setEditingTransaction(transaction);
-    setIsExpense(transaction.type === 'expense');
+  const handleEditClick = (transaction: (Income | Expense), type: 'income' | 'expense') => {
+    setEditingTransaction({ ...transaction, type });
+    setIsExpense(type === 'expense');
     setEditDesc(transaction.description);
     setEditAmount(String(transaction.amount));
     setEditCategory(transaction.category);
@@ -258,7 +258,7 @@ export default function TransactionsPage() {
                                 {t.status === 'planned' && (
                                     <div className="flex gap-0.5 justify-center">
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'completed')}><Check className="w-4 h-4 text-green-500" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t)}><Edit className="w-4 h-4" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t, t.type)}><Edit className="w-4 h-4" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'cancelled')}><Ban className="w-4 h-4 text-red-500" /></Button>
                                     </div>
                                 )}
@@ -336,5 +336,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    
