@@ -38,6 +38,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
@@ -183,17 +184,19 @@ export default function ProductsPage() {
                     <SelectValue placeholder="Select a unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="kg">kg</SelectItem>
-                    <SelectItem value="g">g</SelectItem>
-                    <SelectItem value="l">l</SelectItem>
-                    <SelectItem value="ml">ml</SelectItem>
-                    <SelectItem value="piece">piece</SelectItem>
-                    <SelectItem value="pack">pack</SelectItem>
-                    <SelectItem value="dozen">dozen</SelectItem>
-                    <SelectItem value="box">box</SelectItem>
-                    <SelectItem value="bottle">bottle</SelectItem>
-                    <SelectItem value="can">can</SelectItem>
-                    <SelectItem value="roll">roll</SelectItem>
+                    <ScrollArea className="h-48">
+                      <SelectItem value="kg">kg</SelectItem>
+                      <SelectItem value="g">g</SelectItem>
+                      <SelectItem value="l">l</SelectItem>
+                      <SelectItem value="ml">ml</SelectItem>
+                      <SelectItem value="piece">piece</SelectItem>
+                      <SelectItem value="pack">pack</SelectItem>
+                      <SelectItem value="dozen">dozen</SelectItem>
+                      <SelectItem value="box">box</SelectItem>
+                      <SelectItem value="bottle">bottle</SelectItem>
+                      <SelectItem value="can">can</SelectItem>
+                      <SelectItem value="roll">roll</SelectItem>
+                    </ScrollArea>
                   </SelectContent>
                 </Select>
               </div>
@@ -329,17 +332,19 @@ export default function ProductsPage() {
                     <SelectValue placeholder="Select a unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="kg">kg</SelectItem>
-                    <SelectItem value="g">g</SelectItem>
-                    <SelectItem value="l">l</SelectItem>
-                    <SelectItem value="ml">ml</SelectItem>
-                    <SelectItem value="piece">piece</SelectItem>
-                    <SelectItem value="pack">pack</SelectItem>
-                    <SelectItem value="dozen">dozen</SelectItem>
-                    <SelectItem value="box">box</SelectItem>
-                    <SelectItem value="bottle">bottle</SelectItem>
-                    <SelectItem value="can">can</SelectItem>
-                    <SelectItem value="roll">roll</SelectItem>
+                    <ScrollArea className="h-48">
+                      <SelectItem value="kg">kg</SelectItem>
+                      <SelectItem value="g">g</SelectItem>
+                      <SelectItem value="l">l</SelectItem>
+                      <SelectItem value="ml">ml</SelectItem>
+                      <SelectItem value="piece">piece</SelectItem>
+                      <SelectItem value="pack">pack</SelectItem>
+                      <SelectItem value="dozen">dozen</SelectItem>
+                      <SelectItem value="box">box</SelectItem>
+                      <SelectItem value="bottle">bottle</SelectItem>
+                      <SelectItem value="can">can</SelectItem>
+                      <SelectItem value="roll">roll</SelectItem>
+                    </ScrollArea>
                   </SelectContent>
                 </Select>
               </div>
