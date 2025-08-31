@@ -14,14 +14,14 @@ interface DataContextType {
   incomes: Income[];
   savingGoal: number;
   setSavingGoal: (goal: number) => void;
-  addExpense: (expense: Omit<Expense, 'id' | 'status'>) => void;
+  addExpense: (expense: Omit<Expense, 'id' | 'status'>, status?: Expense['status']) => void;
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => void;
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
-  addIncome: (income: Omit<Income, 'id' | 'status'>) => void;
+  addIncome: (income: Omit<Income, 'id' | 'status'>, status?: Income['status']) => void;
   updateIncome: (income: Income) => void;
   deleteIncome: (incomeId: string) => void;
 }
@@ -134,8 +134,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [isMounted]);
 
 
-  const addExpense = (expense: Omit<Expense, 'id' | 'status'>) => {
-    const newExpense: Expense = { ...expense, id: new Date().toISOString(), status: 'planned' };
+  const addExpense = (expense: Omit<Expense, 'id' | 'status'>, status: Expense['status'] = 'planned') => {
+    const newExpense: Expense = { ...expense, id: new Date().toISOString(), status };
     setExpenses([...expenses, newExpense].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
   
@@ -174,8 +174,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProducts(productsData.filter(p => p.id !== productId));
   };
 
-  const addIncome = (income: Omit<Income, 'id' | 'status'>) => {
-      const newIncome: Income = { ...income, id: new Date().toISOString(), status: 'planned' };
+  const addIncome = (income: Omit<Income, 'id' | 'status'>, status: Income['status'] = 'planned') => {
+      const newIncome: Income = { ...income, id: new Date().toISOString(), status };
       setIncomes([...incomesData, newIncome].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
 

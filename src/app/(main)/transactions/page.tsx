@@ -19,12 +19,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, Edit, ChevronLeft, ChevronRight, Ban } from "lucide-react";
+import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,16 +46,39 @@ import { cn } from '@/lib/utils';
 export default function TransactionsPage() {
   const { getSymbol } = useCurrency();
   const { 
-    expenses, 
+    expenses,
+    addExpense, 
     incomes, 
+    addIncome,
     updateExpense,
     updateIncome,
   } = useData();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  // Dialog states
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
+  const [isIncomeDialogOpen, setIsIncomeDialogOpen] = useState(false);
+  
   const [editingTransaction, setEditingTransaction] = useState<(Expense | Income) & { type: 'income' | 'expense' } | null>(null);
   const [isExpense, setIsExpense] = useState(true);
+
+  // Add Expense form state
+  const [newExpenseDesc, setNewExpenseDesc] = useState('');
+  const [newExpenseAmount, setNewExpenseAmount] = useState('');
+  const [newExpenseCategory, setNewExpenseCategory] = useState<ExpenseCategory>('Other');
+  const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [newExpenseRecurrent, setNewExpenseRecurrent] = useState(false);
+  const [newExpenseNotes, setNewExpenseNotes] = useState('');
+
+  // Add Income form state
+  const [newIncomeDesc, setNewIncomeDesc] = useState('');
+  const [newIncomeAmount, setNewIncomeAmount] = useState('');
+  const [newIncomeCategory, setNewIncomeCategory] = useState<IncomeCategory>('Other');
+  const [newIncomeDate, setNewIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [newIncomeRecurrent, setNewIncomeRecurrent] = useState(false);
+  const [newIncomeNotes, setNewIncomeNotes] = useState('');
 
   // Edit form state
   const [editDesc, setEditDesc] = useState('');
@@ -142,6 +167,57 @@ export default function TransactionsPage() {
     }
   };
 
+  const handleAddExpense = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newExpenseDesc && newExpenseAmount && newExpenseCategory && newExpenseDate) {
+        addExpense({
+            description: newExpenseDesc,
+            amount: parseFloat(newExpenseAmount),
+            category: newExpenseCategory,
+            date: newExpenseDate,
+            recurrent: newExpenseRecurrent,
+            notes: newExpenseNotes,
+        }, 'completed');
+        resetAddExpenseForm();
+    }
+  };
+
+  const resetAddExpenseForm = () => {
+    setNewExpenseDesc('');
+    setNewExpenseAmount('');
+    setNewExpenseCategory('Other');
+    setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
+    setNewExpenseRecurrent(false);
+    setNewExpenseNotes('');
+    setIsExpenseDialogOpen(false);
+  };
+
+  const handleAddIncome = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newIncomeDesc && newIncomeAmount && newIncomeDate) {
+        addIncome({
+            description: newIncomeDesc,
+            amount: parseFloat(newIncomeAmount),
+            category: newIncomeCategory,
+            date: newIncomeDate,
+            recurrent: newIncomeRecurrent,
+            notes: newIncomeNotes,
+        }, 'completed');
+        resetAddIncomeForm();
+    }
+  };
+
+  const resetAddIncomeForm = () => {
+     setNewIncomeDesc('');
+    setNewIncomeAmount('');
+    setNewIncomeCategory('Other');
+    setNewIncomeDate(format(new Date(), 'yyyy-MM-dd'));
+    setNewIncomeRecurrent(false);
+    setNewIncomeNotes('');
+    setIsIncomeDialogOpen(false);
+  };
+
+
   const completedIncome = filteredIncomes.filter(i => i.status === 'completed').reduce((sum, i) => sum + i.amount, 0);
   const completedExpenses = filteredExpenses.filter(e => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
   const actualSavings = completedIncome - completedExpenses;
@@ -156,7 +232,123 @@ export default function TransactionsPage() {
 
   return (
     <div className="container mx-auto">
-      <PageHeader title="Transactions" subtitle="Log your actual income and expenses against your plan." />
+      <PageHeader title="Transactions" subtitle="Log your actual income and expenses.">
+         <div className="flex gap-2">
+            <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)}>
+                <DollarSign className="mr-2 h-4 w-4" />
+                Add Real Income
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                <DialogTitle>Add Real Income</DialogTitle>
+                <DialogDescription>
+                    Log a new completed income transaction.
+                </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddIncome}>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="income-description" className="text-right">Description</Label>
+                    <Input id="income-description" placeholder="e.g., Freelance Project" className="col-span-3" value={newIncomeDesc} onChange={e=>setNewIncomeDesc(e.target.value)} required/>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="income-amount" className="text-right">Amount ({getSymbol()})</Label>
+                    <Input id="income-amount" type="number" placeholder="e.g., 5000" className="col-span-3" value={newIncomeAmount} onChange={e=>setNewIncomeAmount(e.target.value)} required/>
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Category</Label>
+                        <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
+                            <RadioGroup value={newIncomeCategory} onValueChange={(v) => setNewIncomeCategory(v as IncomeCategory)} className="p-4">
+                                {(['Salary', 'Business', 'Investment', 'Gift', 'Other'] as IncomeCategory[]).map(category => (
+                                    <div key={category} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={category} id={`income-${category}`} />
+                                        <Label htmlFor={`income-${category}`}>{category}</Label>
+                                    </div>
+                                ))}
+                            </RadioGroup>
+                        </ScrollArea>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="income-date" className="text-right">Date</Label>
+                    <Input id="income-date" type="date" className="col-span-3" value={newIncomeDate} onChange={e=>setNewIncomeDate(e.target.value)} required/>
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="income-recurrent" className="text-right">Recurrent</Label>
+                        <div className="col-span-3">
+                            <Switch id="income-recurrent" checked={newIncomeRecurrent} onCheckedChange={setNewIncomeRecurrent} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label htmlFor="income-notes" className="text-right pt-2">Short Note</Label>
+                        <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-3" value={newIncomeNotes} onChange={e => setNewIncomeNotes(e.target.value)} />
+                    </div>
+                    <Button type="submit" className="w-full">Add Income</Button>
+                </div>
+                </form>
+            </DialogContent>
+            </Dialog>
+
+            <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
+            <DialogTrigger asChild>
+                <Button onClick={() => setIsExpenseDialogOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Real Expense
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                <DialogTitle>Add Real Expense</DialogTitle>
+                <DialogDescription>
+                    Log a new completed expense transaction.
+                </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddExpense}>
+                <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="description" className="text-right">Description</Label>
+                    <Input id="description" placeholder="e.g., Dinner Out" className="col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="amount" className="text-right">Amount ({getSymbol()})</Label>
+                    <Input id="amount" type="number" placeholder="e.g., 1200" className="col-span-3" value={newExpenseAmount} onChange={e=>setNewExpenseAmount(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label className="text-right pt-2">Category</Label>
+                    <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
+                        <RadioGroup value={newExpenseCategory} onValueChange={(v) => setNewExpenseCategory(v as ExpenseCategory)} className="p-4">
+                            {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
+                                <div key={category} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category} id={`expense-${category}`} />
+                                    <Label htmlFor={`expense-${category}`}>{category}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </ScrollArea>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="date" className="text-right">Date</Label>
+                    <Input id="date" type="date" className="col-span-3" value={newExpenseDate} onChange={e=>setNewExpenseDate(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="recurrent" className="text-right">Recurrent</Label>
+                    <div className="col-span-3">
+                        <Switch id="recurrent" checked={newExpenseRecurrent} onCheckedChange={setNewExpenseRecurrent} />
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="expense-notes" className="text-right pt-2">Short Note</Label>
+                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
+                </div>
+                <Button type="submit" className="w-full">Add Expense</Button>
+                </div>
+                </form>
+            </DialogContent>
+            </Dialog>
+        </div>
+      </PageHeader>
       
       <div className="px-4 sm:px-0">
         <Card>
@@ -238,15 +430,15 @@ export default function TransactionsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {allTransactions.map(t => (
+                        {allTransactions.filter(t => t.status === 'planned').map(t => (
                             <TableRow key={t.id}>
-                                <TableCell className="font-medium">
-                                    {t.description}
+                                <TableCell className="font-medium p-2">
+                                    <span className="truncate">{t.description}</span>
                                     <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="ml-2 text-xs capitalize">{t.type}</Badge>
                                 </TableCell>
-                                <TableCell>{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
+                                <TableCell className="p-2">{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
                                 <TableCell className={cn(
-                                    "text-right font-semibold",
+                                    "text-right font-semibold p-2",
                                      t.type === 'expense' ? 'text-red-500' : 'text-green-500'
                                     )}
                                 >
@@ -255,19 +447,17 @@ export default function TransactionsPage() {
                                     {t.amount.toLocaleString()}
                                 </TableCell>
                                 <TableCell className="text-center p-1">
-                                {t.status === 'planned' && (
                                     <div className="flex gap-0.5 justify-center">
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'completed')}><Check className="w-4 h-4 text-green-500" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t, t.type)}><Edit className="w-4 h-4" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'cancelled')}><Ban className="w-4 h-4 text-red-500" /></Button>
                                     </div>
-                                )}
                                 </TableCell>
                             </TableRow>
                         ))}
-                         {allTransactions.length === 0 && (
+                         {allTransactions.filter(t => t.status === 'planned').length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center">No transactions for this month.</TableCell>
+                                <TableCell colSpan={4} className="text-center">No planned transactions for this month.</TableCell>
                             </TableRow>
                         )}
                     </TableBody>
