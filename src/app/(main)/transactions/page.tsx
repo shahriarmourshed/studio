@@ -19,11 +19,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, X, Edit, ChevronLeft, ChevronRight, Ban } from "lucide-react";
+import { Check, Edit, ChevronLeft, ChevronRight, Ban } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -145,6 +144,14 @@ export default function TransactionsPage() {
   const completedIncome = filteredIncomes.filter(i => i.status === 'completed').reduce((sum, i) => sum + i.amount, 0);
   const completedExpenses = filteredExpenses.filter(e => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
   const actualSavings = completedIncome - completedExpenses;
+  
+  const allTransactions = useMemo(() => {
+    const combined = [
+        ...filteredIncomes.map(i => ({...i, type: 'income' as const})),
+        ...filteredExpenses.map(e => ({...e, type: 'expense' as const}))
+    ];
+    return combined.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  },[filteredIncomes, filteredExpenses]);
 
   return (
     <div className="container mx-auto">
@@ -233,32 +240,27 @@ export default function TransactionsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {[...filteredIncomes, ...filteredExpenses].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(t => {
-                            const isExpenseItem = 'category' in t && t.category !== undefined && 'amount' in t;
-                            const type = isExpenseItem && expenses.some(e => e.id === t.id) ? 'expense' : 'income';
-
-                            return (
-                                <TableRow key={t.id}>
-                                    <TableCell className="font-medium">{t.description}</TableCell>
-                                    <TableCell>{t.category}</TableCell>
-                                    <TableCell>{t.date}</TableCell>
-                                    <TableCell>
-                                      <Badge variant={type === 'income' ? 'default': 'destructive'}>{type}</Badge>
-                                    </TableCell>
-                                    <TableCell><Badge variant={t.status === 'planned' ? 'secondary' : t.status === 'completed' ? 'default' : 'destructive'}>{t.status}</Badge></TableCell>
-                                    <TableCell className="text-right">{getSymbol()}{t.amount.toLocaleString()}</TableCell>
-                                    <TableCell className="text-center">
-                                    {t.status === 'planned' && (
-                                        <div className="flex gap-1 justify-center">
-                                            <Button size="icon" variant="ghost" onClick={() => handleStatusChange(t.id, type, 'completed')}><Check className="w-4 h-4 text-green-500" /></Button>
-                                            <Button size="icon" variant="ghost" onClick={() => handleEditClick(t, type)}><Edit className="w-4 h-4" /></Button>
-                                            <Button size="icon" variant="ghost" onClick={() => handleStatusChange(t.id, type, 'cancelled')}><Ban className="w-4 h-4 text-red-500" /></Button>
-                                        </div>
-                                    )}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
+                        {allTransactions.map(t => (
+                            <TableRow key={t.id}>
+                                <TableCell className="font-medium max-w-32 sm:max-w-xs truncate">{t.description}</TableCell>
+                                <TableCell><Badge variant="outline" className="text-xs">{t.category}</Badge></TableCell>
+                                <TableCell>{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
+                                <TableCell>
+                                    <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="text-xs">{t.type}</Badge>
+                                </TableCell>
+                                <TableCell><Badge variant={t.status === 'planned' ? 'secondary' : t.status === 'completed' ? 'default' : 'destructive'} className="text-xs">{t.status}</Badge></TableCell>
+                                <TableCell className="text-right">{getSymbol()}{t.amount.toLocaleString()}</TableCell>
+                                <TableCell className="text-center p-1">
+                                {t.status === 'planned' && (
+                                    <div className="flex gap-0.5 justify-center">
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'completed')}><Check className="w-4 h-4 text-green-500" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t, t.type)}><Edit className="w-4 h-4" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'cancelled')}><Ban className="w-4 h-4 text-red-500" /></Button>
+                                    </div>
+                                )}
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </CardContent>
@@ -325,3 +327,5 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+    
