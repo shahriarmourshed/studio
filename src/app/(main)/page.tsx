@@ -12,7 +12,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
 import SavingsPieChart from '@/components/dashboard/savings-pie-chart';
-import { upcomingBills } from '@/lib/data';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
@@ -41,6 +40,14 @@ export default function DashboardPage() {
         totalSpent: monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0)
     };
   }, [incomes, expenses]);
+
+  const upcomingRecurrentBills = useMemo(() => {
+    const today = new Date();
+    return expenses
+      .filter(e => e.recurrent && new Date(e.date) > today)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [expenses]);
+
 
   if (!budget) {
     return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;
@@ -87,15 +94,17 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {upcomingBills.slice(0, 3).map((bill) => (
+              {upcomingRecurrentBills.length > 0 ? upcomingRecurrentBills.slice(0, 3).map((bill) => (
                 <li key={bill.id} className="flex justify-between items-center">
                   <div>
-                    <p className="font-medium">{bill.name}</p>
-                    <p className="text-sm text-muted-foreground">Due: {new Date(bill.dueDate).toLocaleDateString()}</p>
+                    <p className="font-medium">{bill.description}</p>
+                    <p className="text-sm text-muted-foreground">Due: {new Date(bill.date).toLocaleDateString()}</p>
                   </div>
                   <p className="font-semibold text-lg">{getSymbol()}{bill.amount.toLocaleString()}</p>
                 </li>
-              ))}
+              )) : (
+                <p className="text-sm text-muted-foreground text-center">No upcoming recurrent bills found.</p>
+              )}
             </ul>
           </CardContent>
         </Card>
