@@ -8,14 +8,21 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
 import { getYear } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import type { Expense, Income, ExpenseCategory, IncomeCategory } from '@/lib/types';
+
+type AggregatedData = {
+    planned: number;
+    actual: number;
+    difference: number;
+};
 
 export default function PlanVsActualsPage() {
   const { getSymbol } = useCurrency();
@@ -39,29 +46,88 @@ export default function PlanVsActualsPage() {
   }, [incomes, expenses]);
   
   const {
-    plannedIncomesList,
-    actualIncomesList,
-    plannedExpensesList,
-    actualExpensesList
+    aggregatedIncomes,
+    aggregatedExpenses,
+    totalIncome,
+    totalExpense
   } = useMemo(() => {
     const yearlyIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
     const yearlyExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
+    
+    const aggregate = <T extends Expense | Income, C extends ExpenseCategory | IncomeCategory>(
+        items: T[], 
+        categories: C[]
+    ): { data: Record<string, AggregatedData>, total: AggregatedData } => {
+        const data = {} as Record<string, AggregatedData>;
+        
+        categories.forEach(cat => {
+            data[cat] = { planned: 0, actual: 0, difference: 0 };
+        });
 
-    // Items that were ever planned (i.e., have a plannedAmount) or are still planned.
-    const plannedIncomesList = yearlyIncomes.filter(i => i.status === 'planned' || i.plannedAmount !== undefined);
-    const plannedExpensesList = yearlyExpenses.filter(e => e.status === 'planned' || e.plannedAmount !== undefined);
+        items.forEach(item => {
+            const category = item.category as C;
+            if (!data[category]) data[category] = { planned: 0, actual: 0, difference: 0 };
+            
+            if(item.status === 'completed') {
+                data[category].actual += item.amount;
+                data[category].planned += item.plannedAmount ?? item.amount;
+            } else if (item.status === 'planned') {
+                data[category].planned += item.amount;
+            }
+        });
 
-    // Actuals are only completed transactions.
-    const actualIncomesList = yearlyIncomes.filter(i => i.status === 'completed');
-    const actualExpensesList = yearlyExpenses.filter(e => e.status === 'completed');
+        let totalPlanned = 0;
+        let totalActual = 0;
+
+        Object.keys(data).forEach(cat => {
+            data[cat].difference = data[cat].actual - data[cat].planned;
+            totalPlanned += data[cat].planned;
+            totalActual += data[cat].actual;
+        });
+
+        return {
+            data,
+            total: {
+                planned: totalPlanned,
+                actual: totalActual,
+                difference: totalActual - totalPlanned
+            }
+        };
+    };
+
+    const incomeCategories: IncomeCategory[] = ['Salary', 'Business', 'Investment', 'Gift', 'Other'];
+    const expenseCategories: ExpenseCategory[] = ['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'];
+
+    const incomeResult = aggregate<Income, IncomeCategory>(yearlyIncomes, incomeCategories);
+    const expenseResult = aggregate<Expense, ExpenseCategory>(yearlyExpenses, expenseCategories);
 
     return {
-      plannedIncomesList,
-      actualIncomesList,
-      plannedExpensesList,
-      actualExpensesList,
+      aggregatedIncomes: incomeResult.data,
+      totalIncome: incomeResult.total,
+      aggregatedExpenses: expenseResult.data,
+      totalExpense: expenseResult.total
     };
   }, [expenses, incomes, selectedYear]);
+
+  const renderDifference = (difference: number, type: 'income' | 'expense') => {
+      const isPositive = difference > 0;
+      const isNegative = difference < 0;
+      let colorClass = 'text-muted-foreground';
+
+      if (type === 'income') {
+          if (isPositive) colorClass = 'text-green-500';
+          if (isNegative) colorClass = 'text-red-500';
+      } else { // expense
+          if (isPositive) colorClass = 'text-red-500'; // Overspent
+          if (isNegative) colorClass = 'text-green-500'; // Underspent
+      }
+
+      return (
+          <span className={cn('font-semibold', colorClass)}>
+              {isPositive ? '+' : ''}{getSymbol()}{difference.toLocaleString()}
+          </span>
+      )
+  };
 
   return (
     <div className="container mx-auto">
@@ -88,80 +154,90 @@ export default function PlanVsActualsPage() {
                 </SelectContent>
             </Select>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Income Section */}
-            <div className="p-4 rounded-lg bg-green-100 dark:bg-green-900/50">
-              <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
-                <TrendingUp className="h-5 w-5" />
-                <h3 className="font-semibold text-lg">Income</h3>
-              </div>
-              <Separator className="bg-green-300 dark:bg-green-700"/>
-              <div className="grid grid-cols-2 gap-x-4 mt-2">
-                <div>
-                  <h4 className="text-md font-semibold mb-2">Planned</h4>
-                  <ScrollArea className="h-60 pr-3">
-                    <ul className="text-sm space-y-2">
-                      {plannedIncomesList.map(i => (
-                        <li key={i.id} className="flex justify-between">
-                          <span className="truncate pr-1">{i.description}</span>
-                          <span>{getSymbol()}{(i.plannedAmount ?? i.amount).toLocaleString()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-                <div>
-                  <h4 className="text-md font-semibold mb-2">Actual</h4>
-                  <ScrollArea className="h-60">
-                    <ul className="text-sm space-y-2">
-                      {actualIncomesList.map(i => (
-                        <li key={i.id} className="flex justify-between">
-                          <span className="truncate pr-1">{i.description}</span>
-                          <span>{getSymbol()}{i.amount.toLocaleString()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-              </div>
-            </div>
+          <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Income Card */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-6 w-6 text-green-500"/>
+                        Income Comparison
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Category</TableHead>
+                                <TableHead className="text-right">Planned</TableHead>
+                                <TableHead className="text-right">Actual</TableHead>
+                                <TableHead className="text-right">Difference</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Object.entries(aggregatedIncomes).map(([category, data]) => (
+                                (data.planned > 0 || data.actual > 0) &&
+                                <TableRow key={category}>
+                                    <TableCell className="font-medium">{category}</TableCell>
+                                    <TableCell className="text-right">{getSymbol()}{data.planned.toLocaleString()}</TableCell>
+                                    <TableCell className="text-right">{getSymbol()}{data.actual.toLocaleString()}</TableCell>
+                                    <TableCell className="text-right">{renderDifference(data.difference, 'income')}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                        <TableFooter>
+                           <TableRow className="bg-muted/50">
+                               <TableHead>Total</TableHead>
+                               <TableHead className="text-right">{getSymbol()}{totalIncome.planned.toLocaleString()}</TableHead>
+                               <TableHead className="text-right">{getSymbol()}{totalIncome.actual.toLocaleString()}</TableHead>
+                               <TableHead className="text-right">{renderDifference(totalIncome.difference, 'income')}</TableHead>
+                           </TableRow>
+                        </TableFooter>
+                    </Table>
+                </CardContent>
+            </Card>
 
-            {/* Expenses Section */}
-            <div className="p-4 rounded-lg bg-red-100 dark:bg-red-900/50">
-              <div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-2">
-                <TrendingDown className="h-5 w-5" />
-                <h3 className="font-semibold text-lg">Expenses</h3>
-              </div>
-              <Separator className="bg-red-300 dark:bg-red-700" />
-              <div className="grid grid-cols-2 gap-x-4 mt-2">
-                <div>
-                  <h4 className="text-md font-semibold mb-2">Planned</h4>
-                  <ScrollArea className="h-60 pr-3">
-                    <ul className="text-sm space-y-2">
-                      {plannedExpensesList.map(e => (
-                        <li key={e.id} className="flex justify-between">
-                          <span className="truncate pr-1">{e.description}</span>
-                          <span>{getSymbol()}{(e.plannedAmount ?? e.amount).toLocaleString()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-                <div>
-                  <h4 className="text-md font-semibold mb-2">Actual</h4>
-                  <ScrollArea className="h-60">
-                    <ul className="text-sm space-y-2">
-                      {actualExpensesList.map(e => (
-                        <li key={e.id} className="flex justify-between">
-                          <span className="truncate pr-1">{e.description}</span>
-                          <span>{getSymbol()}{e.amount.toLocaleString()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-              </div>
-            </div>
+            {/* Expense Card */}
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <TrendingDown className="h-6 w-6 text-red-500"/>
+                        Expense Comparison
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Category</TableHead>
+                                <TableHead className="text-right">Planned</TableHead>
+                                <TableHead className="text-right">Actual</TableHead>
+                                <TableHead className="text-right">Difference</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Object.entries(aggregatedExpenses).map(([category, data]) => (
+                                (data.planned > 0 || data.actual > 0) &&
+                                <TableRow key={category}>
+                                    <TableCell className="font-medium">{category}</TableCell>
+                                    <TableCell className="text-right">{getSymbol()}{data.planned.toLocaleString()}</TableCell>
+                                    <TableCell className="text-right">{getSymbol()}{data.actual.toLocaleString()}</TableCell>
+                                    <TableCell className="text-right">{renderDifference(data.difference, 'expense')}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                         <TableFooter>
+                           <TableRow className="bg-muted/50">
+                               <TableHead>Total</TableHead>
+                               <TableHead className="text-right">{getSymbol()}{totalExpense.planned.toLocaleString()}</TableHead>
+                               <TableHead className="text-right">{getSymbol()}{totalExpense.actual.toLocaleString()}</TableHead>
+                               <TableHead className="text-right">{renderDifference(totalExpense.difference, 'expense')}</TableHead>
+                           </TableRow>
+                        </TableFooter>
+                    </Table>
+                </CardContent>
+            </Card>
+
           </CardContent>
         </Card>
       </div>
