@@ -24,10 +24,12 @@ const HealthDataSchema = z.object({
     .describe('Any dietary restrictions of the member (e.g., allergies).'),
 });
 
-const ProductNeedSchema = z.object({
-  productName: z.string().describe('Name of the product (e.g., rice).'),
-  quantity: z.number().describe('Quantity of the product available (e.g., 25).'),
-  unit: z.string().describe('Unit of measurement (e.g., kg).'),
+const ProductSchema = z.object({
+  name: z.string().describe('Name of the product.'),
+  quantity: z.number().describe('Last purchased quantity of the product.'),
+  currentStock: z.number().describe('Current available stock of the product.'),
+  unit: z.string().describe('Unit of measurement (e.g., kg, l, piece).'),
+  price: z.number().describe('Price of the product.'),
   consumptionRate: z.number().optional().describe('The consumption rate of the product.'),
   consumptionPeriod: z.enum(['daily', 'weekly', 'half-monthly', 'monthly']).optional().describe('The consumption period of the product.'),
 });
@@ -36,9 +38,9 @@ const DietChartInputSchema = z.object({
   familyHealthData: z
     .array(HealthDataSchema)
     .describe('Health data for each family member.'),
-  monthlyProductNeeds: z
-    .array(ProductNeedSchema)
-    .describe('List of monthly product needs, including consumption patterns.'),
+  products: z
+    .array(ProductSchema)
+    .describe('List of available products, including stock levels, prices, and consumption patterns.'),
   preferences: z.string().describe('Dietary Preferences'),
   dietType: z
     .enum(['cost-optimized', 'standard', 'as-per-products'])
@@ -70,9 +72,9 @@ const prompt = ai.definePrompt({
   - Name: {{{name}}}, Age: {{{age}}}, Health Conditions: {{{healthConditions}}}, Dietary Restrictions: {{{dietaryRestrictions}}}
   {{/each}}
 
-  Also, consider the following product needs and consumption patterns:
-  {{#each monthlyProductNeeds}}
-  - Product: {{{productName}}}, Available: {{{quantity}}}{{{unit}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
+  Here is the list of available products, their stock, and prices:
+  {{#each products}}
+  - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
 
   Dietary Preferences: {{{preferences}}}
@@ -82,7 +84,10 @@ const prompt = ai.definePrompt({
   - The diet chart must take into account each family member's dietary restrictions and name.
   - The diet chart should utilize the available products and align with the specified product needs.
   - Optimize the diet to be as healthy as possible.
-  - Based on the '{{{dietType}}}', adjust the meal suggestions. 'cost-optimized' should prioritize cheaper meals, 'standard' should be a balanced approach, and 'as-per-products' should strictly use the products listed as available.
+  - Based on the '{{{dietType}}}', adjust the meal suggestions.
+    - 'cost-optimized' should prioritize cheaper meals, using the provided product prices to make decisions.
+    - 'standard' should be a balanced approach to health and cost.
+    - 'as-per-products' should strictly use only the products listed as available in stock.
   `,
   config: {
     safetySettings: [

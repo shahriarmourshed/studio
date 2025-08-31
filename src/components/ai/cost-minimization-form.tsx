@@ -11,19 +11,16 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { costMinimizationSuggestions, CostMinimizationInput, CostMinimizationOutput } from '@/ai/flows/cost-minimization-suggestions';
 import { useData } from '@/context/data-context';
 import { Loader2, Lightbulb } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CostMinimizationForm() {
-  const [spendingHabits, setSpendingHabits] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CostMinimizationOutput | null>(null);
   const { toast } = useToast();
-  const { products } = useData();
+  const { products, expenses, incomes, savingGoal } = useData();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,15 +28,20 @@ export default function CostMinimizationForm() {
     setResult(null);
 
     const input: CostMinimizationInput = {
-      spendingHabits,
-      productNeeds: products.map(p => ({
+      plannedIncomes: incomes.filter(i => i.status === 'planned'),
+      actualIncomes: incomes.filter(i => i.status === 'completed'),
+      plannedExpenses: expenses.filter(e => e.status === 'planned'),
+      actualExpenses: expenses.filter(e => e.status === 'completed'),
+      products: products.map(p => ({
         name: p.name,
         quantity: p.quantity,
+        currentStock: p.currentStock,
         unit: p.unit,
         price: p.price,
         consumptionRate: p.consumptionRate,
         consumptionPeriod: p.consumptionPeriod,
       })),
+      savingGoal: savingGoal,
     };
 
     try {
@@ -62,22 +64,13 @@ export default function CostMinimizationForm() {
       <CardHeader>
         <CardTitle>Cost Minimization Suggestions</CardTitle>
         <CardDescription>
-          Describe your family's spending, and our AI will find ways to save.
+          Our AI will analyze your complete financial and product data to find the best ways for you to save money.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="spending">Describe your spending habits</Label>
-            <Textarea
-              id="spending"
-              placeholder="e.g., We spend a lot on eating out on weekends. Kids' clothes are a major expense..."
-              value={spendingHabits}
-              onChange={(e) => setSpendingHabits(e.target.value)}
-            />
-          </div>
+        <CardContent>
            <p className="text-sm text-muted-foreground">
-              Note: The AI will use your current product needs list, including consumption patterns.
+              Click the button below to get personalized suggestions. The AI will use all your data, including planned and actual transactions, product inventory, and your savings goal.
             </p>
         </CardContent>
         <CardFooter>

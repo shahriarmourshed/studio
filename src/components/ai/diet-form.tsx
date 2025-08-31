@@ -46,10 +46,12 @@ export default function DietForm() {
         healthConditions: m.healthConditions,
         dietaryRestrictions: m.dietaryRestrictions
       })),
-      monthlyProductNeeds: products.map(p => ({
-        productName: p.name,
+      products: products.map(p => ({
+        name: p.name,
         quantity: p.quantity,
+        currentStock: p.currentStock,
         unit: p.unit,
+        price: p.price,
         consumptionRate: p.consumptionRate,
         consumptionPeriod: p.consumptionPeriod,
       })),
