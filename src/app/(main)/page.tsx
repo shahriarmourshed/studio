@@ -10,18 +10,64 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, PlusCircle, Lightbulb, Utensils, ChevronRight } from 'lucide-react';
+import { PlusCircle, Lightbulb, Utensils, ChevronRight } from 'lucide-react';
 import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
-import { getYear, isFuture, differenceInDays } from 'date-fns';
+import { getYear, isFuture, differenceInDays, format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import type { ExpenseCategory } from '@/lib/types';
+
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
-  const { products, expenses, incomes, reminderDays } = useData();
+  const { products, expenses, incomes, reminderDays, addExpense } = useData();
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
+
+  // Dialog states
+  const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
+
+  // Add Expense form state
+  const [newExpenseDesc, setNewExpenseDesc] = useState('');
+  const [newExpenseAmount, setNewExpenseAmount] = useState('');
+  const [newExpenseCategory, setNewExpenseCategory] = useState<ExpenseCategory>('Other');
+  const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  const handleAddExpense = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newExpenseDesc && newExpenseAmount && newExpenseCategory && newExpenseDate) {
+        addExpense({
+            description: newExpenseDesc,
+            amount: parseFloat(newExpenseAmount),
+            category: newExpenseCategory,
+            date: newExpenseDate,
+            recurrent: false, 
+        }, 'completed');
+        resetAddExpenseForm();
+    }
+  };
+
+  const resetAddExpenseForm = () => {
+    setNewExpenseDesc('');
+    setNewExpenseAmount('');
+    setNewExpenseCategory('Other');
+    setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
+    setIsExpenseDialogOpen(false);
+  };
+
 
   const yearsWithData = useMemo(() => {
     const years = new Set<number>();
@@ -99,14 +145,57 @@ export default function DashboardPage() {
             <CardDescription>Get started with common tasks.</CardDescription>
           </CardHeader>
           <CardContent className="flex-grow flex flex-col justify-center space-y-2">
-             <Link href="/budget" className="flex items-center p-3 rounded-lg hover:bg-muted transition-colors">
-                <PlusCircle className="w-5 h-5 mr-3 text-primary"/>
-                <div className="flex-1">
-                    <p className="font-semibold">Add Expense Plan</p>
-                    <p className="text-sm text-muted-foreground">Log a future expense.</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground"/>
-             </Link>
+            <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
+                <DialogTrigger asChild>
+                    <button className="flex items-center p-3 rounded-lg hover:bg-muted transition-colors w-full text-left">
+                        <PlusCircle className="w-5 h-5 mr-3 text-primary"/>
+                        <div className="flex-1">
+                            <p className="font-semibold">Add Unplanned Expense</p>
+                            <p className="text-sm text-muted-foreground">Log a real-time expense.</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground"/>
+                    </button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                    <DialogTitle>Add Unplanned Expense</DialogTitle>
+                    <DialogDescription>
+                        Log a new completed expense transaction.
+                    </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleAddExpense}>
+                    <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="description" className="text-right">Description</Label>
+                        <Input id="description" placeholder="e.g., Dinner Out" className="col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="amount" className="text-right">Amount ({getSymbol()})</Label>
+                        <Input id="amount" type="number" placeholder="e.g., 1200" className="col-span-3" value={newExpenseAmount} onChange={e=>setNewExpenseAmount(e.target.value)} required/>
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Category</Label>
+                        <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
+                            <RadioGroup value={newExpenseCategory} onValueChange={(v) => setNewExpenseCategory(v as ExpenseCategory)} className="p-4">
+                                {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
+                                    <div key={category} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={category} id={`expense-${category}`} />
+                                        <Label htmlFor={`expense-${category}`}>{category}</Label>
+                                    </div>
+                                ))}
+                            </RadioGroup>
+                        </ScrollArea>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="date" className="text-right">Date</Label>
+                        <Input id="date" type="date" className="col-span-3" value={newExpenseDate} onChange={e=>setNewExpenseDate(e.target.value)} required/>
+                    </div>
+                    <Button type="submit" className="w-full">Add Expense</Button>
+                    </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
              <Link href="/products" className="flex items-center p-3 rounded-lg hover:bg-muted transition-colors">
                 <Utensils className="w-5 h-5 mr-3 text-primary"/>
                 <div className="flex-1">
