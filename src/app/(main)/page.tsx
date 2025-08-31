@@ -1,7 +1,7 @@
 
 'use client';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -11,35 +11,37 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
-import SavingsPieChart from '@/components/dashboard/savings-pie-chart';
+import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
-import { getMonth, getYear } from 'date-fns';
+import { getYear } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
-  const { budget, products, expenses, incomes } = useData();
-  
-  const { totalIncome, totalSpent } = useMemo(() => {
-    const currentMonth = getMonth(new Date());
-    const currentYear = getYear(new Date());
+  const { products, expenses, incomes } = useData();
+  const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
 
-    const monthlyIncomes = incomes.filter(i => {
-        const incomeDate = new Date(i.date);
-        return getMonth(incomeDate) === currentMonth && getYear(incomeDate) === currentYear;
-    });
-
-    const monthlyExpenses = expenses.filter(e => {
-        const expenseDate = new Date(e.date);
-        return getMonth(expenseDate) === currentMonth && getYear(expenseDate) === currentYear;
-    });
-
-    return {
-        totalIncome: monthlyIncomes.reduce((sum, income) => sum + income.amount, 0),
-        totalSpent: monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0)
-    };
+  const yearsWithData = useMemo(() => {
+    const years = new Set<number>();
+    [...incomes, ...expenses].forEach(t => years.add(getYear(new Date(t.date))));
+    if (!years.has(getYear(new Date()))) {
+        years.add(getYear(new Date()));
+    }
+    return Array.from(years).sort((a,b) => b - a);
   }, [incomes, expenses]);
+  
+  const { yearlyIncome, yearlyExpenses, yearlySavings, filteredYearlyExpenses } = useMemo(() => {
+    const filteredIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
+    const filteredExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
+
+    const yearlyIncome = filteredIncomes.reduce((sum, income) => sum + income.amount, 0);
+    const yearlyExpenses = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const yearlySavings = yearlyIncome - yearlyExpenses;
+
+    return { yearlyIncome, yearlyExpenses, yearlySavings, filteredYearlyExpenses: filteredExpenses };
+  }, [incomes, expenses, selectedYear]);
 
   const upcomingRecurrentBills = useMemo(() => {
     const today = new Date();
@@ -49,24 +51,47 @@ export default function DashboardPage() {
   }, [expenses]);
 
 
-  if (!budget) {
-    return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;
-  }
-
   return (
     <div className="container mx-auto px-0 sm:px-4">
       <PageHeader title="Welcome to Family Manager!" subtitle="Your family's command center." />
       
       <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>This Month's Financial Summary</CardTitle>
-             <CardDescription>
-              A visual breakdown of your income and expenses.
-            </CardDescription>
+          <CardHeader className="flex-row items-center justify-between">
+            <div>
+              <CardTitle>Financial Summary</CardTitle>
+              <CardDescription>
+                An overview of your finances for {selectedYear}.
+              </CardDescription>
+            </div>
+            <Select
+                value={String(selectedYear)}
+                onValueChange={(year) => setSelectedYear(parseInt(year))}
+            >
+                <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent>
+                    {yearsWithData.map(year => (
+                        <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
           </CardHeader>
-          <CardContent className="h-60">
-            <SavingsPieChart income={totalIncome} expenses={totalSpent} />
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="h-60">
+                 <ExpenseChart expenses={filteredYearlyExpenses} />
+            </div>
+            <div className="flex flex-col justify-center space-y-4">
+                <div className="text-center p-4 rounded-lg bg-muted">
+                    <p className="text-sm text-muted-foreground">Total Income</p>
+                    <p className="text-2xl font-bold text-green-500">{getSymbol()}{yearlyIncome.toLocaleString()}</p>
+                </div>
+                 <div className="text-center p-4 rounded-lg bg-muted">
+                    <p className="text-sm text-muted-foreground">Total Savings</p>
+                    <p className="text-2xl font-bold text-primary">{getSymbol()}{yearlySavings.toLocaleString()}</p>
+                </div>
+            </div>
           </CardContent>
         </Card>
 

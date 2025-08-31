@@ -5,7 +5,6 @@ import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recha
 import { useCurrency } from "@/context/currency-context"
 
 const COLORS = {
-  income: "hsl(var(--chart-2))", // A green shade
   expenses: "hsl(var(--chart-4))", // A red shade
   savings: "hsl(var(--chart-1))", // A blue/primary shade
 };
