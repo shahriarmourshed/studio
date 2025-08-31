@@ -14,6 +14,8 @@ interface DataContextType {
   incomes: Income[];
   savingGoal: number;
   setSavingGoal: (goal: number) => void;
+  reminderDays: number;
+  setReminderDays: (days: number) => void;
   addExpense: (expense: Omit<Expense, 'id' | 'status'>, status?: Expense['status']) => void;
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
@@ -88,6 +90,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [productsData, setProducts] = useLocalStorage<Product[]>('family-manager-products', defaultProducts);
   const [incomesData, setIncomes] = useLocalStorage<Income[]>('family-manager-incomes', defaultIncomes);
   const [savingGoal, setSavingGoal] = useLocalStorage<number>('family-manager-saving-goal', 10000);
+  const [reminderDays, setReminderDays] = useLocalStorage<number>('family-manager-reminder-days', 3);
 
 
   const [isMounted, setIsMounted] = useState(false);
@@ -202,7 +205,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [expenses, incomesData]);
   
 
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, addExpense, updateExpense, deleteExpense, addFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome };
+  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome };
 
   if (!isMounted) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;

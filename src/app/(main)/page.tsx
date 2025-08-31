@@ -15,12 +15,12 @@ import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
-import { getYear } from 'date-fns';
+import { getYear, isFuture, differenceInDays } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
-  const { products, expenses, incomes } = useData();
+  const { products, expenses, incomes, reminderDays } = useData();
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
 
   const yearsWithData = useMemo(() => {
@@ -36,19 +36,19 @@ export default function DashboardPage() {
     const filteredIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
     const filteredExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
 
-    const yearlyIncome = filteredIncomes.reduce((sum, income) => sum + income.amount, 0);
-    const yearlyExpenses = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const yearlySavings = yearlyIncome - yearlyExpenses;
-
-    return { yearlyIncome, yearlyExpenses, yearlySavings, filteredYearlyExpenses: filteredExpenses };
+    return { filteredYearlyExpenses: filteredExpenses };
   }, [incomes, expenses, selectedYear]);
 
   const upcomingRecurrentBills = useMemo(() => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); 
     return expenses
-      .filter(e => e.recurrent && new Date(e.date) > today)
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        return e.status === 'planned' && isFuture(expenseDate) && differenceInDays(expenseDate, today) <= reminderDays;
+      })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [expenses]);
+  }, [expenses, reminderDays]);
 
 
   return (
@@ -103,7 +103,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Upcoming Bills & Reminders</CardTitle>
-            <CardDescription>Don't miss these payments.</CardDescription>
+            <CardDescription>Due within the next {reminderDays} day(s).</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
@@ -116,7 +116,7 @@ export default function DashboardPage() {
                   <p className="font-semibold text-lg">{getSymbol()}{bill.amount.toLocaleString()}</p>
                 </li>
               )) : (
-                <p className="text-sm text-muted-foreground text-center">No upcoming recurrent bills found.</p>
+                <p className="text-sm text-muted-foreground text-center">No upcoming bills found.</p>
               )}
             </ul>
           </CardContent>

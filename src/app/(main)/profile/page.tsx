@@ -1,3 +1,4 @@
+
 'use client';
 
 import PageHeader from '@/components/common/page-header';
@@ -9,8 +10,15 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import ThemeSwitcher from '@/components/common/theme-switcher';
+import { useData } from '@/context/data-context';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 
 export default function ProfilePage() {
+
+  const { reminderDays, setReminderDays } = useData();
+
   return (
     <div className="container mx-auto">
       <PageHeader title="Settings" subtitle="Manage your application settings." />
@@ -25,6 +33,30 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between">
               <p className="font-medium">Theme</p>
               <ThemeSwitcher />
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="font-medium">Reminders</p>
+                <p className="text-sm text-muted-foreground">
+                  Set how many days in advance you get reminders for planned bills.
+                </p>
+              </div>
+              <Select
+                value={String(reminderDays)}
+                onValueChange={(value) => setReminderDays(Number(value))}
+              >
+                <SelectTrigger className="w-24">
+                  <SelectValue placeholder="Days" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 day</SelectItem>
+                  <SelectItem value="2">2 days</SelectItem>
+                  <SelectItem value="3">3 days</SelectItem>
+                  <SelectItem value="5">5 days</SelectItem>
+                  <SelectItem value="7">7 days</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
