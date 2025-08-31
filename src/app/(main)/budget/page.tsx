@@ -53,6 +53,7 @@ import type { Expense, Income, IncomeCategory, ExpenseCategory } from '@/lib/typ
 import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 
 export default function BudgetPage() {
   const { getSymbol } = useCurrency();
@@ -262,27 +263,27 @@ export default function BudgetPage() {
      return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
   }
 
-  const totalIncome = filteredIncomes.reduce((sum, income) => sum + income.amount, 0);
-  const totalSpent = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const savings = totalIncome - totalSpent;
-  const spentPercentage = totalIncome > 0 ? (totalSpent / totalIncome) * 100 : 0;
+  const totalPlannedIncome = filteredIncomes.filter(i => i.status === 'planned').reduce((sum, income) => sum + income.amount, 0);
+  const totalPlannedExpenses = filteredExpenses.filter(e => e.status === 'planned').reduce((sum, expense) => sum + expense.amount, 0);
+  const plannedSavings = totalPlannedIncome - totalPlannedExpenses;
+  const spentPercentage = totalPlannedIncome > 0 ? (totalPlannedExpenses / totalPlannedIncome) * 100 : 0;
   
   return (
     <div className="container mx-auto">
-      <PageHeader title="Family Budget" subtitle="Keep track of your income and expenses.">
+      <PageHeader title="Budget Planner" subtitle="Plan your income and expenses.">
         <div className="flex gap-2">
             <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)}>
                 <DollarSign className="mr-2 h-4 w-4" />
-                Add Income
+                Add Planned Income
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                <DialogTitle>Add New Income</DialogTitle>
+                <DialogTitle>Add Planned Income</DialogTitle>
                 <DialogDescription>
-                    Log a new income source to keep your budget up to date.
+                    Log a new income source to your budget plan.
                 </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAddIncome}>
@@ -322,7 +323,7 @@ export default function BudgetPage() {
                         <Label htmlFor="income-notes" className="text-right pt-2">Short Note</Label>
                         <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-3" value={newIncomeNotes} onChange={e => setNewIncomeNotes(e.target.value)} />
                     </div>
-                    <Button type="submit" className="w-full">Save Income</Button>
+                    <Button type="submit" className="w-full">Save Planned Income</Button>
                 </div>
                 </form>
             </DialogContent>
@@ -332,14 +333,14 @@ export default function BudgetPage() {
             <DialogTrigger asChild>
                 <Button onClick={() => setIsExpenseDialogOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Add Expense
+                Add Planned Expense
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                <DialogTitle>Add New Expense</DialogTitle>
+                <DialogTitle>Add Planned Expense</DialogTitle>
                 <DialogDescription>
-                    Log a new transaction to keep your budget up to date.
+                    Log a new transaction to your budget plan.
                 </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAddExpense}>
@@ -379,7 +380,7 @@ export default function BudgetPage() {
                     <Label htmlFor="expense-notes" className="text-right pt-2">Short Note</Label>
                     <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
                 </div>
-                <Button type="submit" className="w-full">Save Expense</Button>
+                <Button type="submit" className="w-full">Save Planned Expense</Button>
                 </div>
                 </form>
             </DialogContent>
@@ -421,25 +422,25 @@ export default function BudgetPage() {
       <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
+            <CardTitle>Planned Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
              <CardDescription>
-              {getSymbol()}{totalSpent.toLocaleString()} spent out of {getSymbol()}{totalIncome.toLocaleString()}
+              {getSymbol()}{totalPlannedExpenses.toLocaleString()} planned expenses out of {getSymbol()}{totalPlannedIncome.toLocaleString()} planned income
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Progress value={spentPercentage} className="w-full mb-2" />
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
-                    <p className="text-sm text-muted-foreground">Total Income</p>
-                    <p className="text-2xl font-bold text-green-500">{getSymbol()}{totalIncome.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Planned Income</p>
+                    <p className="text-2xl font-bold text-green-500">{getSymbol()}{totalPlannedIncome.toLocaleString()}</p>
                 </div>
                 <div>
-                    <p className="text-sm text-muted-foreground">Total Spent</p>
-                    <p className="text-2xl font-bold text-red-500">{getSymbol()}{totalSpent.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Planned Expenses</p>
+                    <p className="text-2xl font-bold text-red-500">{getSymbol()}{totalPlannedExpenses.toLocaleString()}</p>
                 </div>
                  <div>
-                    <p className="text-sm text-muted-foreground">Savings</p>
-                    <p className="text-2xl font-bold text-primary">{getSymbol()}{savings.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Planned Savings</p>
+                    <p className="text-2xl font-bold text-primary">{getSymbol()}{plannedSavings.toLocaleString()}</p>
                 </div>
             </div>
           </CardContent>
@@ -476,11 +477,11 @@ export default function BudgetPage() {
                         <p className="text-3xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
                         {savingGoal > 0 && (
                             <p className="text-sm text-muted-foreground mt-1">
-                                {Math.max(0, (savings / savingGoal) * 100).toFixed(0)}% of your goal reached
+                                {Math.max(0, (plannedSavings / savingGoal) * 100).toFixed(0)}% of your goal reached (planned)
                             </p>
                         )}
                          <p className="text-sm text-muted-foreground mt-1">
-                            Saved: {getSymbol()}{savings.toLocaleString()}
+                            Planned Savings: {getSymbol()}{plannedSavings.toLocaleString()}
                         </p>
                     </div>
                 )}
@@ -489,17 +490,17 @@ export default function BudgetPage() {
         
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Expense Breakdown</CardTitle>
-            <CardDescription>How your money is being spent across categories.</CardDescription>
+            <CardTitle>Planned Expense Breakdown</CardTitle>
+            <CardDescription>How your money is planned to be spent across categories.</CardDescription>
           </CardHeader>
           <CardContent className="h-96">
-            <ExpenseChart expenses={filteredExpenses} />
+            <ExpenseChart expenses={filteredExpenses.filter(e => e.status === 'planned')} />
           </CardContent>
         </Card>
         
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Incomes</CardTitle>
+            <CardTitle>Planned Incomes</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -510,6 +511,7 @@ export default function BudgetPage() {
                         <TableHead>Date</TableHead>
                         <TableHead>Recurrent</TableHead>
                         <TableHead>Note</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -517,7 +519,7 @@ export default function BudgetPage() {
                 <TableBody>
                     {filteredIncomes.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center">No income recorded for this month.</TableCell>
+                            <TableCell colSpan={8} className="text-center">No income planned for this month.</TableCell>
                         </TableRow>
                     ) : filteredIncomes.map((income) => (
                         <TableRow key={income.id}>
@@ -526,6 +528,7 @@ export default function BudgetPage() {
                             <TableCell>{income.date}</TableCell>
                             <TableCell>{income.recurrent ? 'Yes' : 'No'}</TableCell>
                             <TableCell className="text-xs text-muted-foreground">{income.notes}</TableCell>
+                            <TableCell><Badge variant={income.status === 'planned' ? 'secondary' : income.status === 'completed' ? 'default' : 'destructive'}>{income.status}</Badge></TableCell>
                             <TableCell className="text-right">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
@@ -545,7 +548,7 @@ export default function BudgetPage() {
                                             <AlertDialogHeader>
                                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete this income record.
+                                                This action cannot be undone. This will permanently delete this income plan.
                                             </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
@@ -565,7 +568,7 @@ export default function BudgetPage() {
 
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Expenses</CardTitle>
+            <CardTitle>Planned Expenses</CardTitle>
           </CardHeader>
           <CardContent>
              <Table>
@@ -576,6 +579,7 @@ export default function BudgetPage() {
                         <TableHead>Date</TableHead>
                         <TableHead>Recurrent</TableHead>
                         <TableHead>Note</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -583,7 +587,7 @@ export default function BudgetPage() {
                 <TableBody>
                      {filteredExpenses.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center">No expenses recorded for this month.</TableCell>
+                            <TableCell colSpan={8} className="text-center">No expenses planned for this month.</TableCell>
                         </TableRow>
                     ) : filteredExpenses.map((expense) => (
                         <TableRow key={expense.id}>
@@ -592,6 +596,7 @@ export default function BudgetPage() {
                             <TableCell>{expense.date}</TableCell>
                             <TableCell>{expense.recurrent ? 'Yes' : 'No'}</TableCell>
                             <TableCell className="text-xs text-muted-foreground">{expense.notes}</TableCell>
+                            <TableCell><Badge variant={expense.status === 'planned' ? 'secondary' : expense.status === 'completed' ? 'default' : 'destructive'}>{expense.status}</Badge></TableCell>
                             <TableCell className="text-right">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
@@ -611,7 +616,7 @@ export default function BudgetPage() {
                                             <AlertDialogHeader>
                                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete this expense record.
+                                                This action cannot be undone. This will permanently delete this expense plan.
                                             </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
@@ -634,7 +639,7 @@ export default function BudgetPage() {
         <Dialog open={isEditIncomeDialogOpen} onOpenChange={setIsEditIncomeDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Income</DialogTitle>
+              <DialogTitle>Edit Planned Income</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdateIncome}>
             <div className="grid gap-4 py-4">
@@ -684,7 +689,7 @@ export default function BudgetPage() {
         <Dialog open={isEditExpenseDialogOpen} onOpenChange={setIsEditExpenseDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Expense</DialogTitle>
+              <DialogTitle>Edit Planned Expense</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdateExpense}>
             <div className="grid gap-4 py-4">
@@ -733,5 +738,3 @@ export default function BudgetPage() {
     </div>
   );
 }
-
-    

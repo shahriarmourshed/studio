@@ -39,6 +39,7 @@ export type Expense = {
   date: string;
   recurrent: boolean;
   notes?: string;
+  status: 'planned' | 'completed' | 'cancelled';
 };
 
 export type IncomeCategory = 'Salary' | 'Business' | 'Investment' | 'Gift' | 'Other';
@@ -51,6 +52,7 @@ export type Income = {
   date: string;
   recurrent: boolean;
   notes?: string;
+  status: 'planned' | 'completed' | 'cancelled';
 };
 
 export type Budget = {

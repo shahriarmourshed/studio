@@ -9,6 +9,7 @@ import {
   Sparkles,
   Users,
   User,
+  ListChecks,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +17,7 @@ const navItems = [
   { href: '/', label: 'Home', icon: LayoutGrid },
   { href: '/products', label: 'Products', icon: ShoppingBasket },
   { href: '/budget', label: 'Budget', icon: Wallet },
+  { href: '/transactions', label: 'Transactions', icon: ListChecks },
   { href: '/ai', label: 'AI', icon: Sparkles },
   { href: '/family', label: 'Family', icon: Users },
   { href: '/profile', label: 'Profile', icon: User },
@@ -37,11 +39,13 @@ export default function BottomNav() {
                 'flex flex-col items-center justify-center w-full h-full text-sm font-medium transition-colors',
                 isActive
                   ? 'text-primary'
-                  : 'text-muted-foreground hover:text-primary'
+                  : 'text-muted-foreground hover:text-primary',
+                // Adjust for more items
+                'px-1'
               )}
             >
-              <Icon className="w-6 h-6 mb-1" />
-              <span>{label}</span>
+              <Icon className="w-5 h-5 mb-1" />
+              <span className="text-xs">{label}</span>
             </Link>
           );
         })}

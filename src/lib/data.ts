@@ -49,15 +49,15 @@ export const products: Product[] = [
 ];
 
 export const expenses: Expense[] = [
-  { id: 'e1', description: 'Weekly Groceries', amount: 3500, category: 'Groceries', date: '2024-07-25', recurrent: false },
-  { id: 'e2', description: 'Electricity Bill', amount: 2200, category: 'Bills', date: '2024-08-22', recurrent: true },
-  { id: 'e3', description: 'Movie Tickets', amount: 1200, category: 'Entertainment', date: '2024-07-24', recurrent: false },
-  { id: 'e4', description: 'Fuel for Car', amount: 1500, category: 'Transport', date: '2024-08-23', recurrent: true },
-  { id: 'e5', description: 'Internet Bill', amount: 800, category: 'Bills', date: '2024-08-20', recurrent: true },
+  { id: 'e1', description: 'Weekly Groceries', amount: 3500, category: 'Groceries', date: '2024-07-25', recurrent: false, status: 'planned', notes: 'Buy organic vegetables' },
+  { id: 'e2', description: 'Electricity Bill', amount: 2200, category: 'Bills', date: '2024-08-22', recurrent: true, status: 'planned' },
+  { id: 'e3', description: 'Movie Tickets', amount: 1200, category: 'Entertainment', date: '2024-07-24', recurrent: false, status: 'completed', notes: 'Watched the new action movie' },
+  { id: 'e4', description: 'Fuel for Car', amount: 1500, category: 'Transport', date: '2024-08-23', recurrent: true, status: 'planned' },
+  { id: 'e5', description: 'Internet Bill', amount: 800, category: 'Bills', date: '2024-08-20', recurrent: true, status: 'completed' },
 ];
 
 export const incomes: Income[] = [
-    { id: 'inc1', description: 'Monthly Salary', amount: 50000, category: 'Salary', date: '2024-07-01', recurrent: true }
+    { id: 'inc1', description: 'Monthly Salary', amount: 50000, category: 'Salary', date: '2024-07-01', recurrent: true, status: 'completed' }
 ];
 
 export const budget: Budget = {

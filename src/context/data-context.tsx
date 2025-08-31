@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
-import { familyMembers, products as defaultProducts, budget as defaultBudget, incomes as defaultIncomes } from '@/lib/data';
+import { familyMembers, products as defaultProducts, budget as defaultBudget, incomes as defaultIncomes, expenses as defaultExpenses } from '@/lib/data';
 import { differenceInDays, differenceInWeeks, differenceInMonths, format } from 'date-fns';
 
 interface DataContextType {
@@ -14,14 +14,14 @@ interface DataContextType {
   incomes: Income[];
   savingGoal: number;
   setSavingGoal: (goal: number) => void;
-  addExpense: (expense: Omit<Expense, 'id'>) => void;
+  addExpense: (expense: Omit<Expense, 'id' | 'status'>) => void;
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => void;
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
-  addIncome: (income: Omit<Income, 'id'>) => void;
+  addIncome: (income: Omit<Income, 'id' | 'status'>) => void;
   updateIncome: (income: Income) => void;
   deleteIncome: (incomeId: string) => void;
 }
@@ -83,7 +83,7 @@ const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T) => vo
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const [budget, setBudget] = useLocalStorage<Budget>('family-manager-budget', defaultBudget);
-  const [expenses, setExpenses] = useLocalStorage<Expense[]>('family-manager-expenses', []);
+  const [expenses, setExpenses] = useLocalStorage<Expense[]>('family-manager-expenses', defaultExpenses);
   const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('family-manager-family', familyMembers);
   const [productsData, setProducts] = useLocalStorage<Product[]>('family-manager-products', defaultProducts);
   const [incomesData, setIncomes] = useLocalStorage<Income[]>('family-manager-incomes', defaultIncomes);
@@ -134,8 +134,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [isMounted]);
 
 
-  const addExpense = (expense: Omit<Expense, 'id'>) => {
-    const newExpense = { ...expense, id: new Date().toISOString() };
+  const addExpense = (expense: Omit<Expense, 'id' | 'status'>) => {
+    const newExpense: Expense = { ...expense, id: new Date().toISOString(), status: 'planned' };
     setExpenses([...expenses, newExpense].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
   
@@ -174,8 +174,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProducts(productsData.filter(p => p.id !== productId));
   };
 
-  const addIncome = (income: Omit<Income, 'id'>) => {
-      const newIncome = { ...income, id: new Date().toISOString() };
+  const addIncome = (income: Omit<Income, 'id' | 'status'>) => {
+      const newIncome: Income = { ...income, id: new Date().toISOString(), status: 'planned' };
       setIncomes([...incomesData, newIncome].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
 
@@ -190,8 +190,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Recalculate spent amount whenever expenses change
   useEffect(() => {
     if(budget) {
-      const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-      const totalIncome = incomesData.reduce((sum, inc) => sum + inc.amount, 0);
+      const totalSpent = expenses
+        .filter(e => e.status === 'completed')
+        .reduce((sum, exp) => sum + exp.amount, 0);
+      const totalIncome = incomesData
+        .filter(i => i.status === 'completed')
+        .reduce((sum, inc) => sum + inc.amount, 0);
       setBudget({ ...budget, spent: totalSpent, total: totalIncome });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
