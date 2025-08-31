@@ -10,7 +10,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
+import { ArrowRight, PlusCircle, Lightbulb, Utensils, TrendingUp, TrendingDown } from 'lucide-react';
 import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
@@ -40,10 +40,29 @@ export default function DashboardPage() {
     return Array.from(years).sort((a,b) => a - b);
   }, [incomes, expenses]);
   
-  const { filteredYearlyExpenses } = useMemo(() => {
-    const filteredExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
-    return { filteredYearlyExpenses: filteredExpenses };
-  }, [expenses, selectedYear]);
+  const { 
+    filteredYearlyExpenses, 
+    plannedIncome,
+    actualIncome,
+    plannedExpenses,
+    actualExpenses
+  } = useMemo(() => {
+    const yearlyIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
+    const yearlyExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
+
+    const plannedIncome = yearlyIncomes.filter(i => i.status === 'planned').reduce((sum, i) => sum + i.amount, 0);
+    const actualIncome = yearlyIncomes.filter(i => i.status === 'completed').reduce((sum, i) => sum + i.amount, 0);
+    const plannedExpenses = yearlyExpenses.filter(e => e.status === 'planned').reduce((sum, e) => sum + e.amount, 0);
+    const actualExpenses = yearlyExpenses.filter(e => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
+
+    return { 
+      filteredYearlyExpenses: yearlyExpenses,
+      plannedIncome,
+      actualIncome,
+      plannedExpenses,
+      actualExpenses
+    };
+  }, [expenses, incomes, selectedYear]);
 
   const upcomingRecurrentBills = useMemo(() => {
     const today = new Date();
@@ -61,7 +80,7 @@ export default function DashboardPage() {
     <div className="container mx-auto px-0 sm:px-4">
       <PageHeader title="Welcome to Family Manager!" subtitle="Your family's command center." />
       
-      <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="lg:col-span-2">
           <CardHeader className="flex-row items-center justify-between">
             <div>
@@ -89,27 +108,60 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col">
+        <Card className="lg:col-span-2 flex flex-col">
+          <CardHeader>
+            <CardTitle>Plan vs. Actuals ({selectedYear})</CardTitle>
+            <CardDescription>How your planning compares to reality.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/50">
+                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                  <TrendingUp className="h-5 w-5" />
+                  <h3 className="font-semibold">Income</h3>
+                </div>
+                <div className="mt-2 text-sm">
+                  <p><span className="font-medium">Planned:</span> {getSymbol()}{plannedIncome.toLocaleString()}</p>
+                  <p><span className="font-medium">Actual:</span> {getSymbol()}{actualIncome.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+             <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/50">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <TrendingDown className="h-5 w-5" />
+                  <h3 className="font-semibold">Expenses</h3>
+                </div>
+                <div className="mt-2 text-sm">
+                  <p><span className="font-medium">Planned:</span> {getSymbol()}{plannedExpenses.toLocaleString()}</p>
+                  <p><span className="font-medium">Actual:</span> {getSymbol()}{actualExpenses.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2 flex flex-col">
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col justify-center space-y-3">
-            <Button asChild variant="outline">
-              <Link href="/budget"><PlusCircle className="mr-2 h-4 w-4" /> Add Expense</Link>
+          <CardContent className="flex-grow grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Button asChild variant="outline" className="h-full">
+              <Link href="/budget"><PlusCircle className="mr-2 h-4 w-4" /> Add Expense Plan</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="h-full">
               <Link href="/products"><Utensils className="mr-2 h-4 w-4" /> Update Products</Link>
             </Button>
-            <Button asChild>
+            <Button asChild className="h-full">
               <Link href="/ai"><Lightbulb className="mr-2 h-4 w-4" /> Get AI Suggestions</Link>
             </Button>
           </CardContent>
         </Card>
-
+        
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Bills & Reminders</CardTitle>
-            <CardDescription>Due within the next {reminderDays} day(s).</CardDescription>
+            <CardTitle>Upcoming Bills</CardTitle>
+            <CardDescription>Due within {reminderDays} day(s).</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
