@@ -20,6 +20,8 @@ interface DataContextType {
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'avatarUrl'>) => void;
+  updateFamilyMember: (member: FamilyMember) => void;
+  deleteFamilyMember: (memberId: string) => void;
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
@@ -159,6 +161,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
     setFamilyMembers([...familyMembersData, newMember]);
   };
+
+  const updateFamilyMember = (updatedMember: FamilyMember) => {
+    setFamilyMembers(familyMembersData.map(m => m.id === updatedMember.id ? updatedMember : m));
+  };
+
+  const deleteFamilyMember = (memberId: string) => {
+    setFamilyMembers(familyMembersData.filter(m => m.id !== memberId));
+  };
   
   const addProduct = (product: Omit<Product, 'id' | 'lastUpdated'>) => {
       const newProduct: Product = { 
@@ -205,7 +215,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [expenses, incomesData]);
   
 
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome };
+  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, updateFamilyMember, deleteFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome };
 
   if (!isMounted) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
