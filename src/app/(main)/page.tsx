@@ -110,7 +110,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Upcoming Bills</CardTitle>
             <CardDescription>Due within {reminderDays} day(s).</CardDescription>
@@ -131,26 +131,6 @@ export default function DashboardPage() {
             </ul>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle>Product Inventory</CardTitle>
-             <Link href="/products" className="text-sm text-primary hover:underline flex items-center">
-              View All <ArrowRight className="h-4 w-4 ml-1" />
-            </Link>
-          </CardHeader>
-          <CardContent>
-             <ul className="space-y-2">
-              {products.slice(0, 4).map((product) => (
-                <li key={product.id} className="flex justify-between text-sm">
-                  <span>{product.name}</span>
-                  <span className="text-muted-foreground">{product.currentStock}{product.unit}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
       </div>
     </div>
   );
