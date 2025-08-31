@@ -38,25 +38,28 @@ export default function PlanVsActualsPage() {
     return Array.from(years).sort((a,b) => a - b);
   }, [incomes, expenses]);
   
-  const { 
-    yearlyPlannedIncomes,
-    yearlyActualIncomes,
-    yearlyPlannedExpenses,
-    yearlyActualExpenses,
+  const {
+    plannedIncomesList,
+    actualIncomesList,
+    plannedExpensesList,
+    actualExpensesList
   } = useMemo(() => {
     const yearlyIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
     const yearlyExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
 
-    const yearlyPlannedIncomes = yearlyIncomes.filter(i => i.status === 'planned');
-    const yearlyActualIncomes = yearlyIncomes.filter(i => i.status === 'completed');
-    const yearlyPlannedExpenses = yearlyExpenses.filter(e => e.status === 'planned');
-    const yearlyActualExpenses = yearlyExpenses.filter(e => e.status === 'completed');
+    // Items that were ever planned (i.e., have a plannedAmount) or are still planned.
+    const plannedIncomesList = yearlyIncomes.filter(i => i.status === 'planned' || i.plannedAmount !== undefined);
+    const plannedExpensesList = yearlyExpenses.filter(e => e.status === 'planned' || e.plannedAmount !== undefined);
 
-    return { 
-      yearlyPlannedIncomes,
-      yearlyActualIncomes,
-      yearlyPlannedExpenses,
-      yearlyActualExpenses,
+    // Actuals are only completed transactions.
+    const actualIncomesList = yearlyIncomes.filter(i => i.status === 'completed');
+    const actualExpensesList = yearlyExpenses.filter(e => e.status === 'completed');
+
+    return {
+      plannedIncomesList,
+      actualIncomesList,
+      plannedExpensesList,
+      actualExpensesList,
     };
   }, [expenses, incomes, selectedYear]);
 
@@ -98,10 +101,10 @@ export default function PlanVsActualsPage() {
                   <h4 className="text-md font-semibold mb-2">Planned</h4>
                   <ScrollArea className="h-60 pr-3">
                     <ul className="text-sm space-y-2">
-                      {yearlyPlannedIncomes.map(i => (
+                      {plannedIncomesList.map(i => (
                         <li key={i.id} className="flex justify-between">
                           <span className="truncate pr-1">{i.description}</span>
-                          <span>{getSymbol()}{i.amount.toLocaleString()}</span>
+                          <span>{getSymbol()}{(i.plannedAmount ?? i.amount).toLocaleString()}</span>
                         </li>
                       ))}
                     </ul>
@@ -111,7 +114,7 @@ export default function PlanVsActualsPage() {
                   <h4 className="text-md font-semibold mb-2">Actual</h4>
                   <ScrollArea className="h-60">
                     <ul className="text-sm space-y-2">
-                      {yearlyActualIncomes.map(i => (
+                      {actualIncomesList.map(i => (
                         <li key={i.id} className="flex justify-between">
                           <span className="truncate pr-1">{i.description}</span>
                           <span>{getSymbol()}{i.amount.toLocaleString()}</span>
@@ -135,10 +138,10 @@ export default function PlanVsActualsPage() {
                   <h4 className="text-md font-semibold mb-2">Planned</h4>
                   <ScrollArea className="h-60 pr-3">
                     <ul className="text-sm space-y-2">
-                      {yearlyPlannedExpenses.map(e => (
+                      {plannedExpensesList.map(e => (
                         <li key={e.id} className="flex justify-between">
                           <span className="truncate pr-1">{e.description}</span>
-                          <span>{getSymbol()}{e.amount.toLocaleString()}</span>
+                          <span>{getSymbol()}{(e.plannedAmount ?? e.amount).toLocaleString()}</span>
                         </li>
                       ))}
                     </ul>
@@ -148,7 +151,7 @@ export default function PlanVsActualsPage() {
                   <h4 className="text-md font-semibold mb-2">Actual</h4>
                   <ScrollArea className="h-60">
                     <ul className="text-sm space-y-2">
-                      {yearlyActualExpenses.map(e => (
+                      {actualExpensesList.map(e => (
                         <li key={e.id} className="flex justify-between">
                           <span className="truncate pr-1">{e.description}</span>
                           <span>{getSymbol()}{e.amount.toLocaleString()}</span>
