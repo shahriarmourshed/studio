@@ -87,13 +87,22 @@ export default function DashboardPage() {
   }, [incomes, expenses]);
   
   const { 
-    filteredYearlyExpenses, 
+    filteredYearlyExpenses,
+    totalYearlyIncome,
+    totalYearlyExpenses
   } = useMemo(() => {
-    const yearlyExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
+    const yearlyExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear && e.status === 'completed');
+    const yearlyIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear && i.status === 'completed');
+
+    const totalIncome = yearlyIncomes.reduce((sum, i) => sum + i.amount, 0);
+    const totalExpenses = yearlyExpenses.reduce((sum, e) => sum + e.amount, 0);
+
     return { 
       filteredYearlyExpenses: yearlyExpenses,
+      totalYearlyIncome: totalIncome,
+      totalYearlyExpenses: totalExpenses,
     };
-  }, [expenses, selectedYear]);
+  }, [expenses, incomes, selectedYear]);
 
   const upcomingRecurrentBills = useMemo(() => {
     const today = new Date();
@@ -117,7 +126,7 @@ export default function DashboardPage() {
             <div>
               <CardTitle>Financial Summary</CardTitle>
               <CardDescription>
-                An overview of your finances for {selectedYear}.
+                You had {getSymbol()}{totalYearlyIncome.toLocaleString()} in income vs. {getSymbol()}{totalYearlyExpenses.toLocaleString()} in expenses for {selectedYear}.
               </CardDescription>
             </div>
             <Select
