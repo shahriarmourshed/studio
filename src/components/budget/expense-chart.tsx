@@ -48,8 +48,8 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
           cy="50%"
           labelLine={false}
           label={false}
-          outerRadius={100}
-          innerRadius={60}
+          outerRadius="80%"
+          innerRadius="60%"
           fill="#8884d8"
           dataKey="value"
           paddingAngle={2}
@@ -68,3 +68,5 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
     </ResponsiveContainer>
   )
 }
+
+    

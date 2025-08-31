@@ -492,7 +492,7 @@ export default function BudgetPage() {
             <CardTitle>Expense Breakdown</CardTitle>
             <CardDescription>How your money is being spent across categories.</CardDescription>
           </CardHeader>
-          <CardContent className="h-80">
+          <CardContent className="h-96">
             <ExpenseChart expenses={filteredExpenses} />
           </CardContent>
         </Card>
@@ -733,3 +733,5 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
