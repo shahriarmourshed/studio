@@ -104,6 +104,13 @@ export default function TransactionsPage() {
 
     return { filteredIncomes, filteredExpenses };
   }, [selectedDate, incomes, expenses]);
+  
+  const plannedTransactionsForMonth = useMemo(() => {
+    return [
+      ...filteredIncomes.map(i => ({...i, type: 'income' as const})),
+      ...filteredExpenses.map(e => ({...e, type: 'expense' as const}))
+    ].filter(t => t.status === 'planned');
+  }, [filteredIncomes, filteredExpenses]);
 
   const handleStatusChange = (id: string, type: 'income' | 'expense', status: 'completed' | 'cancelled') => {
     if (type === 'income') {
@@ -212,24 +219,6 @@ export default function TransactionsPage() {
   const completedIncome = filteredIncomes.filter(i => i.status === 'completed').reduce((sum, i) => sum + i.amount, 0);
   const completedExpenses = filteredExpenses.filter(e => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
   const actualSavings = completedIncome - completedExpenses;
-  
-  const allTransactions = useMemo(() => {
-    const combined = [
-        ...incomes.map(i => ({...i, type: 'income' as const})),
-        ...expenses.map(e => ({...e, type: 'expense' as const}))
-    ];
-    return combined.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  },[incomes, expenses]);
-
-  const plannedTransactionsForMonth = useMemo(() => {
-    const month = getMonth(selectedDate);
-    const year = getYear(selectedDate);
-    
-    return allTransactions.filter(t => {
-        const transactionDate = new Date(t.date);
-        return t.status === 'planned' && getMonth(transactionDate) === month && getYear(transactionDate) === year;
-    });
-  }, [selectedDate, allTransactions]);
   
   const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newYear = parseInt(e.target.value, 10);
