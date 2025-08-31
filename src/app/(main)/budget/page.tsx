@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import PageHeader from "@/components/common/page-header";
 import {
   Card,
@@ -21,7 +21,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import ExpenseChart from "@/components/budget/expense-chart";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, DollarSign, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, DollarSign, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -50,7 +50,8 @@ import { Switch } from "@/components/ui/switch";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Expense, Income, IncomeCategory, ExpenseCategory } from '@/lib/types';
-import { format } from 'date-fns';
+import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, getFullYear } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function BudgetPage() {
   const { getSymbol, convert } = useCurrency();
@@ -65,6 +66,8 @@ export default function BudgetPage() {
     updateIncome,
     deleteIncome
   } = useData();
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Dialog states
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
@@ -203,13 +206,39 @@ export default function BudgetPage() {
     }
   };
 
+  const { filteredIncomes, filteredExpenses } = useMemo(() => {
+    const month = getMonth(selectedDate);
+    const year = getYear(selectedDate);
+    
+    const filteredIncomes = incomes.filter(i => {
+        const incomeDate = new Date(i.date);
+        return getMonth(incomeDate) === month && getYear(incomeDate) === year;
+    });
+    
+    const filteredExpenses = expenses.filter(e => {
+        const expenseDate = new Date(e.date);
+        return getMonth(expenseDate) === month && getYear(expenseDate) === year;
+    });
+
+    return { filteredIncomes, filteredExpenses };
+  }, [selectedDate, incomes, expenses]);
+
+  const yearsWithData = useMemo(() => {
+    const years = new Set<number>();
+    [...incomes, ...expenses].forEach(t => years.add(getYear(new Date(t.date))));
+    if (!years.has(getFullYear(new Date()))) {
+        years.add(getFullYear(new Date()));
+    }
+    return Array.from(years).sort((a,b) => b - a);
+  }, [incomes, expenses]);
+
 
   if (!budget) {
      return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
   }
 
-  const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
-  const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalIncome = filteredIncomes.reduce((sum, income) => sum + income.amount, 0);
+  const totalSpent = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
   const savings = totalIncome - totalSpent;
   const spentPercentage = totalIncome > 0 ? (totalSpent / totalIncome) * 100 : 0;
   
@@ -325,10 +354,41 @@ export default function BudgetPage() {
         </div>
       </PageHeader>
       
-      <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="px-4 sm:px-0">
+        <Card>
+            <CardHeader className="flex-row items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <h3 className="text-lg font-semibold text-center w-48">{format(selectedDate, 'MMMM yyyy')}</h3>
+                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                     <Select
+                        value={String(getYear(selectedDate))}
+                        onValueChange={(year) => setSelectedDate(setYear(selectedDate, parseInt(year)))}
+                    >
+                        <SelectTrigger className="w-32">
+                            <SelectValue placeholder="Year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {yearsWithData.map(year => (
+                                <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardHeader>
+        </Card>
+      </div>
+
+      <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Financial Overview</CardTitle>
+            <CardTitle>Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
              <CardDescription>
               {getSymbol()}{convert(totalSpent).toLocaleString()} spent out of {getSymbol()}{convert(totalIncome).toLocaleString()}
             </CardDescription>
@@ -358,7 +418,7 @@ export default function BudgetPage() {
             <CardDescription>How your money is being spent across categories.</CardDescription>
           </CardHeader>
           <CardContent className="h-80">
-            <ExpenseChart expenses={expenses} />
+            <ExpenseChart expenses={filteredExpenses} />
           </CardContent>
         </Card>
         
@@ -379,7 +439,11 @@ export default function BudgetPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {incomes.map((income) => (
+                    {filteredIncomes.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center">No income recorded for this month.</TableCell>
+                        </TableRow>
+                    ) : filteredIncomes.map((income) => (
                         <TableRow key={income.id}>
                             <TableCell className="font-medium">{income.description}</TableCell>
                             <TableCell>{income.category}</TableCell>
@@ -439,7 +503,11 @@ export default function BudgetPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {expenses.map((expense) => (
+                     {filteredExpenses.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center">No expenses recorded for this month.</TableCell>
+                        </TableRow>
+                    ) : filteredExpenses.map((expense) => (
                         <TableRow key={expense.id}>
                             <TableCell className="font-medium">{expense.description}</TableCell>
                             <TableCell>{expense.category}</TableCell>
