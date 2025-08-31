@@ -224,11 +224,21 @@ export default function TransactionsPage() {
   
   const allTransactions = useMemo(() => {
     const combined = [
-        ...filteredIncomes.map(i => ({...i, type: 'income' as const})),
-        ...filteredExpenses.map(e => ({...e, type: 'expense' as const}))
+        ...incomes.map(i => ({...i, type: 'income' as const})),
+        ...expenses.map(e => ({...e, type: 'expense' as const}))
     ];
     return combined.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  },[filteredIncomes, filteredExpenses]);
+  },[incomes, expenses]);
+
+  const plannedTransactionsForMonth = useMemo(() => {
+    const month = getMonth(selectedDate);
+    const year = getYear(selectedDate);
+    
+    return allTransactions.filter(t => {
+        const transactionDate = new Date(t.date);
+        return t.status === 'planned' && getMonth(transactionDate) === month && getYear(transactionDate) === year;
+    });
+  }, [selectedDate, allTransactions]);
 
   return (
     <div className="container mx-auto">
@@ -430,12 +440,11 @@ export default function TransactionsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {allTransactions.filter(t => t.status === 'planned').length === 0 && (
+                        {plannedTransactionsForMonth.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={4} className="text-center">No planned transactions for this month.</TableCell>
                             </TableRow>
-                        )}
-                        {allTransactions.filter(t => t.status === 'planned').map(t => (
+                        ) : plannedTransactionsForMonth.map(t => (
                             <TableRow key={t.id}>
                                 <TableCell className="font-medium p-2">
                                     <span className="truncate">{t.description}</span>
