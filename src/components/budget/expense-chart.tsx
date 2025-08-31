@@ -49,7 +49,6 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
           labelLine={false}
           label={false}
           outerRadius="80%"
-          innerRadius="60%"
           fill="#8884d8"
           dataKey="value"
           paddingAngle={2}

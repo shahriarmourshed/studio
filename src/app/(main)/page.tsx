@@ -32,7 +32,7 @@ export default function DashboardPage() {
     return Array.from(years).sort((a,b) => b - a);
   }, [incomes, expenses]);
   
-  const { yearlyIncome, yearlyExpenses, yearlySavings, filteredYearlyExpenses } = useMemo(() => {
+  const { filteredYearlyExpenses } = useMemo(() => {
     const filteredIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
     const filteredExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
 
@@ -78,20 +78,8 @@ export default function DashboardPage() {
                 </SelectContent>
             </Select>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-60">
-                 <ExpenseChart expenses={filteredYearlyExpenses} />
-            </div>
-            <div className="flex flex-col justify-center space-y-4">
-                <div className="text-center p-4 rounded-lg bg-muted">
-                    <p className="text-sm text-muted-foreground">Total Income</p>
-                    <p className="text-2xl font-bold text-green-500">{getSymbol()}{yearlyIncome.toLocaleString()}</p>
-                </div>
-                 <div className="text-center p-4 rounded-lg bg-muted">
-                    <p className="text-sm text-muted-foreground">Total Savings</p>
-                    <p className="text-2xl font-bold text-primary">{getSymbol()}{yearlySavings.toLocaleString()}</p>
-                </div>
-            </div>
+          <CardContent className="h-80">
+             <ExpenseChart expenses={filteredYearlyExpenses} />
           </CardContent>
         </Card>
 
