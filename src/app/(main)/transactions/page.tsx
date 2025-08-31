@@ -430,6 +430,11 @@ export default function TransactionsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
+                        {allTransactions.filter(t => t.status === 'planned').length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center">No planned transactions for this month.</TableCell>
+                            </TableRow>
+                        )}
                         {allTransactions.filter(t => t.status === 'planned').map(t => (
                             <TableRow key={t.id}>
                                 <TableCell className="font-medium p-2">
@@ -455,11 +460,6 @@ export default function TransactionsPage() {
                                 </TableCell>
                             </TableRow>
                         ))}
-                         {allTransactions.filter(t => t.status === 'planned').length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center">No planned transactions for this month.</TableCell>
-                            </TableRow>
-                        )}
                     </TableBody>
                 </Table>
             </CardContent>
