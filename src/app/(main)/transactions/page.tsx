@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign } from "lucide-react";
+import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign, ChevronsLeft, ChevronsRight } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,7 @@ import { Label } from "@/components/ui/label";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Expense, Income, IncomeCategory, ExpenseCategory } from '@/lib/types';
-import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths } from 'date-fns';
+import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, addYears, subYears } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -104,15 +104,6 @@ export default function TransactionsPage() {
 
     return { filteredIncomes, filteredExpenses };
   }, [selectedDate, incomes, expenses]);
-  
-  const yearsWithData = useMemo(() => {
-    const years = new Set<number>();
-    [...incomes, ...expenses].forEach(t => years.add(getYear(new Date(t.date))));
-    if (!years.has(getYear(new Date()))) {
-        years.add(getYear(new Date()));
-    }
-    return Array.from(years).sort((a,b) => b - a);
-  }, [incomes, expenses]);
 
   const handleStatusChange = (id: string, type: 'income' | 'expense', status: 'completed' | 'cancelled') => {
     if (type === 'income') {
@@ -239,6 +230,13 @@ export default function TransactionsPage() {
         return t.status === 'planned' && getMonth(transactionDate) === month && getYear(transactionDate) === year;
     });
   }, [selectedDate, allTransactions]);
+  
+  const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newYear = parseInt(e.target.value, 10);
+    if (!isNaN(newYear)) {
+      setSelectedDate(setYear(selectedDate, newYear));
+    }
+  };
 
   return (
     <div className="container mx-auto">
@@ -362,30 +360,30 @@ export default function TransactionsPage() {
       
       <div className="px-4 sm:px-0">
         <Card>
-            <CardHeader className="flex-row items-center justify-between">
-                <div className="flex items-center gap-4">
+            <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <h3 className="text-lg font-semibold text-center w-48">{format(selectedDate, 'MMMM yyyy')}</h3>
+                    <h3 className="text-lg font-semibold text-center w-36">{format(selectedDate, 'MMMM')}</h3>
                      <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
                 <div className="flex items-center gap-2">
-                     <Select
-                        value={String(getYear(selectedDate))}
-                        onValueChange={(year) => setSelectedDate(setYear(selectedDate, parseInt(year)))}
-                    >
-                        <SelectTrigger className="w-32">
-                            <SelectValue placeholder="Year" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {yearsWithData.map(year => (
-                                <SelectItem key={year} value={String(year)}>{year}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(subYears(selectedDate, 1))}>
+                        <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Input 
+                        type="number"
+                        className="w-24 text-center"
+                        value={getYear(selectedDate)}
+                        onChange={handleYearChange}
+                        aria-label="Year"
+                    />
+                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(addYears(selectedDate, 1))}>
+                        <ChevronsRight className="h-4 w-4" />
+                    </Button>
                 </div>
             </CardHeader>
         </Card>

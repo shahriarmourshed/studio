@@ -4,7 +4,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { familyMembers, products as defaultProducts, budget as defaultBudget, incomes as defaultIncomes, expenses as defaultExpenses } from '@/lib/data';
-import { differenceInDays, differenceInWeeks, differenceInMonths, format } from 'date-fns';
+import { differenceInDays, differenceInWeeks, differenceInMonths, format, getYear } from 'date-fns';
 
 interface DataContextType {
   budget: Budget | null;

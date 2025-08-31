@@ -26,18 +26,24 @@ export default function DashboardPage() {
   const yearsWithData = useMemo(() => {
     const years = new Set<number>();
     [...incomes, ...expenses].forEach(t => years.add(getYear(new Date(t.date))));
-    if (!years.has(getYear(new Date()))) {
-        years.add(getYear(new Date()));
+    
+    const currentYear = getYear(new Date());
+    if (!years.has(currentYear)) {
+        years.add(currentYear);
     }
-    return Array.from(years).sort((a,b) => b - a);
+    
+    // Add years up to 2050
+    for (let i = currentYear + 1; i <= 2050; i++) {
+        years.add(i);
+    }
+
+    return Array.from(years).sort((a,b) => a - b);
   }, [incomes, expenses]);
   
   const { filteredYearlyExpenses } = useMemo(() => {
-    const filteredIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
     const filteredExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
-
     return { filteredYearlyExpenses: filteredExpenses };
-  }, [incomes, expenses, selectedYear]);
+  }, [expenses, selectedYear]);
 
   const upcomingRecurrentBills = useMemo(() => {
     const today = new Date();
