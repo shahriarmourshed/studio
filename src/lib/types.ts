@@ -38,6 +38,7 @@ export type Expense = {
   category: ExpenseCategory;
   date: string;
   recurrent: boolean;
+  notes?: string;
 };
 
 export type IncomeCategory = 'Salary' | 'Business' | 'Investment' | 'Gift' | 'Other';
@@ -49,6 +50,7 @@ export type Income = {
   category: IncomeCategory;
   date: string;
   recurrent: boolean;
+  notes?: string;
 };
 
 export type Budget = {

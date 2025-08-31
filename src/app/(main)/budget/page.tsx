@@ -52,6 +52,7 @@ import { useData } from '@/context/data-context';
 import type { Expense, Income, IncomeCategory, ExpenseCategory } from '@/lib/types';
 import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function BudgetPage() {
   const { getSymbol } = useCurrency();
@@ -87,6 +88,7 @@ export default function BudgetPage() {
   const [newExpenseCategory, setNewExpenseCategory] = useState<ExpenseCategory>('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newExpenseRecurrent, setNewExpenseRecurrent] = useState(false);
+  const [newExpenseNotes, setNewExpenseNotes] = useState('');
 
   // Add Income form state
   const [newIncomeDesc, setNewIncomeDesc] = useState('');
@@ -94,6 +96,7 @@ export default function BudgetPage() {
   const [newIncomeCategory, setNewIncomeCategory] = useState<IncomeCategory>('Other');
   const [newIncomeDate, setNewIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newIncomeRecurrent, setNewIncomeRecurrent] = useState(false);
+  const [newIncomeNotes, setNewIncomeNotes] = useState('');
   
   // Edit Expense form state
   const [editExpenseDesc, setEditExpenseDesc] = useState('');
@@ -101,6 +104,7 @@ export default function BudgetPage() {
   const [editExpenseCategory, setEditExpenseCategory] = useState<ExpenseCategory>('Other');
   const [editExpenseDate, setEditExpenseDate] = useState('');
   const [editExpenseRecurrent, setEditExpenseRecurrent] = useState(false);
+  const [editExpenseNotes, setEditExpenseNotes] = useState('');
   
   // Edit Income form state
   const [editIncomeDesc, setEditIncomeDesc] = useState('');
@@ -108,6 +112,7 @@ export default function BudgetPage() {
   const [editIncomeCategory, setEditIncomeCategory] = useState<IncomeCategory>('Other');
   const [editIncomeDate, setEditIncomeDate] = useState('');
   const [editIncomeRecurrent, setEditIncomeRecurrent] = useState(false);
+  const [editIncomeNotes, setEditIncomeNotes] = useState('');
 
   // Savings Goal state
   const [newSavingGoal, setNewSavingGoal] = useState(savingGoal ? String(savingGoal) : '');
@@ -123,6 +128,7 @@ export default function BudgetPage() {
             category: newExpenseCategory,
             date: newExpenseDate,
             recurrent: newExpenseRecurrent,
+            notes: newExpenseNotes,
         });
         resetAddExpenseForm();
     }
@@ -134,6 +140,7 @@ export default function BudgetPage() {
     setNewExpenseCategory('Other');
     setNewExpenseDate(format(new Date(), 'yyyy-MM-dd'));
     setNewExpenseRecurrent(false);
+    setNewExpenseNotes('');
     setIsExpenseDialogOpen(false);
   };
 
@@ -146,6 +153,7 @@ export default function BudgetPage() {
             category: newIncomeCategory,
             date: newIncomeDate,
             recurrent: newIncomeRecurrent,
+            notes: newIncomeNotes,
         });
         resetAddIncomeForm();
     }
@@ -157,6 +165,7 @@ export default function BudgetPage() {
     setNewIncomeCategory('Other');
     setNewIncomeDate(format(new Date(), 'yyyy-MM-dd'));
     setNewIncomeRecurrent(false);
+    setNewIncomeNotes('');
     setIsIncomeDialogOpen(false);
   };
 
@@ -167,6 +176,7 @@ export default function BudgetPage() {
     setEditExpenseCategory(expense.category);
     setEditExpenseDate(expense.date);
     setEditExpenseRecurrent(expense.recurrent);
+    setEditExpenseNotes(expense.notes || '');
     setIsEditExpenseDialogOpen(true);
   };
   
@@ -180,6 +190,7 @@ export default function BudgetPage() {
               category: editExpenseCategory,
               date: editExpenseDate,
               recurrent: editExpenseRecurrent,
+              notes: editExpenseNotes,
           });
           setIsEditExpenseDialogOpen(false);
           setSelectedExpense(null);
@@ -193,6 +204,7 @@ export default function BudgetPage() {
     setEditIncomeCategory(income.category);
     setEditIncomeDate(income.date);
     setEditIncomeRecurrent(income.recurrent);
+    setEditIncomeNotes(income.notes || '');
     setIsEditIncomeDialogOpen(true);
   };
   
@@ -206,6 +218,7 @@ export default function BudgetPage() {
             category: editIncomeCategory,
             date: editIncomeDate,
             recurrent: editIncomeRecurrent,
+            notes: editIncomeNotes,
         });
         setIsEditIncomeDialogOpen(false);
         setSelectedIncome(null);
@@ -305,6 +318,10 @@ export default function BudgetPage() {
                             <Switch id="income-recurrent" checked={newIncomeRecurrent} onCheckedChange={setNewIncomeRecurrent} />
                         </div>
                     </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label htmlFor="income-notes" className="text-right pt-2">Short Note</Label>
+                        <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-3" value={newIncomeNotes} onChange={e => setNewIncomeNotes(e.target.value)} />
+                    </div>
                     <Button type="submit" className="w-full">Save Income</Button>
                 </div>
                 </form>
@@ -357,6 +374,10 @@ export default function BudgetPage() {
                     <div className="col-span-3">
                         <Switch id="recurrent" checked={newExpenseRecurrent} onCheckedChange={setNewExpenseRecurrent} />
                     </div>
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="expense-notes" className="text-right pt-2">Short Note</Label>
+                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Save Expense</Button>
                 </div>
@@ -488,6 +509,7 @@ export default function BudgetPage() {
                         <TableHead>Category</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Recurrent</TableHead>
+                        <TableHead>Note</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -495,7 +517,7 @@ export default function BudgetPage() {
                 <TableBody>
                     {filteredIncomes.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={6} className="text-center">No income recorded for this month.</TableCell>
+                            <TableCell colSpan={7} className="text-center">No income recorded for this month.</TableCell>
                         </TableRow>
                     ) : filteredIncomes.map((income) => (
                         <TableRow key={income.id}>
@@ -503,6 +525,7 @@ export default function BudgetPage() {
                             <TableCell>{income.category}</TableCell>
                             <TableCell>{income.date}</TableCell>
                             <TableCell>{income.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{income.notes}</TableCell>
                             <TableCell className="text-right">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
@@ -552,6 +575,7 @@ export default function BudgetPage() {
                         <TableHead>Category</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Recurrent</TableHead>
+                        <TableHead>Note</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -559,7 +583,7 @@ export default function BudgetPage() {
                 <TableBody>
                      {filteredExpenses.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={6} className="text-center">No expenses recorded for this month.</TableCell>
+                            <TableCell colSpan={7} className="text-center">No expenses recorded for this month.</TableCell>
                         </TableRow>
                     ) : filteredExpenses.map((expense) => (
                         <TableRow key={expense.id}>
@@ -567,6 +591,7 @@ export default function BudgetPage() {
                             <TableCell>{expense.category}</TableCell>
                             <TableCell>{expense.date}</TableCell>
                             <TableCell>{expense.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{expense.notes}</TableCell>
                             <TableCell className="text-right">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
@@ -644,6 +669,10 @@ export default function BudgetPage() {
                         <Switch id="edit-income-recurrent" checked={editIncomeRecurrent} onCheckedChange={setEditIncomeRecurrent} />
                     </div>
                 </div>
+                 <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="edit-income-notes" className="text-right pt-2">Short Note</Label>
+                    <Textarea id="edit-income-notes" placeholder="Any details to remember..." className="col-span-3" value={editIncomeNotes} onChange={e => setEditIncomeNotes(e.target.value)} />
+                </div>
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>
             </form>
@@ -689,6 +718,10 @@ export default function BudgetPage() {
                     <div className="col-span-3">
                         <Switch id="edit-exp-recurrent" checked={editExpenseRecurrent} onCheckedChange={setEditExpenseRecurrent} />
                     </div>
+                </div>
+                 <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="edit-expense-notes" className="text-right pt-2">Short Note</Label>
+                    <Textarea id="edit-expense-notes" placeholder="Any details to remember..." className="col-span-3" value={editExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>
