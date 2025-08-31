@@ -8,11 +8,11 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
-import { getYear } from 'date-fns';
+import { getYear, getMonth, format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
@@ -28,6 +28,8 @@ export default function PlanVsActualsPage() {
   const { getSymbol } = useCurrency();
   const { expenses, incomes } = useData();
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
+  const [selectedMonth, setSelectedMonth] = useState<number | 'all'>(getMonth(new Date()));
+
 
   const yearsWithData = useMemo(() => {
     const years = new Set<number>();
@@ -44,6 +46,8 @@ export default function PlanVsActualsPage() {
 
     return Array.from(years).sort((a,b) => a - b);
   }, [incomes, expenses]);
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   
   const {
     aggregatedIncomes,
@@ -51,8 +55,17 @@ export default function PlanVsActualsPage() {
     totalIncome,
     totalExpense
   } = useMemo(() => {
-    const yearlyIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
-    const yearlyExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
+    const getFilteredItems = <T extends Income | Expense>(items: T[]) => {
+        return items.filter(item => {
+            const itemDate = new Date(item.date);
+            const yearMatch = getYear(itemDate) === selectedYear;
+            const monthMatch = selectedMonth === 'all' || getMonth(itemDate) === selectedMonth;
+            return yearMatch && monthMatch;
+        });
+    }
+
+    const yearlyIncomes = getFilteredItems(incomes);
+    const yearlyExpenses = getFilteredItems(expenses);
     
     const aggregate = <T extends Expense | Income, C extends ExpenseCategory | IncomeCategory>(
         items: T[], 
@@ -107,7 +120,7 @@ export default function PlanVsActualsPage() {
       aggregatedExpenses: expenseResult.data,
       totalExpense: expenseResult.total
     };
-  }, [expenses, incomes, selectedYear]);
+  }, [expenses, incomes, selectedYear, selectedMonth]);
 
   const renderDifference = (difference: number, type: 'income' | 'expense') => {
       const isPositive = difference > 0;
@@ -128,6 +141,14 @@ export default function PlanVsActualsPage() {
           </span>
       )
   };
+  
+  const getSelectedPeriodText = () => {
+    if (selectedMonth === 'all') {
+        return `for ${selectedYear}`;
+    }
+    return `for ${monthNames[selectedMonth]}, ${selectedYear}`;
+  }
+
 
   return (
     <div className="container mx-auto">
@@ -135,24 +156,40 @@ export default function PlanVsActualsPage() {
       
       <div className="px-4 sm:px-0">
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
+          <CardHeader className="flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <CardTitle>Comparison for {selectedYear}</CardTitle>
+              <CardTitle>Comparison {getSelectedPeriodText()}</CardTitle>
               <CardDescription>How your planning compares to reality.</CardDescription>
             </div>
-             <Select
-                value={String(selectedYear)}
-                onValueChange={(year) => setSelectedYear(parseInt(year))}
-            >
-                <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                    {yearsWithData.map(year => (
-                        <SelectItem key={year} value={String(year)}>{year}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+             <div className='flex gap-2'>
+                <Select
+                    value={String(selectedMonth)}
+                    onValueChange={(month) => setSelectedMonth(month === 'all' ? 'all' : Number(month))}
+                >
+                    <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Months</SelectItem>
+                        {monthNames.map((month, index) => (
+                            <SelectItem key={index} value={String(index)}>{month}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select
+                    value={String(selectedYear)}
+                    onValueChange={(year) => setSelectedYear(parseInt(year))}
+                >
+                    <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {yearsWithData.map(year => (
+                            <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+             </div>
           </CardHeader>
           <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
