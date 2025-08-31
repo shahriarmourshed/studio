@@ -17,22 +17,8 @@ const COLORS = [
     "hsl(50, 82%, 60%)",
 ];
 
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-      {`${name} (${(percent * 100).toFixed(0)}%)`}
-    </text>
-  );
-};
-
-
 export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
-  const { convert, getSymbol } = useCurrency();
+  const { getSymbol } = useCurrency();
 
   const categoryTotals = expenses.reduce((acc, expense) => {
     if (!acc[expense.category]) {
@@ -61,8 +47,9 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
           cx="50%"
           cy="50%"
           labelLine={false}
-          label={renderCustomizedLabel}
-          outerRadius={120}
+          label={false}
+          outerRadius={100}
+          innerRadius={60}
           fill="#8884d8"
           dataKey="value"
           paddingAngle={2}
@@ -71,7 +58,12 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Legend iconSize={10} />
+        <Legend 
+            iconSize={10} 
+            layout="vertical"
+            verticalAlign="middle"
+            align="right"
+        />
       </PieChart>
     </ResponsiveContainer>
   )
