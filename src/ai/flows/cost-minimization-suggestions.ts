@@ -17,12 +17,8 @@ const ProductSchema = z.object({
   quantity: z.number().describe('Current quantity of the product.'),
   unit: z.string().describe('Unit of measurement (e.g., kg, l, piece).'),
   price: z.number().describe('Price of the product.'),
-  dailyNeed: z.number().optional().describe('The daily need for this product.'),
-  halfMonthlyNeed: z
-    .number()
-    .optional()
-    .describe('The half-monthly need for this product.'),
-  monthlyNeed: z.number().optional().describe('The monthly need for this product.'),
+  consumptionRate: z.number().optional().describe('The consumption rate of the product.'),
+  consumptionPeriod: z.enum(['daily', 'weekly', 'half-monthly', 'monthly']).optional().describe('The consumption period of the product.'),
 });
 
 const CostMinimizationInputSchema = z.object({
@@ -34,7 +30,7 @@ const CostMinimizationInputSchema = z.object({
   productNeeds: z
     .array(ProductSchema)
     .describe(
-      'A list of product needs, including names, quantities, units, prices, and consumption needs (daily, half-monthly, monthly).'
+      'A list of product needs, including names, quantities, units, prices, and consumption needs.'
     ),
 });
 export type CostMinimizationInput = z.infer<typeof CostMinimizationInputSchema>;
@@ -64,7 +60,7 @@ Spending Habits: {{{spendingHabits}}}
 
 Product Needs:
 {{#each productNeeds}}
-- Product: {{{name}}}, Quantity: {{{quantity}}}{{{unit}}}, Price: {{{price}}}, Daily Need: {{#if dailyNeed}}{{{dailyNeed}}}{{else}}N/A{{/if}}, Half-monthly Need: {{#if halfMonthlyNeed}}{{{halfMonthlyNeed}}}{{else}}N/A{{/if}}, Monthly Need: {{#if monthlyNeed}}{{{monthlyNeed}}}{{else}}N/A{{/if}}
+- Product: {{{name}}}, Quantity: {{{quantity}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
 {{/each}}
 
 Based on the detailed product needs and spending habits, suggest specific, actionable strategies to reduce expenses and save money for the family. Consider bulk buying, alternative products, and timing of purchases based on the provided needs.`,

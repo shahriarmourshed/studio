@@ -37,9 +37,8 @@ export default function CostMinimizationForm() {
         quantity: p.quantity,
         unit: p.unit,
         price: p.price,
-        dailyNeed: p.dailyNeed,
-        halfMonthlyNeed: p.halfMonthlyNeed,
-        monthlyNeed: p.monthlyNeed,
+        consumptionRate: p.consumptionRate,
+        consumptionPeriod: p.consumptionPeriod,
       })),
     };
 

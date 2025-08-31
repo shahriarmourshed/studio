@@ -58,10 +58,9 @@ export default function ProductsPage() {
   const [newProductUnit, setNewProductUnit] = useState<Product['unit']>('kg');
   const [newProductPrice, setNewProductPrice] = useState('');
   const [newProductPurchaseDate, setNewProductPurchaseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [newProductDailyNeed, setNewProductDailyNeed] = useState('');
-  const [newProductMonthlyNeed, setNewProductMonthlyNeed] = useState('');
-  const [newProductHalfMonthlyNeed, setNewProductHalfMonthlyNeed] = useState('');
-
+  const [newProductConsumptionRate, setNewProductConsumptionRate] = useState('');
+  const [newProductConsumptionPeriod, setNewProductConsumptionPeriod] = useState<Product['consumptionPeriod']>('daily');
+  
   // Edit form state
   const [editProductName, setEditProductName] = useState('');
   const [editProductQuantity, setEditProductQuantity] = useState('');
@@ -69,9 +68,8 @@ export default function ProductsPage() {
   const [editProductUnit, setEditProductUnit] = useState<Product['unit']>('kg');
   const [editProductPrice, setEditProductPrice] = useState('');
   const [editProductPurchaseDate, setEditProductPurchaseDate] = useState('');
-  const [editProductDailyNeed, setEditProductDailyNeed] = useState('');
-  const [editProductMonthlyNeed, setEditProductMonthlyNeed] = useState('');
-  const [editProductHalfMonthlyNeed, setEditProductHalfMonthlyNeed] = useState('');
+  const [editProductConsumptionRate, setEditProductConsumptionRate] = useState('');
+  const [editProductConsumptionPeriod, setEditProductConsumptionPeriod] = useState<Product['consumptionPeriod']>('daily');
 
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -84,9 +82,8 @@ export default function ProductsPage() {
         unit: newProductUnit,
         price: parseFloat(newProductPrice),
         purchaseDate: newProductPurchaseDate,
-        dailyNeed: newProductDailyNeed ? parseFloat(newProductDailyNeed) : undefined,
-        monthlyNeed: newProductMonthlyNeed ? parseFloat(newProductMonthlyNeed) : undefined,
-        halfMonthlyNeed: newProductHalfMonthlyNeed ? parseFloat(newProductHalfMonthlyNeed) : undefined,
+        consumptionRate: newProductConsumptionRate ? parseFloat(newProductConsumptionRate) : undefined,
+        consumptionPeriod: newProductConsumptionRate ? newProductConsumptionPeriod : undefined,
       });
       resetAddForm();
     }
@@ -99,9 +96,8 @@ export default function ProductsPage() {
       setNewProductUnit('kg');
       setNewProductPrice('');
       setNewProductPurchaseDate(format(new Date(), 'yyyy-MM-dd'));
-      setNewProductDailyNeed('');
-      setNewProductMonthlyNeed('');
-      setNewProductHalfMonthlyNeed('');
+      setNewProductConsumptionRate('');
+      setNewProductConsumptionPeriod('daily');
       setIsAddDialogOpen(false);
   }
 
@@ -113,9 +109,8 @@ export default function ProductsPage() {
     setEditProductUnit(product.unit);
     setEditProductPrice(String(product.price));
     setEditProductPurchaseDate(product.purchaseDate);
-    setEditProductDailyNeed(product.dailyNeed?.toString() ?? '');
-    setEditProductMonthlyNeed(product.monthlyNeed?.toString() ?? '');
-    setEditProductHalfMonthlyNeed(product.halfMonthlyNeed?.toString() ?? '');
+    setEditProductConsumptionRate(product.consumptionRate?.toString() ?? '');
+    setEditProductConsumptionPeriod(product.consumptionPeriod ?? 'daily');
     setIsEditDialogOpen(true);
   };
   
@@ -130,9 +125,8 @@ export default function ProductsPage() {
             unit: editProductUnit,
             price: parseFloat(editProductPrice),
             purchaseDate: editProductPurchaseDate,
-            dailyNeed: editProductDailyNeed ? parseFloat(editProductDailyNeed) : undefined,
-            monthlyNeed: editProductMonthlyNeed ? parseFloat(editProductMonthlyNeed) : undefined,
-            halfMonthlyNeed: editProductHalfMonthlyNeed ? parseFloat(editProductHalfMonthlyNeed) : undefined,
+            consumptionRate: editProductConsumptionRate ? parseFloat(editProductConsumptionRate) : undefined,
+            consumptionPeriod: editProductConsumptionRate ? editProductConsumptionPeriod : undefined,
         };
         updateProduct(updatedProduct);
         setIsEditDialogOpen(false);
@@ -142,6 +136,13 @@ export default function ProductsPage() {
 
   const handleDeleteProduct = (productId: string) => {
       deleteProduct(productId);
+  }
+  
+  const renderConsumptionInfo = (product: Product) => {
+    if (product.consumptionRate && product.consumptionPeriod) {
+      return `${product.consumptionRate} ${product.unit} / ${product.consumptionPeriod.charAt(0).toUpperCase() + product.consumptionPeriod.slice(1)}`;
+    }
+    return 'N/A';
   }
 
   return (
@@ -154,7 +155,7 @@ export default function ProductsPage() {
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Add a New Product</DialogTitle>
               <DialogDescription>
@@ -204,18 +205,28 @@ export default function ProductsPage() {
                 <Label htmlFor="purchaseDate" className="text-right">Purchase Date</Label>
                 <Input id="purchaseDate" type="date" className="col-span-3" value={newProductPurchaseDate} onChange={e => setNewProductPurchaseDate(e.target.value)} required />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="dailyNeed" className="text-right">Daily Need</Label>
-                <Input id="dailyNeed" type="number" placeholder="(Optional)" className="col-span-3" value={newProductDailyNeed} onChange={e => setNewProductDailyNeed(e.target.value)} />
+
+               <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Consumption</Label>
+                <div className="col-span-3 grid grid-cols-2 gap-2">
+                    <Select value={newProductConsumptionPeriod} onValueChange={(v) => setNewProductConsumptionPeriod(v as Product['consumptionPeriod'])}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Period" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="half-monthly">Half-monthly</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div className="relative">
+                        <Input id="consumptionRate" type="number" placeholder="Amount" className="pr-12" value={newProductConsumptionRate} onChange={e => setNewProductConsumptionRate(e.target.value)} />
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{newProductUnit}</span>
+                    </div>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="monthlyNeed" className="text-right">Monthly Need</Label>
-                <Input id="monthlyNeed" type="number" placeholder="(Optional)" className="col-span-3" value={newProductMonthlyNeed} onChange={e => setNewProductMonthlyNeed(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="halfMonthlyNeed" className="text-right">Half-monthly Need</Label>
-                <Input id="halfMonthlyNeed" type="number" placeholder="(Optional)" className="col-span-3" value={newProductHalfMonthlyNeed} onChange={e => setNewProductHalfMonthlyNeed(e.target.value)} />
-              </div>
+             
               <Button type="submit" className="w-full">Save Product</Button>
             </div>
             </form>
@@ -233,9 +244,7 @@ export default function ProductsPage() {
                   <TableHead className="text-center">Current Stock</TableHead>
                   <TableHead className="text-center">Last Purchase</TableHead>
                   <TableHead className="text-center">Purchase Date</TableHead>
-                  <TableHead className="text-center">Daily Need</TableHead>
-                  <TableHead className="text-center">Half-monthly</TableHead>
-                  <TableHead className="text-center">Monthly Need</TableHead>
+                  <TableHead className="text-center">Consumption</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -251,9 +260,7 @@ export default function ProductsPage() {
                       {product.quantity} <Badge variant="secondary">{product.unit}</Badge>
                     </TableCell>
                     <TableCell className="text-center">{product.purchaseDate}</TableCell>
-                     <TableCell className="text-center">{product.dailyNeed ?? 'N/A'}</TableCell>
-                    <TableCell className="text-center">{product.halfMonthlyNeed ?? 'N/A'}</TableCell>
-                    <TableCell className="text-center">{product.monthlyNeed ?? 'N/A'}</TableCell>
+                     <TableCell className="text-center">{renderConsumptionInfo(product)}</TableCell>
                     <TableCell className="text-right">{getSymbol()}{convert(product.price).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
@@ -294,7 +301,7 @@ export default function ProductsPage() {
       
       {selectedProduct && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Edit Product</DialogTitle>
               <DialogDescription>
@@ -344,17 +351,25 @@ export default function ProductsPage() {
                 <Label htmlFor="edit-purchaseDate" className="text-right">Purchase Date</Label>
                 <Input id="edit-purchaseDate" type="date" className="col-span-3" value={editProductPurchaseDate} onChange={e => setEditProductPurchaseDate(e.target.value)} required />
               </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-dailyNeed" className="text-right">Daily Need</Label>
-                <Input id="edit-dailyNeed" type="number" placeholder="(Optional)" className="col-span-3" value={editProductDailyNeed} onChange={e => setEditProductDailyNeed(e.target.value)} />
-              </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-monthlyNeed" className="text-right">Monthly Need</Label>
-                <Input id="edit-monthlyNeed" type="number" placeholder="(Optional)" className="col-span-3" value={editProductMonthlyNeed} onChange={e => setEditProductMonthlyNeed(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-halfMonthlyNeed" className="text-right">Half-monthly Need</Label>
-                <Input id="edit-halfMonthlyNeed" type="number" placeholder="(Optional)" className="col-span-3" value={editProductHalfMonthlyNeed} onChange={e => setEditProductHalfMonthlyNeed(e.target.value)} />
+                <Label className="text-right">Consumption</Label>
+                 <div className="col-span-3 grid grid-cols-2 gap-2">
+                    <Select value={editProductConsumptionPeriod} onValueChange={(v) => setEditProductConsumptionPeriod(v as Product['consumptionPeriod'])}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Period" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="half-monthly">Half-monthly</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div className="relative">
+                        <Input id="edit-consumptionRate" type="number" placeholder="Amount" className="pr-12" value={editProductConsumptionRate} onChange={e => setEditProductConsumptionRate(e.target.value)} />
+                        <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{editProductUnit}</span>
+                    </div>
+                </div>
               </div>
               <Button type="submit" className="w-full">Save Changes</Button>
             </div>

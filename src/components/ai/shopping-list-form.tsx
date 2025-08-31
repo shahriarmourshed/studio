@@ -44,9 +44,8 @@ export default function ShoppingListForm() {
         productName: p.name,
         quantity: p.quantity,
         unit: p.unit,
-        dailyNeed: p.dailyNeed,
-        halfMonthlyNeed: p.halfMonthlyNeed,
-        monthlyNeed: p.monthlyNeed,
+        consumptionRate: p.consumptionRate,
+        consumptionPeriod: p.consumptionPeriod,
       })),
       shoppingListPeriod,
     };

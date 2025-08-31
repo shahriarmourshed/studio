@@ -28,9 +28,8 @@ const ProductNeedSchema = z.object({
   productName: z.string().describe('Name of the product (e.g., rice).'),
   quantity: z.number().describe('Quantity of the product available (e.g., 25).'),
   unit: z.string().describe('Unit of measurement (e.g., kg).'),
-  dailyNeed: z.number().optional().describe('The daily need for this product per unit.'),
-  halfMonthlyNeed: z.number().optional().describe('The half-monthly need for this product per unit.'),
-  monthlyNeed: z.number().optional().describe('The monthly need for this product per unit.'),
+  consumptionRate: z.number().optional().describe('The consumption rate of the product.'),
+  consumptionPeriod: z.enum(['daily', 'weekly', 'half-monthly', 'monthly']).optional().describe('The consumption period of the product.'),
 });
 
 const DietChartInputSchema = z.object({
@@ -73,7 +72,7 @@ const prompt = ai.definePrompt({
 
   Also, consider the following product needs and consumption patterns:
   {{#each monthlyProductNeeds}}
-  - Product: {{{productName}}}, Available: {{{quantity}}}{{{unit}}}, Daily Need: {{#if dailyNeed}}{{{dailyNeed}}}{{else}}N/A{{/if}}, Half-monthly Need: {{#if halfMonthlyNeed}}{{{halfMonthlyNeed}}}{{else}}N/A{{/if}}, Monthly Need: {{#if monthlyNeed}}{{{monthlyNeed}}}{{else}}N/A{{/if}}
+  - Product: {{{productName}}}, Available: {{{quantity}}}{{{unit}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
 
   Dietary Preferences: {{{preferences}}}

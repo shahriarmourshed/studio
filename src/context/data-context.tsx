@@ -35,6 +35,30 @@ const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T) => vo
     }
     try {
       const item = window.localStorage.getItem(key);
+      // Attempt to migrate old data structure
+      if (key === 'familyverse-products' && item) {
+        const parsed = JSON.parse(item);
+        if (Array.isArray(parsed) && parsed.length > 0 && ('dailyNeed' in parsed[0] || 'monthlyNeed' in parsed[0])) {
+          const migrated = parsed.map((p: any) => {
+             const newProduct: Partial<Product> = { ...p };
+             if(p.dailyNeed) {
+                newProduct.consumptionRate = p.dailyNeed;
+                newProduct.consumptionPeriod = 'daily';
+             } else if (p.halfMonthlyNeed) {
+                newProduct.consumptionRate = p.halfMonthlyNeed;
+                newProduct.consumptionPeriod = 'half-monthly';
+             } else if (p.monthlyNeed) {
+                newProduct.consumptionRate = p.monthlyNeed;
+                newProduct.consumptionPeriod = 'monthly';
+             }
+             delete newProduct['dailyNeed' as keyof Product];
+             delete newProduct['halfMonthlyNeed' as keyof Product];
+             delete newProduct['monthlyNeed' as keyof Product];
+             return newProduct;
+          });
+          return migrated as T;
+        }
+      }
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
       console.log(error);
@@ -76,17 +100,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const lastUpdatedDate = new Date(product.lastUpdated);
         let stockUsed = 0;
 
-        if (product.dailyNeed) {
-          const daysPassed = differenceInDays(today, lastUpdatedDate);
-          stockUsed += daysPassed * product.dailyNeed;
-        }
-        if (product.halfMonthlyNeed) {
-           const weeksPassed = differenceInWeeks(today, lastUpdatedDate);
-           stockUsed += (weeksPassed / 2) * product.halfMonthlyNeed;
-        }
-        if (product.monthlyNeed) {
-          const monthsPassed = differenceInMonths(today, lastUpdatedDate);
-          stockUsed += monthsPassed * product.monthlyNeed;
+        if (product.consumptionRate && product.consumptionPeriod) {
+            const daysPassed = differenceInDays(today, lastUpdatedDate);
+            switch(product.consumptionPeriod) {
+                case 'daily':
+                    stockUsed = daysPassed * product.consumptionRate;
+                    break;
+                case 'weekly':
+                    const weeksPassed = differenceInWeeks(today, lastUpdatedDate);
+                    stockUsed = weeksPassed * product.consumptionRate;
+                    break;
+                case 'half-monthly':
+                    stockUsed = (differenceInWeeks(today, lastUpdatedDate) / 2) * product.consumptionRate;
+                    break;
+                case 'monthly':
+                    const monthsPassed = differenceInMonths(today, lastUpdatedDate);
+                    stockUsed = monthsPassed * product.consumptionRate;
+                    break;
+            }
         }
 
         const newStock = Math.max(0, product.currentStock - stockUsed);

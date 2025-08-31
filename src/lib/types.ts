@@ -9,15 +9,14 @@ export type FamilyMember = {
 
 export type Product = {
   id: string;
-  name: string;
+  name:string;
   quantity: number; // Represents the last purchased quantity
   currentStock: number;
   unit: 'kg' | 'g' | 'l' | 'ml' | 'piece' | 'pack' | 'dozen' | 'box' | 'bottle' | 'can' | 'roll';
   price: number;
   purchaseDate: string;
-  dailyNeed?: number;
-  monthlyNeed?: number;
-  halfMonthlyNeed?: number;
+  consumptionRate?: number;
+  consumptionPeriod?: 'daily' | 'weekly' | 'half-monthly' | 'monthly';
   lastUpdated: string; // ISO string to track when stock was last updated
 };
 
