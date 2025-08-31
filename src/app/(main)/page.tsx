@@ -149,7 +149,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 flex flex-col">
+        <Card className="lg:col-span-1 flex flex-col">
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
             <CardDescription>Get started with common tasks.</CardDescription>
@@ -225,7 +225,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Upcoming Bills</CardTitle>
             <CardDescription>Due within {reminderDays} day(s).</CardDescription>
