@@ -59,9 +59,8 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
         </Pie>
         <Legend 
             iconSize={10} 
-            layout="vertical"
-            verticalAlign="middle"
-            align="right"
+            verticalAlign="bottom"
+            align="center"
         />
       </PieChart>
     </ResponsiveContainer>
