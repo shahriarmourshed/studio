@@ -246,9 +246,9 @@ export default function TransactionsPage() {
                                 <TableCell><Badge variant="outline" className="text-xs">{t.category}</Badge></TableCell>
                                 <TableCell>{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
                                 <TableCell>
-                                    <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="text-xs">{t.type}</Badge>
+                                    <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="text-xs capitalize">{t.type}</Badge>
                                 </TableCell>
-                                <TableCell><Badge variant={t.status === 'planned' ? 'secondary' : t.status === 'completed' ? 'default' : 'destructive'} className="text-xs">{t.status}</Badge></TableCell>
+                                <TableCell><Badge variant={t.status === 'planned' ? 'secondary' : t.status === 'completed' ? 'default' : 'destructive'} className="text-xs capitalize">{t.status}</Badge></TableCell>
                                 <TableCell className="text-right">{getSymbol()}{t.amount.toLocaleString()}</TableCell>
                                 <TableCell className="text-center p-1">
                                 {t.status === 'planned' && (
@@ -261,6 +261,11 @@ export default function TransactionsPage() {
                                 </TableCell>
                             </TableRow>
                         ))}
+                         {allTransactions.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={7} className="text-center">No transactions for this month.</TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>
@@ -327,5 +332,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    
