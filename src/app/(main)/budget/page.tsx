@@ -50,11 +50,11 @@ import { Switch } from "@/components/ui/switch";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Expense, Income, IncomeCategory, ExpenseCategory } from '@/lib/types';
-import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, getFullYear } from 'date-fns';
+import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function BudgetPage() {
-  const { getSymbol, convert } = useCurrency();
+  const { getSymbol } = useCurrency();
   const { 
     budget, 
     expenses, 
@@ -226,8 +226,8 @@ export default function BudgetPage() {
   const yearsWithData = useMemo(() => {
     const years = new Set<number>();
     [...incomes, ...expenses].forEach(t => years.add(getYear(new Date(t.date))));
-    if (!years.has(getFullYear(new Date()))) {
-        years.add(getFullYear(new Date()));
+    if (!years.has(getYear(new Date()))) {
+        years.add(getYear(new Date()));
     }
     return Array.from(years).sort((a,b) => b - a);
   }, [incomes, expenses]);
@@ -390,7 +390,7 @@ export default function BudgetPage() {
           <CardHeader>
             <CardTitle>Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
              <CardDescription>
-              {getSymbol()}{convert(totalSpent).toLocaleString()} spent out of {getSymbol()}{convert(totalIncome).toLocaleString()}
+              {getSymbol()}{totalSpent.toLocaleString()} spent out of {getSymbol()}{totalIncome.toLocaleString()}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -398,15 +398,15 @@ export default function BudgetPage() {
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
                     <p className="text-sm text-muted-foreground">Total Income</p>
-                    <p className="text-2xl font-bold text-green-500">{getSymbol()}{convert(totalIncome).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-green-500">{getSymbol()}{totalIncome.toLocaleString()}</p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Total Spent</p>
-                    <p className="text-2xl font-bold text-red-500">{getSymbol()}{convert(totalSpent).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-red-500">{getSymbol()}{totalSpent.toLocaleString()}</p>
                 </div>
                  <div>
                     <p className="text-sm text-muted-foreground">Savings</p>
-                    <p className="text-2xl font-bold text-primary">{getSymbol()}{convert(savings).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-primary">{getSymbol()}{savings.toLocaleString()}</p>
                 </div>
             </div>
           </CardContent>
@@ -449,7 +449,7 @@ export default function BudgetPage() {
                             <TableCell>{income.category}</TableCell>
                             <TableCell>{income.date}</TableCell>
                             <TableCell>{income.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-right">{getSymbol()}{convert(income.amount).toLocaleString()}</TableCell>
+                            <TableCell className="text-right">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
                                     <Button variant="ghost" size="icon" onClick={() => handleEditIncomeClick(income)}>
@@ -513,7 +513,7 @@ export default function BudgetPage() {
                             <TableCell>{expense.category}</TableCell>
                             <TableCell>{expense.date}</TableCell>
                             <TableCell>{expense.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-right">{getSymbol()}{convert(expense.amount).toLocaleString()}</TableCell>
+                            <TableCell className="text-right">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
                                     <Button variant="ghost" size="icon" onClick={() => handleEditExpenseClick(expense)}>
