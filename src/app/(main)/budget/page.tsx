@@ -64,7 +64,9 @@ export default function BudgetPage() {
     incomes, 
     addIncome,
     updateIncome,
-    deleteIncome
+    deleteIncome,
+    savingGoal,
+    setSavingGoal,
   } = useData();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -106,6 +108,10 @@ export default function BudgetPage() {
   const [editIncomeCategory, setEditIncomeCategory] = useState<IncomeCategory>('Other');
   const [editIncomeDate, setEditIncomeDate] = useState('');
   const [editIncomeRecurrent, setEditIncomeRecurrent] = useState(false);
+
+  // Savings Goal state
+  const [newSavingGoal, setNewSavingGoal] = useState(savingGoal ? String(savingGoal) : '');
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
 
 
   const handleAddExpense = (e: React.FormEvent) => {
@@ -204,6 +210,12 @@ export default function BudgetPage() {
         setIsEditIncomeDialogOpen(false);
         setSelectedIncome(null);
     }
+  };
+
+  const handleGoalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingGoal(parseFloat(newSavingGoal));
+    setIsEditingGoal(false);
   };
 
   const { filteredIncomes, filteredExpenses } = useMemo(() => {
@@ -386,7 +398,7 @@ export default function BudgetPage() {
       </div>
 
       <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
              <CardDescription>
@@ -410,6 +422,48 @@ export default function BudgetPage() {
                 </div>
             </div>
           </CardContent>
+        </Card>
+
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                    <span>Savings Goal</span>
+                    <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)}>
+                        <Edit className="h-4 w-4"/>
+                        <span className="sr-only">Edit Goal</span>
+                    </Button>
+                </CardTitle>
+                <CardDescription>Your savings target for {format(selectedDate, 'MMMM')}.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isEditingGoal ? (
+                    <form onSubmit={handleGoalSubmit}>
+                        <div className="space-y-2">
+                            <Label htmlFor="saving-goal">New Goal ({getSymbol()})</Label>
+                            <Input 
+                                id="saving-goal"
+                                type="number" 
+                                value={newSavingGoal}
+                                onChange={(e) => setNewSavingGoal(e.target.value)}
+                                placeholder="e.g., 15000"
+                            />
+                            <Button type="submit" size="sm" className="w-full">Set Goal</Button>
+                        </div>
+                    </form>
+                ) : (
+                    <div className="text-center">
+                        <p className="text-3xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
+                        {savingGoal > 0 && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {Math.max(0, (savings / savingGoal) * 100).toFixed(0)}% of your goal reached
+                            </p>
+                        )}
+                         <p className="text-sm text-muted-foreground mt-1">
+                            Saved: {getSymbol()}{savings.toLocaleString()}
+                        </p>
+                    </div>
+                )}
+            </CardContent>
         </Card>
         
         <Card className="lg:col-span-3">

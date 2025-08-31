@@ -1,44 +1,50 @@
 
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, PlusCircle, Lightbulb, Utensils, Target, Edit } from 'lucide-react';
+import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
 import SavingsPieChart from '@/components/dashboard/savings-pie-chart';
 import { upcomingBills } from '@/lib/data';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { getMonth, getYear } from 'date-fns';
 
 export default function DashboardPage() {
-  const { getSymbol, convert } = useCurrency();
-  const { budget, products, expenses, incomes, savingGoal, setSavingGoal } = useData();
-  const [newSavingGoal, setNewSavingGoal] = useState(savingGoal ? String(savingGoal) : '');
-  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const { getSymbol } = useCurrency();
+  const { budget, products, expenses, incomes } = useData();
+  
+  const { totalIncome, totalSpent } = useMemo(() => {
+    const currentMonth = getMonth(new Date());
+    const currentYear = getYear(new Date());
+
+    const monthlyIncomes = incomes.filter(i => {
+        const incomeDate = new Date(i.date);
+        return getMonth(incomeDate) === currentMonth && getYear(incomeDate) === currentYear;
+    });
+
+    const monthlyExpenses = expenses.filter(e => {
+        const expenseDate = new Date(e.date);
+        return getMonth(expenseDate) === currentMonth && getYear(expenseDate) === currentYear;
+    });
+
+    return {
+        totalIncome: monthlyIncomes.reduce((sum, income) => sum + income.amount, 0),
+        totalSpent: monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+    };
+  }, [incomes, expenses]);
 
   if (!budget) {
     return <div className="flex items-center justify-center h-screen">Loading Dashboard...</div>;
   }
-
-  const handleGoalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingGoal(parseFloat(newSavingGoal));
-    setIsEditingGoal(false);
-  };
-
-  const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
-  const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const savings = totalIncome - totalSpent;
 
   return (
     <div className="container mx-auto px-0 sm:px-4">
@@ -47,53 +53,14 @@ export default function DashboardPage() {
       <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Financial Summary</CardTitle>
+            <CardTitle>This Month's Financial Summary</CardTitle>
              <CardDescription>
-              A visual breakdown of your income, expenses, and savings this month.
+              A visual breakdown of your income and expenses.
             </CardDescription>
           </CardHeader>
           <CardContent className="h-60">
             <SavingsPieChart income={totalIncome} expenses={totalSpent} />
           </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                    <span>Savings Goal</span>
-                    <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)}>
-                        <Edit className="h-4 w-4"/>
-                        <span className="sr-only">Edit Goal</span>
-                    </Button>
-                </CardTitle>
-                <CardDescription>Set and track your monthly savings target.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {isEditingGoal ? (
-                    <form onSubmit={handleGoalSubmit}>
-                        <div className="space-y-2">
-                            <Label htmlFor="saving-goal">New Goal ({getSymbol()})</Label>
-                            <Input 
-                                id="saving-goal"
-                                type="number" 
-                                value={newSavingGoal}
-                                onChange={(e) => setNewSavingGoal(e.target.value)}
-                                placeholder="e.g., 15000"
-                            />
-                            <Button type="submit" size="sm" className="w-full">Set Goal</Button>
-                        </div>
-                    </form>
-                ) : (
-                    <div className="text-center">
-                        <p className="text-3xl font-bold text-primary">{getSymbol()}{convert(savingGoal).toLocaleString()}</p>
-                        {savingGoal > 0 && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                {Math.max(0, (savings / savingGoal) * 100).toFixed(0)}% of your goal reached
-                            </p>
-                        )}
-                    </div>
-                )}
-            </CardContent>
         </Card>
 
         <Card className="flex flex-col">
@@ -126,7 +93,7 @@ export default function DashboardPage() {
                     <p className="font-medium">{bill.name}</p>
                     <p className="text-sm text-muted-foreground">Due: {new Date(bill.dueDate).toLocaleDateString()}</p>
                   </div>
-                  <p className="font-semibold text-lg">{getSymbol()}{convert(bill.amount).toLocaleString()}</p>
+                  <p className="font-semibold text-lg">{getSymbol()}{bill.amount.toLocaleString()}</p>
                 </li>
               ))}
             </ul>
