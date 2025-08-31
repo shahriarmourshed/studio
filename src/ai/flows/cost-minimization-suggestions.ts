@@ -102,7 +102,7 @@ Analyze the following comprehensive financial and product data for the family:
 
 **Product & Inventory Analysis:**
 {{#each products}}
-- Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
+- Product: {{{name}}}, Last Bought: {{{quantity}}}{{{unit}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
 {{/each}}
 
 **Your Task:**
@@ -126,4 +126,3 @@ const costMinimizationFlow = ai.defineFlow(
     return output!;
   }
 );
-
