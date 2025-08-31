@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign, ChevronsLeft, ChevronsRight, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,17 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrency } from "@/context/currency-context";
@@ -43,6 +54,8 @@ import { Textarea } from '@/components/ui/textarea';
 import ExpenseChart from '@/components/budget/expense-chart';
 import { cn } from '@/lib/utils';
 
+type Transaction = (Expense | Income) & { type: 'income' | 'expense' };
+
 export default function TransactionsPage() {
   const { getSymbol } = useCurrency();
   const { 
@@ -52,6 +65,8 @@ export default function TransactionsPage() {
     addIncome,
     updateExpense,
     updateIncome,
+    deleteExpense,
+    deleteIncome,
   } = useData();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -61,7 +76,7 @@ export default function TransactionsPage() {
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isIncomeDialogOpen, setIsIncomeDialogOpen] = useState(false);
   
-  const [editingTransaction, setEditingTransaction] = useState<(Expense | Income) & { type: 'income' | 'expense' } | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [isExpense, setIsExpense] = useState(true);
 
   // Add Expense form state
@@ -112,6 +127,13 @@ export default function TransactionsPage() {
     ].filter(t => t.status === 'planned');
   }, [filteredIncomes, filteredExpenses]);
 
+  const allTransactionsForMonth: Transaction[] = useMemo(() => {
+    return [
+      ...filteredIncomes.map(i => ({...i, type: 'income' as const})),
+      ...filteredExpenses.map(e => ({...e, type: 'expense' as const}))
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [filteredIncomes, filteredExpenses]);
+
   const handleStatusChange = (id: string, type: 'income' | 'expense', status: 'completed' | 'cancelled') => {
     if (type === 'income') {
       const income = incomes.find(i => i.id === id);
@@ -122,9 +144,9 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleEditClick = (transaction: (Income | Expense), type: 'income' | 'expense') => {
-    setEditingTransaction({ ...transaction, type });
-    setIsExpense(type === 'expense');
+  const handleEditClick = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setIsExpense(transaction.type === 'expense');
     setEditDesc(transaction.description);
     setEditAmount(String(transaction.amount));
     setEditCategory(transaction.category);
@@ -134,9 +156,18 @@ export default function TransactionsPage() {
     setIsEditDialogOpen(true);
   };
 
+  const handleDeleteClick = (transaction: Transaction) => {
+    if (transaction.type === 'income') {
+      deleteIncome(transaction.id);
+    } else {
+      deleteExpense(transaction.id);
+    }
+  }
+
   const handleUpdateTransaction = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingTransaction) {
+      const updatedStatus = editingTransaction.status === 'planned' ? 'completed' : editingTransaction.status;
       if (isExpense) {
         updateExpense({
           ...(editingTransaction as Expense),
@@ -146,7 +177,7 @@ export default function TransactionsPage() {
           date: editDate,
           recurrent: editRecurrent,
           notes: editNotes,
-          status: 'completed',
+          status: updatedStatus,
         });
       } else {
         updateIncome({
@@ -157,7 +188,7 @@ export default function TransactionsPage() {
           date: editDate,
           recurrent: editRecurrent,
           notes: editNotes,
-          status: 'completed',
+          status: updatedStatus,
         });
       }
       setIsEditDialogOpen(false);
@@ -226,6 +257,14 @@ export default function TransactionsPage() {
       setSelectedDate(setYear(selectedDate, newYear));
     }
   };
+
+  const getStatusVariant = (status: 'planned' | 'completed' | 'cancelled') => {
+    switch (status) {
+      case 'planned': return 'secondary';
+      case 'completed': return 'default';
+      case 'cancelled': return 'destructive';
+    }
+  }
 
   return (
     <div className="container mx-auto">
@@ -450,7 +489,7 @@ export default function TransactionsPage() {
                                 <TableCell className="text-center p-1">
                                     <div className="flex gap-0.5 justify-center">
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'completed')}><Check className="w-4 h-4 text-green-500" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t, t.type)}><Edit className="w-4 h-4" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t)}><Edit className="w-4 h-4" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'cancelled')}><Ban className="w-4 h-4 text-red-500" /></Button>
                                     </div>
                                 </TableCell>
@@ -460,13 +499,79 @@ export default function TransactionsPage() {
                 </Table>
             </CardContent>
         </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>All Transactions for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {allTransactionsForMonth.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center">No transactions for this month.</TableCell>
+                        </TableRow>
+                    ) : allTransactionsForMonth.map((t) => (
+                        <TableRow key={t.id}>
+                            <TableCell className="font-medium">{t.description}</TableCell>
+                            <TableCell>{t.category}</TableCell>
+                            <TableCell>{t.date}</TableCell>
+                            <TableCell><Badge variant={getStatusVariant(t.status)}>{t.status}</Badge></TableCell>
+                            <TableCell className={cn("text-right", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
+                                {t.type === 'expense' ? '-' : '+'}
+                                {getSymbol()}{t.amount.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <div className="flex gap-2 justify-end">
+                                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(t)}>
+                                        <Edit className="h-4 w-4"/>
+                                        <span className="sr-only">Edit</span>
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <Trash2 className="h-4 w-4 text-destructive"/>
+                                                <span className="sr-only">Delete</span>
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete this transaction.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteClick(t)}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
 
       {editingTransaction && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Modify and Complete Transaction</DialogTitle>
+              <DialogTitle>Edit Transaction</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdateTransaction}>
             <div className="grid gap-4 py-4">
@@ -513,7 +618,9 @@ export default function TransactionsPage() {
                     <Label htmlFor="edit-notes" className="text-right pt-2">Short Note</Label>
                     <Textarea id="edit-notes" placeholder="Any details to remember..." className="col-span-3" value={editNotes} onChange={e => setEditNotes(e.target.value)} />
                 </div>
-                <Button type="submit" className="w-full">Update and Mark as Done</Button>
+                <Button type="submit" className="w-full">
+                  {editingTransaction.status === 'planned' ? 'Update and Mark as Done' : 'Save Changes'}
+                </Button>
             </div>
             </form>
           </DialogContent>
