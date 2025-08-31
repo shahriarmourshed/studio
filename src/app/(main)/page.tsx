@@ -17,6 +17,8 @@ import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
 import { getYear, isFuture, differenceInDays } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
@@ -42,25 +44,25 @@ export default function DashboardPage() {
   
   const { 
     filteredYearlyExpenses, 
-    plannedIncome,
-    actualIncome,
-    plannedExpenses,
-    actualExpenses
+    yearlyPlannedIncomes,
+    yearlyActualIncomes,
+    yearlyPlannedExpenses,
+    yearlyActualExpenses,
   } = useMemo(() => {
     const yearlyIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
     const yearlyExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
 
-    const plannedIncome = yearlyIncomes.filter(i => i.status === 'planned').reduce((sum, i) => sum + i.amount, 0);
-    const actualIncome = yearlyIncomes.filter(i => i.status === 'completed').reduce((sum, i) => sum + i.amount, 0);
-    const plannedExpenses = yearlyExpenses.filter(e => e.status === 'planned').reduce((sum, e) => sum + e.amount, 0);
-    const actualExpenses = yearlyExpenses.filter(e => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
+    const yearlyPlannedIncomes = yearlyIncomes.filter(i => i.status === 'planned');
+    const yearlyActualIncomes = yearlyIncomes.filter(i => i.status === 'completed');
+    const yearlyPlannedExpenses = yearlyExpenses.filter(e => e.status === 'planned');
+    const yearlyActualExpenses = yearlyExpenses.filter(e => e.status === 'completed');
 
     return { 
       filteredYearlyExpenses: yearlyExpenses,
-      plannedIncome,
-      actualIncome,
-      plannedExpenses,
-      actualExpenses
+      yearlyPlannedIncomes,
+      yearlyActualIncomes,
+      yearlyPlannedExpenses,
+      yearlyActualExpenses,
     };
   }, [expenses, incomes, selectedYear]);
 
@@ -113,33 +115,87 @@ export default function DashboardPage() {
             <CardTitle>Plan vs. Actuals ({selectedYear})</CardTitle>
             <CardDescription>How your planning compares to reality.</CardDescription>
           </CardHeader>
-          <CardContent className="flex-grow grid grid-cols-2 gap-4">
+          <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Income Column */}
             <div className="space-y-4">
               <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/50">
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
                   <TrendingUp className="h-5 w-5" />
                   <h3 className="font-semibold">Income</h3>
                 </div>
-                <div className="mt-2 text-sm">
-                  <p><span className="font-medium">Planned:</span> {getSymbol()}{plannedIncome.toLocaleString()}</p>
-                  <p><span className="font-medium">Actual:</span> {getSymbol()}{actualIncome.toLocaleString()}</p>
+                <Separator />
+                <div className="grid grid-cols-2 gap-x-4 mt-2">
+                    <div>
+                        <h4 className="text-sm font-semibold mb-1">Planned</h4>
+                        <ScrollArea className="h-28 pr-3">
+                            <ul className="text-xs space-y-1">
+                                {yearlyPlannedIncomes.map(i => (
+                                    <li key={i.id} className="flex justify-between">
+                                        <span className="truncate pr-1">{i.description}</span>
+                                        <span>{getSymbol()}{i.amount.toLocaleString()}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </ScrollArea>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-semibold mb-1">Actual</h4>
+                         <ScrollArea className="h-28">
+                            <ul className="text-xs space-y-1">
+                                {yearlyActualIncomes.map(i => (
+                                    <li key={i.id} className="flex justify-between">
+                                        <span className="truncate pr-1">{i.description}</span>
+                                        <span>{getSymbol()}{i.amount.toLocaleString()}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </ScrollArea>
+                    </div>
                 </div>
               </div>
             </div>
-             <div className="space-y-4">
+
+            {/* Expenses Column */}
+            <div className="space-y-4">
               <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/50">
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-2">
                   <TrendingDown className="h-5 w-5" />
                   <h3 className="font-semibold">Expenses</h3>
                 </div>
-                <div className="mt-2 text-sm">
-                  <p><span className="font-medium">Planned:</span> {getSymbol()}{plannedExpenses.toLocaleString()}</p>
-                  <p><span className="font-medium">Actual:</span> {getSymbol()}{actualExpenses.toLocaleString()}</p>
+                <Separator />
+                 <div className="grid grid-cols-2 gap-x-4 mt-2">
+                    <div>
+                        <h4 className="text-sm font-semibold mb-1">Planned</h4>
+                        <ScrollArea className="h-28 pr-3">
+                            <ul className="text-xs space-y-1">
+                                {yearlyPlannedExpenses.map(e => (
+                                    <li key={e.id} className="flex justify-between">
+                                        <span className="truncate pr-1">{e.description}</span>
+                                        <span>{getSymbol()}{e.amount.toLocaleString()}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </ScrollArea>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-semibold mb-1">Actual</h4>
+                         <ScrollArea className="h-28">
+                            <ul className="text-xs space-y-1">
+                                {yearlyActualExpenses.map(e => (
+                                    <li key={e.id} className="flex justify-between">
+                                        <span className="truncate pr-1">{e.description}</span>
+                                        <span>{getSymbol()}{e.amount.toLocaleString()}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </ScrollArea>
+                    </div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
+
 
         <Card className="lg:col-span-2 flex flex-col">
           <CardHeader>
