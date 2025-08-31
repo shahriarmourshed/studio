@@ -226,7 +226,7 @@ export default function TransactionsPage() {
         </Card>
 
         <Card className="lg:col-span-3">
-            <CardHeader><CardTitle>Manage Transactions</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Manage Pre-planned Transactions</CardTitle></CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
