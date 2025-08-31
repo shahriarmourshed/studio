@@ -131,7 +131,8 @@ export default function TransactionsPage() {
     return [
       ...filteredIncomes.map(i => ({...i, type: 'income' as const})),
       ...filteredExpenses.map(e => ({...e, type: 'expense' as const}))
-    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    ].filter(t => t.status !== 'planned')
+     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [filteredIncomes, filteredExpenses]);
 
   const handleStatusChange = (id: string, type: 'income' | 'expense', status: 'completed' | 'cancelled') => {
