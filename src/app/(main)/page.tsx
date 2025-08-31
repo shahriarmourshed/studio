@@ -10,7 +10,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
+import { ArrowRight, PlusCircle, Lightbulb, Utensils, ChevronRight } from 'lucide-react';
 import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
@@ -96,17 +96,33 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2 flex flex-col">
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Get started with common tasks.</CardDescription>
           </CardHeader>
-          <CardContent className="flex-grow grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Button asChild variant="outline" className="h-full">
-              <Link href="/budget"><PlusCircle className="mr-2 h-4 w-4" /> Add Expense Plan</Link>
-            </Button>
-            <Button asChild variant="outline" className="h-full">
-              <Link href="/products"><Utensils className="mr-2 h-4 w-4" /> Update Products</Link>
-            </Button>
-            <Button asChild className="h-full">
-              <Link href="/ai"><Lightbulb className="mr-2 h-4 w-4" /> Get AI Suggestions</Link>
-            </Button>
+          <CardContent className="flex-grow flex flex-col justify-center space-y-2">
+             <Link href="/budget" className="flex items-center p-3 rounded-lg hover:bg-muted transition-colors">
+                <PlusCircle className="w-5 h-5 mr-3 text-primary"/>
+                <div className="flex-1">
+                    <p className="font-semibold">Add Expense Plan</p>
+                    <p className="text-sm text-muted-foreground">Log a future expense.</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground"/>
+             </Link>
+             <Link href="/products" className="flex items-center p-3 rounded-lg hover:bg-muted transition-colors">
+                <Utensils className="w-5 h-5 mr-3 text-primary"/>
+                <div className="flex-1">
+                    <p className="font-semibold">Update Products</p>
+                    <p className="text-sm text-muted-foreground">Manage your inventory.</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground"/>
+             </Link>
+             <Link href="/ai" className="flex items-center p-3 rounded-lg hover:bg-muted transition-colors">
+                <Lightbulb className="w-5 h-5 mr-3 text-primary"/>
+                <div className="flex-1">
+                    <p className="font-semibold">Get AI Suggestions</p>
+                    <p className="text-sm text-muted-foreground">Optimize your planning.</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground"/>
+             </Link>
           </CardContent>
         </Card>
         
@@ -129,6 +145,13 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground text-center">No upcoming bills found.</p>
               )}
             </ul>
+             {upcomingRecurrentBills.length > 3 && (
+                <div className="mt-4 text-center">
+                    <Button variant="link" asChild>
+                        <Link href="/budget">View all</Link>
+                    </Button>
+                </div>
+            )}
           </CardContent>
         </Card>
       </div>
