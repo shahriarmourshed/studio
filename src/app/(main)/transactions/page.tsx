@@ -139,7 +139,7 @@ export default function TransactionsPage() {
     if (type === 'income') {
       const income = incomes.find(i => i.id === id);
       if (income) {
-        const updatedIncome = { ...income, status };
+        const updatedIncome: Income = { ...income, status };
         if (status === 'completed' && income.status === 'planned') {
           updatedIncome.plannedAmount = income.amount;
         }
@@ -148,7 +148,7 @@ export default function TransactionsPage() {
     } else {
       const expense = expenses.find(e => e.id === id);
       if (expense) {
-        const updatedExpense = { ...expense, status };
+        const updatedExpense: Expense = { ...expense, status };
         if (status === 'completed' && expense.status === 'planned') {
           updatedExpense.plannedAmount = expense.amount;
         }
