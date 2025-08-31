@@ -14,6 +14,9 @@ import { useData } from '@/context/data-context';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 export default function ProfilePage() {
 
@@ -58,6 +61,22 @@ export default function ProfilePage() {
                 </SelectContent>
               </Select>
             </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Reports</CardTitle>
+            <CardDescription>View detailed reports and summaries.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/profile/plan-vs-actuals" className="flex items-center justify-between p-3 rounded-lg hover:bg-muted">
+                <div>
+                  <p className="font-medium">Plan vs. Actuals</p>
+                  <p className="text-sm text-muted-foreground">Compare your planned budget against your actual spending.</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </Link>
           </CardContent>
         </Card>
       </div>

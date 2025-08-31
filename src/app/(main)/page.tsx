@@ -10,15 +10,13 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, PlusCircle, Lightbulb, Utensils, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowRight, PlusCircle, Lightbulb, Utensils } from 'lucide-react';
 import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
 import { getYear, isFuture, differenceInDays } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
@@ -44,27 +42,12 @@ export default function DashboardPage() {
   
   const { 
     filteredYearlyExpenses, 
-    yearlyPlannedIncomes,
-    yearlyActualIncomes,
-    yearlyPlannedExpenses,
-    yearlyActualExpenses,
   } = useMemo(() => {
-    const yearlyIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear);
     const yearlyExpenses = expenses.filter(e => getYear(new Date(e.date)) === selectedYear);
-
-    const yearlyPlannedIncomes = yearlyIncomes.filter(i => i.status === 'planned');
-    const yearlyActualIncomes = yearlyIncomes.filter(i => i.status === 'completed');
-    const yearlyPlannedExpenses = yearlyExpenses.filter(e => e.status === 'planned');
-    const yearlyActualExpenses = yearlyExpenses.filter(e => e.status === 'completed');
-
     return { 
       filteredYearlyExpenses: yearlyExpenses,
-      yearlyPlannedIncomes,
-      yearlyActualIncomes,
-      yearlyPlannedExpenses,
-      yearlyActualExpenses,
     };
-  }, [expenses, incomes, selectedYear]);
+  }, [expenses, selectedYear]);
 
   const upcomingRecurrentBills = useMemo(() => {
     const today = new Date();
@@ -109,89 +92,6 @@ export default function DashboardPage() {
              <ExpenseChart expenses={filteredYearlyExpenses} />
           </CardContent>
         </Card>
-
-        <Card className="lg:col-span-2 flex flex-col">
-          <CardHeader>
-            <CardTitle>Plan vs. Actuals ({selectedYear})</CardTitle>
-            <CardDescription>How your planning compares to reality.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Income Section */}
-            <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/50">
-              <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
-                <TrendingUp className="h-5 w-5" />
-                <h3 className="font-semibold">Income</h3>
-              </div>
-              <Separator />
-              <div className="grid grid-cols-2 gap-x-4 mt-2">
-                <div>
-                  <h4 className="text-sm font-semibold mb-1">Planned</h4>
-                  <ScrollArea className="h-28 pr-3">
-                    <ul className="text-xs space-y-1">
-                      {yearlyPlannedIncomes.map(i => (
-                        <li key={i.id} className="flex justify-between">
-                          <span className="truncate pr-1">{i.description}</span>
-                          <span>{getSymbol()}{i.amount.toLocaleString()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold mb-1">Actual</h4>
-                  <ScrollArea className="h-28">
-                    <ul className="text-xs space-y-1">
-                      {yearlyActualIncomes.map(i => (
-                        <li key={i.id} className="flex justify-between">
-                          <span className="truncate pr-1">{i.description}</span>
-                          <span>{getSymbol()}{i.amount.toLocaleString()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-              </div>
-            </div>
-
-            {/* Expenses Section */}
-            <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/50">
-              <div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-2">
-                <TrendingDown className="h-5 w-5" />
-                <h3 className="font-semibold">Expenses</h3>
-              </div>
-              <Separator />
-              <div className="grid grid-cols-2 gap-x-4 mt-2">
-                <div>
-                  <h4 className="text-sm font-semibold mb-1">Planned</h4>
-                  <ScrollArea className="h-28 pr-3">
-                    <ul className="text-xs space-y-1">
-                      {yearlyPlannedExpenses.map(e => (
-                        <li key={e.id} className="flex justify-between">
-                          <span className="truncate pr-1">{e.description}</span>
-                          <span>{getSymbol()}{e.amount.toLocaleString()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold mb-1">Actual</h4>
-                  <ScrollArea className="h-28">
-                    <ul className="text-xs space-y-1">
-                      {yearlyActualExpenses.map(e => (
-                        <li key={e.id} className="flex justify-between">
-                          <span className="truncate pr-1">{e.description}</span>
-                          <span>{getSymbol()}{e.amount.toLocaleString()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
 
         <Card className="lg:col-span-2 flex flex-col">
           <CardHeader>
