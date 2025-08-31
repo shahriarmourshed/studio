@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import type { Expense, Income, ExpenseCategory, IncomeCategory } from '@/lib/types';
+import PageHeader from '../common/page-header';
 
 type AggregatedData = {
     planned: number;
@@ -150,44 +151,39 @@ export default function PlanVsActuals() {
 
 
   return (
-    <Card>
-        <CardHeader className="flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-            <CardTitle>Plan vs. Actuals</CardTitle>
-            <CardDescription>Comparison {getSelectedPeriodText()}</CardDescription>
+    <>
+    <PageHeader title="Plan vs. Actuals" subtitle={`Comparison ${getSelectedPeriodText()}`}>
+        <div className='flex gap-2'>
+        <Select
+            value={String(selectedMonth)}
+            onValueChange={(month) => setSelectedMonth(month === 'all' ? 'all' : Number(month))}
+        >
+            <SelectTrigger className="w-40">
+                <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">All Months</SelectItem>
+                {monthNames.map((month, index) => (
+                    <SelectItem key={index} value={String(index)}>{month}</SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+        <Select
+            value={String(selectedYear)}
+            onValueChange={(year) => setSelectedYear(parseInt(year))}
+        >
+            <SelectTrigger className="w-32">
+                <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+                {yearsWithData.map(year => (
+                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
         </div>
-            <div className='flex gap-2'>
-            <Select
-                value={String(selectedMonth)}
-                onValueChange={(month) => setSelectedMonth(month === 'all' ? 'all' : Number(month))}
-            >
-                <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Month" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Months</SelectItem>
-                    {monthNames.map((month, index) => (
-                        <SelectItem key={index} value={String(index)}>{month}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            <Select
-                value={String(selectedYear)}
-                onValueChange={(year) => setSelectedYear(parseInt(year))}
-            >
-                <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                    {yearsWithData.map(year => (
-                        <SelectItem key={year} value={String(year)}>{year}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            </div>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+    </PageHeader>
+    <div className="px-4 sm:px-0 grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
         {/* Income Card */}
         <Card>
             <CardHeader>
@@ -270,7 +266,7 @@ export default function PlanVsActuals() {
             </CardContent>
         </Card>
 
-        </CardContent>
-    </Card>
+        </div>
+    </>
   );
 }
