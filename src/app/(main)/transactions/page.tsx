@@ -39,6 +39,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import ExpenseChart from '@/components/budget/expense-chart';
+import { cn } from '@/lib/utils';
 
 export default function TransactionsPage() {
   const { getSymbol } = useCurrency();
@@ -51,7 +52,7 @@ export default function TransactionsPage() {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<Expense | Income | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<(Expense | Income) & { type: 'income' | 'expense' } | null>(null);
   const [isExpense, setIsExpense] = useState(true);
 
   // Edit form state
@@ -231,10 +232,7 @@ export default function TransactionsPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Description</TableHead>
-                            <TableHead>Category</TableHead>
                             <TableHead>Date</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Status</TableHead>
                             <TableHead className="text-right">Amount</TableHead>
                             <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
@@ -242,14 +240,20 @@ export default function TransactionsPage() {
                     <TableBody>
                         {allTransactions.map(t => (
                             <TableRow key={t.id}>
-                                <TableCell className="font-medium max-w-32 sm:max-w-xs truncate">{t.description}</TableCell>
-                                <TableCell><Badge variant="outline" className="text-xs">{t.category}</Badge></TableCell>
-                                <TableCell>{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
-                                <TableCell>
-                                    <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="text-xs capitalize">{t.type}</Badge>
+                                <TableCell className="font-medium">
+                                    {t.description}
+                                    <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="ml-2 text-xs capitalize">{t.type}</Badge>
                                 </TableCell>
-                                <TableCell><Badge variant={t.status === 'planned' ? 'secondary' : t.status === 'completed' ? 'default' : 'destructive'} className="text-xs capitalize">{t.status}</Badge></TableCell>
-                                <TableCell className="text-right">{getSymbol()}{t.amount.toLocaleString()}</TableCell>
+                                <TableCell>{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
+                                <TableCell className={cn(
+                                    "text-right font-semibold",
+                                     t.type === 'expense' ? 'text-red-500' : 'text-green-500'
+                                    )}
+                                >
+                                    {t.type === 'expense' ? '-' : '+'}
+                                    {getSymbol()}
+                                    {t.amount.toLocaleString()}
+                                </TableCell>
                                 <TableCell className="text-center p-1">
                                 {t.status === 'planned' && (
                                     <div className="flex gap-0.5 justify-center">
@@ -263,7 +267,7 @@ export default function TransactionsPage() {
                         ))}
                          {allTransactions.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center">No transactions for this month.</TableCell>
+                                <TableCell colSpan={4} className="text-center">No transactions for this month.</TableCell>
                             </TableRow>
                         )}
                     </TableBody>
@@ -332,3 +336,5 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+    
