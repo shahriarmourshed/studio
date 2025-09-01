@@ -17,7 +17,7 @@ interface DataContextType {
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
   setReminderDays: (days: number) => void;
-  addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId'>, status?: Expense['status']) => void;
+  addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited'>, status?: Expense['status']) => void;
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id'>) => void;
@@ -26,7 +26,7 @@ interface DataContextType {
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
-  addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId'>, status?: Income['status']) => void;
+  addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited'>, status?: Income['status']) => void;
   updateIncome: (income: Income) => void;
   deleteIncome: (incomeId: string) => void;
   completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => void;
@@ -142,13 +142,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [isMounted]);
 
 
-  const addExpense = (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId'>, status: Expense['status'] = 'planned') => {
+  const addExpense = (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited'>, status: Expense['status'] = 'planned') => {
     const newExpense: Expense = { ...expense, id: new Date().toISOString(), status };
     setExpenses([...expenses, newExpense].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
   
   const updateExpense = (updatedExpense: Expense) => {
-    setExpenses(expenses.map(e => e.id === updatedExpense.id ? updatedExpense : e).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    setExpenses(expenses.map(e => e.id === updatedExpense.id ? {...updatedExpense, edited: true} : e).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
   
   const deleteExpense = (expenseId: string) => {
@@ -190,13 +190,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProducts(productsData.filter(p => p.id !== productId));
   };
 
-  const addIncome = (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId'>, status: Income['status'] = 'planned') => {
+  const addIncome = (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited'>, status: Income['status'] = 'planned') => {
       const newIncome: Income = { ...income, id: new Date().toISOString(), status };
       setIncomes([...incomesData, newIncome].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
 
   const updateIncome = (updatedIncome: Income) => {
-    setIncomes(incomesData.map(i => i.id === updatedIncome.id ? updatedIncome : i).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    setIncomes(incomesData.map(i => i.id === updatedIncome.id ? {...updatedIncome, edited: true} : i).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
 
   const deleteIncome = (incomeId: string) => {

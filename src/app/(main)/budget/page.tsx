@@ -232,9 +232,15 @@ export default function BudgetPage() {
   };
 
 
-  const { plannedIncomes, plannedExpenses } = useMemo(() => {
+  const { plannedIncomes, plannedExpenses, actionedPlanIds } = useMemo(() => {
     const month = getMonth(selectedDate);
     const year = getYear(selectedDate);
+
+    const actionedIds = new Set(
+        [...incomes, ...expenses]
+            .filter(t => t.plannedId)
+            .map(t => t.plannedId)
+    );
     
     const getPlanned = <T extends Income | Expense>(items: T[]) => {
         return items.filter(item => {
@@ -247,7 +253,8 @@ export default function BudgetPage() {
     
     return { 
         plannedIncomes: getPlanned(incomes), 
-        plannedExpenses: getPlanned(expenses) 
+        plannedExpenses: getPlanned(expenses),
+        actionedPlanIds: actionedIds,
     };
   }, [selectedDate, incomes, expenses]);
 
@@ -263,6 +270,17 @@ export default function BudgetPage() {
   const plannedSavings = totalPlannedIncome - totalPlannedExpenses;
   const spentPercentage = totalPlannedIncome > 0 ? (totalPlannedExpenses / totalPlannedIncome) * 100 : 0;
   
+  const getPlanStatus = (plan: Income | Expense) => {
+      const completed = expenses.find(t => t.plannedId === plan.id && t.status === 'completed') || incomes.find(t => t.plannedId === plan.id && t.status === 'completed');
+      const cancelled = expenses.find(t => t.plannedId === plan.id && t.status === 'cancelled') || incomes.find(t => t.plannedId === plan.id && t.status === 'cancelled');
+
+      if (completed) return <Badge variant="default">Completed</Badge>;
+      if (cancelled) return <Badge variant="destructive">Cancelled</Badge>;
+      if (plan.edited) return <Badge variant="secondary">Edited</Badge>;
+
+      return null;
+  }
+
   return (
     <div className="container mx-auto">
       <PageHeader title="Budget Planner" subtitle="Plan your income and expenses.">
@@ -316,7 +334,7 @@ export default function BudgetPage() {
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4">
                         <Label htmlFor="income-notes" className="text-right pt-2">Short Note</Label>
-                        <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-3" value={newIncomeNotes} onChange={e => setEditIncomeNotes(e.target.value)} />
+                        <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-3" value={newIncomeNotes} onChange={e => setNewIncomeNotes(e.target.value)} />
                     </div>
                     <Button type="submit" className="w-full">Save Planned Income</Button>
                 </div>
@@ -373,7 +391,7 @@ export default function BudgetPage() {
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label htmlFor="expense-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
+                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Save Planned Expense</Button>
                 </div>
@@ -523,7 +541,7 @@ export default function BudgetPage() {
                             <TableCell>{income.date}</TableCell>
                             <TableCell>{income.recurrent ? 'Yes' : 'No'}</TableCell>
                             <TableCell className="text-xs text-muted-foreground">{income.notes}</TableCell>
-                            <TableCell><Badge variant={income.status === 'planned' ? 'secondary' : income.status === 'completed' ? 'default' : 'destructive'}>{income.status}</Badge></TableCell>
+                            <TableCell>{getPlanStatus(income)}</TableCell>
                             <TableCell className="text-right">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
@@ -591,7 +609,7 @@ export default function BudgetPage() {
                             <TableCell>{expense.date}</TableCell>
                             <TableCell>{expense.recurrent ? 'Yes' : 'No'}</TableCell>
                             <TableCell className="text-xs text-muted-foreground">{expense.notes}</TableCell>
-                            <TableCell><Badge variant={expense.status === 'planned' ? 'secondary' : expense.status === 'completed' ? 'default' : 'destructive'}>{expense.status}</Badge></TableCell>
+                            <TableCell>{getPlanStatus(expense)}</TableCell>
                             <TableCell className="text-right">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
