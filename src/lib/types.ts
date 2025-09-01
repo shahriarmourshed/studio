@@ -41,6 +41,7 @@ export type Expense = {
   notes?: string;
   status: 'planned' | 'completed' | 'cancelled';
   plannedAmount?: number;
+  plannedId?: string; // ID of the original planned transaction
 };
 
 export type IncomeCategory = 'Salary' | 'Business' | 'Investment' | 'Gift' | 'Other';
@@ -55,6 +56,7 @@ export type Income = {
   notes?: string;
   status: 'planned' | 'completed' | 'cancelled';
   plannedAmount?: number;
+  plannedId?: string; // ID of the original planned transaction
 };
 
 export type Budget = {

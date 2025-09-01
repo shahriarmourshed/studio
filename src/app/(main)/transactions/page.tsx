@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -67,8 +68,7 @@ export default function TransactionsPage() {
     updateIncome,
     deleteExpense,
     deleteIncome,
-    completePlannedExpense,
-    completePlannedIncome,
+    completePlannedTransaction,
     cancelPlannedTransaction,
   } = useData();
 
@@ -134,11 +134,17 @@ export default function TransactionsPage() {
   }, [selectedDate, incomes, expenses]);
   
   const plannedTransactionsForMonth = useMemo(() => {
+    const actionedPlanIds = new Set(
+        [...incomes, ...expenses]
+        .filter(t => t.plannedId)
+        .map(t => t.plannedId)
+    );
+
     return [
       ...filteredIncomes.map(i => ({...i, type: 'income' as const})),
       ...filteredExpenses.map(e => ({...e, type: 'expense' as const}))
-    ].filter(t => t.status === 'planned');
-  }, [filteredIncomes, filteredExpenses]);
+    ].filter(t => t.status === 'planned' && !actionedPlanIds.has(t.id));
+  }, [filteredIncomes, filteredExpenses, incomes, expenses]);
 
   const allTransactionsForMonth: Transaction[] = useMemo(() => {
     return [
@@ -504,8 +510,8 @@ export default function TransactionsPage() {
                                 <TableCell className="text-center p-1">
                                     <div className="flex gap-0.5 justify-center">
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t)}><Edit className="w-4 h-4" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => t.type === 'expense' ? completePlannedExpense(t.id) : completePlannedIncome(t.id)}><Check className="w-4 h-4 text-green-500" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cancelPlannedTransaction(t.id, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => completePlannedTransaction(t as Income, t.type)}><Check className="w-4 h-4 text-green-500" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cancelPlannedTransaction(t as Income, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -550,7 +556,7 @@ export default function TransactionsPage() {
                                 <div className="flex gap-2 justify-end">
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon">
+                                            <Button variant="ghost" size="icon" disabled={t.status === 'cancelled'}>
                                                 <Trash2 className="h-4 w-4 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
@@ -668,8 +674,7 @@ export default function TransactionsPage() {
                     </div>
                 </div>
                  <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="edit-expense-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="edit-expense-notes" placeholder="Any details to remember..." className="col-span-3" value={editExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
+                    <Label htmlFor="edit-expense-notes" className="text-right pt-2">Short Note</Label>                    <Textarea id="edit-expense-notes" placeholder="Any details to remember..." className="col-span-3" value={editExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>

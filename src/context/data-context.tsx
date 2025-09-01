@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -16,7 +17,7 @@ interface DataContextType {
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
   setReminderDays: (days: number) => void;
-  addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount'>, status?: Expense['status']) => void;
+  addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId'>, status?: Expense['status']) => void;
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id'>) => void;
@@ -25,12 +26,11 @@ interface DataContextType {
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
-  addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount'>, status?: Income['status']) => void;
+  addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId'>, status?: Income['status']) => void;
   updateIncome: (income: Income) => void;
   deleteIncome: (incomeId: string) => void;
-  completePlannedExpense: (expenseId: string, actualAmount?: number) => void;
-  completePlannedIncome: (incomeId: string, actualAmount?: number) => void;
-  cancelPlannedTransaction: (id: string, type: 'income' | 'expense') => void;
+  completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => void;
+  cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -142,7 +142,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [isMounted]);
 
 
-  const addExpense = (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount'>, status: Expense['status'] = 'planned') => {
+  const addExpense = (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId'>, status: Expense['status'] = 'planned') => {
     const newExpense: Expense = { ...expense, id: new Date().toISOString(), status };
     setExpenses([...expenses, newExpense].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
@@ -190,7 +190,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProducts(productsData.filter(p => p.id !== productId));
   };
 
-  const addIncome = (income: Omit<Income, 'id' | 'status' | 'plannedAmount'>, status: Income['status'] = 'planned') => {
+  const addIncome = (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId'>, status: Income['status'] = 'planned') => {
       const newIncome: Income = { ...income, id: new Date().toISOString(), status };
       setIncomes([...incomesData, newIncome].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
@@ -203,44 +203,38 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setIncomes(incomesData.filter(i => i.id !== incomeId));
   };
   
-  const completePlannedExpense = (expenseId: string, actualAmount?: number) => {
-    setExpenses(
-      expenses.map(e => {
-        if (e.id === expenseId) {
-          return {
-            ...e,
-            status: 'completed',
-            plannedAmount: e.amount,
-            amount: actualAmount ?? e.amount, // Use actual amount if provided, otherwise keep planned
-          };
-        }
-        return e;
-      })
-    );
+  const completePlannedTransaction = (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => {
+    const newActualTransaction = {
+      ...transaction,
+      id: new Date().toISOString(), // new id for the actual transaction
+      status: 'completed' as const,
+      plannedId: transaction.id, // link back to the original planned transaction
+      plannedAmount: transaction.amount,
+      amount: actualAmount ?? transaction.amount,
+      date: new Date().toISOString().split('T')[0], // Set to today's date
+    };
+
+    if (type === 'income') {
+      setIncomes([...incomesData, newActualTransaction as Income]);
+    } else {
+      setExpenses([...expenses, newActualTransaction as Expense]);
+    }
   };
   
-  const completePlannedIncome = (incomeId: string, actualAmount?: number) => {
-    setIncomes(
-      incomesData.map(i => {
-        if (i.id === incomeId) {
-          return {
-            ...i,
-            status: 'completed',
-            plannedAmount: i.amount,
-            amount: actualAmount ?? i.amount,
-          };
-        }
-        return i;
-      })
-    );
-  };
-
-  const cancelPlannedTransaction = (id: string, type: 'income' | 'expense') => {
-      if (type === 'expense') {
-          setExpenses(expenses.map(e => e.id === id ? { ...e, status: 'cancelled' } : e));
-      } else {
-          setIncomes(incomesData.map(i => i.id === id ? { ...i, status: 'cancelled' } : i));
-      }
+  const cancelPlannedTransaction = (transaction: Income | Expense, type: 'income' | 'expense') => {
+    const newCancelledTransaction = {
+        ...transaction,
+        id: new Date().toISOString(),
+        status: 'cancelled' as const,
+        plannedId: transaction.id,
+        plannedAmount: transaction.amount,
+        date: new Date().toISOString().split('T')[0],
+    };
+    if (type === 'income') {
+      setIncomes([...incomesData, newCancelledTransaction as Income]);
+    } else {
+      setExpenses([...expenses, newCancelledTransaction as Expense]);
+    }
   }
 
 
@@ -259,7 +253,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [expenses, incomesData]);
   
 
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, updateFamilyMember, deleteFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome, completePlannedExpense, completePlannedIncome, cancelPlannedTransaction };
+  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, updateFamilyMember, deleteFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome, completePlannedTransaction, cancelPlannedTransaction };
 
   if (!isMounted) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
