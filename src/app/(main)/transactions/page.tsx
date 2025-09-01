@@ -61,8 +61,10 @@ export default function TransactionsPage() {
   const { 
     expenses,
     addExpense, 
+    updateExpense,
     incomes, 
     addIncome,
+    updateIncome,
     deleteExpense,
     deleteIncome,
     savingGoal,
@@ -77,7 +79,11 @@ export default function TransactionsPage() {
   // Dialog states
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isIncomeDialogOpen, setIsIncomeDialogOpen] = useState(false);
-  
+  const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false);
+  const [isEditIncomeDialogOpen, setIsEditIncomeDialogOpen] = useState(false);
+
+  // Selected items for editing
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   // Add Expense form state
   const [newExpenseDesc, setNewExpenseDesc] = useState('');
@@ -95,6 +101,22 @@ export default function TransactionsPage() {
   const [newIncomeRecurrent, setNewIncomeRecurrent] = useState(false);
   const [newIncomeNotes, setNewIncomeNotes] = useState('');
 
+  // Edit Expense form state
+  const [editExpenseDesc, setEditExpenseDesc] = useState('');
+  const [editExpenseAmount, setEditExpenseAmount] = useState('');
+  const [editExpenseCategory, setEditExpenseCategory] = useState<ExpenseCategory>('Other');
+  const [editExpenseDate, setEditExpenseDate] = useState('');
+  const [editExpenseRecurrent, setEditExpenseRecurrent] = useState(false);
+  const [editExpenseNotes, setEditExpenseNotes] = useState('');
+  
+  // Edit Income form state
+  const [editIncomeDesc, setEditIncomeDesc] = useState('');
+  const [editIncomeAmount, setEditIncomeAmount] = useState('');
+  const [editIncomeCategory, setEditIncomeCategory] = useState<IncomeCategory>('Other');
+  const [editIncomeDate, setEditIncomeDate] = useState('');
+  const [editIncomeRecurrent, setEditIncomeRecurrent] = useState(false);
+  const [editIncomeNotes, setEditIncomeNotes] = useState('');
+  
   // Savings Goal state
   const [newSavingGoal, setNewSavingGoal] = useState(savingGoal ? String(savingGoal) : '');
   const [isEditingGoal, setIsEditingGoal] = useState(false);
@@ -140,6 +162,27 @@ export default function TransactionsPage() {
       deleteExpense(transaction.id);
     }
   }
+  
+  const handleEditClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    if (transaction.type === 'expense') {
+        setEditExpenseDesc(transaction.description);
+        setEditExpenseAmount(String(transaction.amount));
+        setEditExpenseCategory(transaction.category);
+        setEditExpenseDate(transaction.date);
+        setEditExpenseRecurrent(transaction.recurrent);
+        setEditExpenseNotes(transaction.notes || '');
+        setIsEditExpenseDialogOpen(true);
+    } else {
+        setEditIncomeDesc(transaction.description);
+        setEditIncomeAmount(String(transaction.amount));
+        setEditIncomeCategory(transaction.category);
+        setEditIncomeDate(transaction.date);
+        setEditIncomeRecurrent(transaction.recurrent);
+        setEditIncomeNotes(transaction.notes || '');
+        setIsEditIncomeDialogOpen(true);
+    }
+  };
 
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,6 +232,40 @@ export default function TransactionsPage() {
     setNewIncomeRecurrent(false);
     setNewIncomeNotes('');
     setIsIncomeDialogOpen(false);
+  };
+  
+  const handleUpdateExpense = (e: React.FormEvent) => {
+      e.preventDefault();
+      if(selectedTransaction && selectedTransaction.type === 'expense') {
+          updateExpense({
+              ...selectedTransaction,
+              description: editExpenseDesc,
+              amount: parseFloat(editExpenseAmount),
+              category: editExpenseCategory,
+              date: editExpenseDate,
+              recurrent: editExpenseRecurrent,
+              notes: editExpenseNotes,
+          });
+          setIsEditExpenseDialogOpen(false);
+          setSelectedTransaction(null);
+      }
+  };
+  
+  const handleUpdateIncome = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(selectedTransaction && selectedTransaction.type === 'income') {
+        updateIncome({
+            ...selectedTransaction,
+            description: editIncomeDesc,
+            amount: parseFloat(editIncomeAmount),
+            category: editIncomeCategory,
+            date: editIncomeDate,
+            recurrent: editIncomeRecurrent,
+            notes: editIncomeNotes,
+        });
+        setIsEditIncomeDialogOpen(false);
+        setSelectedTransaction(null);
+    }
   };
   
   const handleGoalSubmit = (e: React.FormEvent) => {
@@ -327,7 +404,7 @@ export default function TransactionsPage() {
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label htmlFor="expense-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
+                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Add Expense</Button>
                 </div>
@@ -481,6 +558,7 @@ export default function TransactionsPage() {
                                 </TableCell>
                                 <TableCell className="text-center p-1">
                                     <div className="flex gap-0.5 justify-center">
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t)}><Edit className="w-4 h-4" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => t.type === 'expense' ? completePlannedExpense(t.id) : completePlannedIncome(t.id)}><Check className="w-4 h-4 text-green-500" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cancelPlannedTransaction(t.id, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
                                     </div>
@@ -527,7 +605,7 @@ export default function TransactionsPage() {
                                 <div className="flex gap-2 justify-end">
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon">
+                                            <Button variant="ghost" size="icon" disabled={t.status === 'cancelled'}>
                                                 <Trash2 className="h-4 w-4 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
@@ -554,6 +632,106 @@ export default function TransactionsPage() {
           </CardContent>
         </Card>
       </div>
+
+       {selectedTransaction && selectedTransaction.type === 'income' && (
+        <Dialog open={isEditIncomeDialogOpen} onOpenChange={setIsEditIncomeDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Planned Income</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleUpdateIncome}>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-description" className="text-right">Description</Label>
+                <Input id="edit-income-description" className="col-span-3" value={editIncomeDesc} onChange={e=>setEditIncomeDesc(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-amount" className="text-right">Amount ({getSymbol()})</Label>
+                <Input id="edit-income-amount" type="number" className="col-span-3" value={editIncomeAmount} onChange={e=>setEditIncomeAmount(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label className="text-right pt-2">Category</Label>
+                    <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
+                        <RadioGroup value={editIncomeCategory} onValueChange={(v) => setEditIncomeCategory(v as IncomeCategory)} className="p-4">
+                            {(['Salary', 'Business', 'Investment', 'Gift', 'Other'] as IncomeCategory[]).map(category => (
+                                <div key={category} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category} id={`edit-income-${category}`} />
+                                    <Label htmlFor={`edit-income-${category}`}>{category}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </ScrollArea>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-date" className="text-right">Date</Label>
+                <Input id="edit-income-date" type="date" className="col-span-3" value={editIncomeDate} onChange={e=>setEditIncomeDate(e.target.value)} required/>
+                </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-income-recurrent" className="text-right">Recurrent</Label>
+                    <div className="col-span-3">
+                        <Switch id="edit-income-recurrent" checked={editIncomeRecurrent} onCheckedChange={setEditIncomeRecurrent} />
+                    </div>
+                </div>
+                 <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="edit-income-notes" className="text-right pt-2">Short Note</Label>
+                    <Textarea id="edit-income-notes" placeholder="Any details to remember..." className="col-span-3" value={editIncomeNotes} onChange={e => setEditIncomeNotes(e.target.value)} />
+                </div>
+                <Button type="submit" className="w-full">Save Changes</Button>
+            </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {selectedTransaction && selectedTransaction.type === 'expense' && (
+        <Dialog open={isEditExpenseDialogOpen} onOpenChange={setIsEditExpenseDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Planned Expense</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleUpdateExpense}>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-description" className="text-right">Description</Label>
+                    <Input id="edit-exp-description" className="col-span-3" value={editExpenseDesc} onChange={e=>setEditExpenseDesc(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-amount" className="text-right">Amount ({getSymbol()})</Label>
+                    <Input id="edit-exp-amount" type="number" className="col-span-3" value={editExpenseAmount} onChange={e=>setEditExpenseAmount(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label className="text-right pt-2">Category</Label>
+                    <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
+                        <RadioGroup value={editExpenseCategory} onValueChange={(v) => setEditExpenseCategory(v as ExpenseCategory)} className="p-4">
+                            {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
+                                <div key={category} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category} id={`edit-expense-${category}`} />
+                                    <Label htmlFor={`edit-expense-${category}`}>{category}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    </ScrollArea>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-date" className="text-right">Date</Label>
+                    <Input id="edit-exp-date" type="date" className="col-span-3" value={editExpenseDate} onChange={e=>setEditExpenseDate(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-recurrent" className="text-right">Recurrent</Label>
+                    <div className="col-span-3">
+                        <Switch id="edit-exp-recurrent" checked={editExpenseRecurrent} onCheckedChange={setEditExpenseRecurrent} />
+                    </div>
+                </div>
+                 <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="edit-expense-notes" className="text-right pt-2">Short Note</Label>
+                    <Textarea id="edit-expense-notes" placeholder="Any details to remember..." className="col-span-3" value={editExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
+                </div>
+                <Button type="submit" className="w-full">Save Changes</Button>
+            </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
 
     </div>
   );
