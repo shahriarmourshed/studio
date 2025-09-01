@@ -67,8 +67,6 @@ export default function BudgetPage() {
     addIncome,
     updateIncome,
     deleteIncome,
-    savingGoal,
-    setSavingGoal,
   } = useData();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -114,11 +112,6 @@ export default function BudgetPage() {
   const [editIncomeDate, setEditIncomeDate] = useState('');
   const [editIncomeRecurrent, setEditIncomeRecurrent] = useState(false);
   const [editIncomeNotes, setEditIncomeNotes] = useState('');
-
-  // Savings Goal state
-  const [newSavingGoal, setNewSavingGoal] = useState(savingGoal ? String(savingGoal) : '');
-  const [isEditingGoal, setIsEditingGoal] = useState(false);
-
 
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,12 +217,6 @@ export default function BudgetPage() {
         setIsEditIncomeDialogOpen(false);
         setSelectedIncome(null);
     }
-  };
-
-  const handleGoalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingGoal(parseFloat(newSavingGoal));
-    setIsEditingGoal(false);
   };
 
   const { plannedIncomes, plannedExpenses } = useMemo(() => {
@@ -378,7 +365,7 @@ export default function BudgetPage() {
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label htmlFor="expense-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
+                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Save Planned Expense</Button>
                 </div>
@@ -446,54 +433,12 @@ export default function BudgetPage() {
           </CardContent>
         </Card>
 
-         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                    <span>Savings Goal</span>
-                    <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)}>
-                        <Edit className="h-4 w-4"/>
-                        <span className="sr-only">Edit Goal</span>
-                    </Button>
-                </CardTitle>
-                <CardDescription>Your savings target for {format(selectedDate, 'MMMM')}.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {isEditingGoal ? (
-                    <form onSubmit={handleGoalSubmit}>
-                        <div className="space-y-2">
-                            <Label htmlFor="saving-goal">New Goal ({getSymbol()})</Label>
-                            <Input 
-                                id="saving-goal"
-                                type="number" 
-                                value={newSavingGoal}
-                                onChange={(e) => setNewSavingGoal(e.target.value)}
-                                placeholder="e.g., 15000"
-                            />
-                            <Button type="submit" size="sm" className="w-full">Set Goal</Button>
-                        </div>
-                    </form>
-                ) : (
-                    <div className="text-center">
-                        <p className="text-3xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
-                        {savingGoal > 0 && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                {Math.max(0, (plannedSavings / savingGoal) * 100).toFixed(0)}% of your goal reached (planned)
-                            </p>
-                        )}
-                         <p className="text-sm text-muted-foreground mt-1">
-                            Planned Savings: {getSymbol()}{plannedSavings.toLocaleString()}
-                        </p>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-        
-        <Card className="lg:col-span-3">
+         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Planned Expense Breakdown</CardTitle>
-            <CardDescription>How your money is planned to be spent across categories.</CardDescription>
+            <CardDescription>How your money is planned to be spent.</CardDescription>
           </CardHeader>
-          <CardContent className="h-96">
+          <CardContent className="h-64">
             <ExpenseChart expenses={plannedExpenses} />
           </CardContent>
         </Card>
@@ -738,3 +683,5 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
