@@ -25,7 +25,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
@@ -269,7 +268,7 @@ export default function TransactionsPage() {
       case 'completed': return 'default';
       case 'cancelled': return 'destructive';
     }
-  }
+  };
 
   return (
     <div className="container mx-auto">
