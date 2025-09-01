@@ -232,21 +232,23 @@ export default function BudgetPage() {
     setIsEditingGoal(false);
   };
 
-  const { filteredIncomes, filteredExpenses } = useMemo(() => {
+  const { plannedIncomes, plannedExpenses } = useMemo(() => {
     const month = getMonth(selectedDate);
     const year = getYear(selectedDate);
     
-    const filteredIncomes = incomes.filter(i => {
-        const incomeDate = new Date(i.date);
-        return getMonth(incomeDate) === month && getYear(incomeDate) === year;
-    });
+    const getPlanned = <T extends Income | Expense>(items: T[]) => {
+        return items.filter(item => {
+            const itemDate = new Date(item.date);
+            const isSameMonth = getMonth(itemDate) === month;
+            const isSameYear = getYear(itemDate) === year;
+            return item.status === 'planned' && isSameMonth && isSameYear;
+        });
+    }
     
-    const filteredExpenses = expenses.filter(e => {
-        const expenseDate = new Date(e.date);
-        return getMonth(expenseDate) === month && getYear(expenseDate) === year;
-    });
-
-    return { filteredIncomes, filteredExpenses };
+    return { 
+        plannedIncomes: getPlanned(incomes), 
+        plannedExpenses: getPlanned(expenses) 
+    };
   }, [selectedDate, incomes, expenses]);
 
   const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -261,8 +263,8 @@ export default function BudgetPage() {
      return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
   }
 
-  const totalPlannedIncome = filteredIncomes.filter(i => i.status === 'planned').reduce((sum, income) => sum + income.amount, 0);
-  const totalPlannedExpenses = filteredExpenses.filter(e => e.status === 'planned').reduce((sum, expense) => sum + expense.amount, 0);
+  const totalPlannedIncome = plannedIncomes.reduce((sum, income) => sum + income.amount, 0);
+  const totalPlannedExpenses = plannedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
   const plannedSavings = totalPlannedIncome - totalPlannedExpenses;
   const spentPercentage = totalPlannedIncome > 0 ? (totalPlannedExpenses / totalPlannedIncome) * 100 : 0;
   
@@ -492,7 +494,7 @@ export default function BudgetPage() {
             <CardDescription>How your money is planned to be spent across categories.</CardDescription>
           </CardHeader>
           <CardContent className="h-96">
-            <ExpenseChart expenses={filteredExpenses.filter(e => e.status === 'planned')} />
+            <ExpenseChart expenses={plannedExpenses} />
           </CardContent>
         </Card>
         
@@ -515,11 +517,11 @@ export default function BudgetPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {filteredIncomes.length === 0 ? (
+                    {plannedIncomes.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={8} className="text-center">No income planned for this month.</TableCell>
                         </TableRow>
-                    ) : filteredIncomes.map((income) => (
+                    ) : plannedIncomes.map((income) => (
                         <TableRow key={income.id}>
                             <TableCell className="font-medium">{income.description}</TableCell>
                             <TableCell>{income.category}</TableCell>
@@ -583,11 +585,11 @@ export default function BudgetPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                     {filteredExpenses.length === 0 ? (
+                     {plannedExpenses.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={8} className="text-center">No expenses planned for this month.</TableCell>
                         </TableRow>
-                    ) : filteredExpenses.map((expense) => (
+                    ) : plannedExpenses.map((expense) => (
                         <TableRow key={expense.id}>
                             <TableCell className="font-medium">{expense.description}</TableCell>
                             <TableCell>{expense.category}</TableCell>
