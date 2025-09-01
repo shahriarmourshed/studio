@@ -70,6 +70,8 @@ export default function TransactionsPage() {
     deleteIncome,
     completePlannedTransaction,
     cancelPlannedTransaction,
+    savingGoal,
+    setSavingGoal,
   } = useData();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -115,29 +117,34 @@ export default function TransactionsPage() {
   const [editIncomeRecurrent, setEditIncomeRecurrent] = useState(false);
   const [editIncomeNotes, setEditIncomeNotes] = useState('');
 
+  // Savings Goal state
+  const [newSavingGoal, setNewSavingGoal] = useState(savingGoal ? String(savingGoal) : '');
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
 
   const { filteredIncomes, filteredExpenses } = useMemo(() => {
     const month = getMonth(selectedDate);
     const year = getYear(selectedDate);
     
-    const filteredIncomes = incomes.filter(i => {
-        const incomeDate = new Date(i.date);
-        return getMonth(incomeDate) === month && getYear(incomeDate) === year;
-    });
-    
-    const filteredExpenses = expenses.filter(e => {
-        const expenseDate = new Date(e.date);
-        return getMonth(expenseDate) === month && getYear(expenseDate) === year;
-    });
+    const getFiltered = <T extends Income | Expense>(items: T[]) => {
+      return items.filter(item => {
+        const itemDate = new Date(item.date);
+        const yearMatch = getYear(itemDate) === year;
+        const monthMatch = getMonth(itemDate) === month;
+        return yearMatch && monthMatch;
+      });
+    }
 
-    return { filteredIncomes, filteredExpenses };
+    return { 
+      filteredIncomes: getFiltered(incomes), 
+      filteredExpenses: getFiltered(expenses),
+    };
   }, [selectedDate, incomes, expenses]);
   
   const plannedTransactionsForMonth = useMemo(() => {
     const actionedPlanIds = new Set(
         [...incomes, ...expenses]
-        .filter(t => t.plannedId)
-        .map(t => t.plannedId)
+            .filter(t => t.plannedId)
+            .map(t => t.plannedId)
     );
 
     return [
@@ -268,10 +275,16 @@ export default function TransactionsPage() {
     }
   };
 
+  const handleGoalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingGoal(parseFloat(newSavingGoal));
+    setIsEditingGoal(false);
+  };
 
   const completedIncome = filteredIncomes.filter(i => i.status === 'completed').reduce((sum, i) => sum + i.amount, 0);
   const completedExpenses = filteredExpenses.filter(e => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
-  
+  const actualSavings = completedIncome - completedExpenses;
+
   const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newYear = parseInt(e.target.value, 10);
     if (!isNaN(newYear)) {
@@ -397,7 +410,7 @@ export default function TransactionsPage() {
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label htmlFor="expense-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
+                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Add Expense</Button>
                 </div>
@@ -438,7 +451,7 @@ export default function TransactionsPage() {
         </Card>
       </div>
       
-      <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
+      <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Actual Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
@@ -463,8 +476,50 @@ export default function TransactionsPage() {
             </div>
           </CardContent>
         </Card>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                    <span>Savings Goal</span>
+                    <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)}>
+                        <Edit className="h-4 w-4"/>
+                        <span className="sr-only">Edit Goal</span>
+                    </Button>
+                </CardTitle>
+                <CardDescription>Your real savings progress for {format(selectedDate, 'MMMM')}.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isEditingGoal ? (
+                    <form onSubmit={handleGoalSubmit}>
+                        <div className="space-y-2">
+                            <Label htmlFor="saving-goal">New Goal ({getSymbol()})</Label>
+                            <Input 
+                                id="saving-goal"
+                                type="number" 
+                                value={newSavingGoal}
+                                onChange={(e) => setNewSavingGoal(e.target.value)}
+                                placeholder="e.g., 15000"
+                            />
+                            <Button type="submit" size="sm" className="w-full">Set Goal</Button>
+                        </div>
+                    </form>
+                ) : (
+                    <div className="text-center">
+                        <p className="text-3xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
+                        {savingGoal > 0 && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {Math.max(0, (actualSavings / savingGoal) * 100).toFixed(0)}% of your goal reached
+                            </p>
+                        )}
+                         <p className="text-sm text-muted-foreground mt-1">
+                            Actual Savings: {getSymbol()}{actualSavings.toLocaleString()}
+                        </p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
 
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Actual Expense Breakdown</CardTitle>
             <CardDescription>How your money was actually spent.</CardDescription>
@@ -474,7 +529,7 @@ export default function TransactionsPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-4">
             <CardHeader><CardTitle>Manage Pre-planned Transactions</CardTitle></CardHeader>
             <CardContent>
                 <Table>
@@ -489,7 +544,7 @@ export default function TransactionsPage() {
                     <TableBody>
                         {plannedTransactionsForMonth.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center">No planned transactions for this month.</TableCell>
+                                <TableCell colSpan={4} className="text-center">No pending planned transactions for this month.</TableCell>
                             </TableRow>
                         ) : plannedTransactionsForMonth.map(t => (
                             <TableRow key={t.id}>
@@ -510,8 +565,8 @@ export default function TransactionsPage() {
                                 <TableCell className="text-center p-1">
                                     <div className="flex gap-0.5 justify-center">
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t)}><Edit className="w-4 h-4" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => completePlannedTransaction(t as Income, t.type)}><Check className="w-4 h-4 text-green-500" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cancelPlannedTransaction(t as Income, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => completePlannedTransaction(t, t.type)}><Check className="w-4 h-4 text-green-500" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cancelPlannedTransaction(t, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -521,7 +576,7 @@ export default function TransactionsPage() {
             </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-4">
           <CardHeader>
             <CardTitle>All Transactions for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
           </CardHeader>
@@ -556,7 +611,7 @@ export default function TransactionsPage() {
                                 <div className="flex gap-2 justify-end">
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" disabled={t.status === 'cancelled'}>
+                                            <Button variant="ghost" size="icon">
                                                 <Trash2 className="h-4 w-4 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
@@ -686,3 +741,4 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
