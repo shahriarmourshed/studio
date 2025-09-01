@@ -69,6 +69,8 @@ export default function TransactionsPage() {
     deleteIncome,
     savingGoal,
     setSavingGoal,
+    completePlannedExpense,
+    completePlannedIncome,
   } = useData();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -142,27 +144,6 @@ export default function TransactionsPage() {
      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [filteredIncomes, filteredExpenses]);
 
-  const handleStatusChange = (id: string, type: 'income' | 'expense', status: 'completed' | 'cancelled') => {
-    if (type === 'income') {
-      const income = incomes.find(i => i.id === id);
-      if (income) {
-        const updatedIncome: Income = { ...income, status };
-        if (status === 'completed' && income.status === 'planned') {
-          updatedIncome.plannedAmount = income.amount;
-        }
-        updateIncome(updatedIncome);
-      }
-    } else {
-      const expense = expenses.find(e => e.id === id);
-      if (expense) {
-        const updatedExpense: Expense = { ...expense, status };
-        if (status === 'completed' && expense.status === 'planned') {
-          updatedExpense.plannedAmount = expense.amount;
-        }
-        updateExpense(updatedExpense);
-      }
-    }
-  };
 
   const handleEditClick = (transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -187,17 +168,12 @@ export default function TransactionsPage() {
   const handleUpdateTransaction = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingTransaction) {
-      const isPlanned = editingTransaction.status === 'planned';
-      const updatedStatus = isPlanned ? 'completed' : editingTransaction.status;
-      
       const commonUpdates = {
         description: editDesc,
         amount: parseFloat(editAmount),
         date: editDate,
         recurrent: editRecurrent,
         notes: editNotes,
-        status: updatedStatus,
-        plannedAmount: isPlanned ? editingTransaction.amount : editingTransaction.plannedAmount,
       };
 
       if (isExpense) {
@@ -291,6 +267,14 @@ export default function TransactionsPage() {
       case 'planned': return 'secondary';
       case 'completed': return 'default';
       case 'cancelled': return 'destructive';
+    }
+  }
+  
+  const handleCancelPlanned = (id: string, type: 'income' | 'expense') => {
+    if (type === 'income') {
+        deleteIncome(id);
+    } else {
+        deleteExpense(id);
     }
   }
 
@@ -558,9 +542,8 @@ export default function TransactionsPage() {
                                 </TableCell>
                                 <TableCell className="text-center p-1">
                                     <div className="flex gap-0.5 justify-center">
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'completed')}><Check className="w-4 h-4 text-green-500" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t)}><Edit className="w-4 h-4" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleStatusChange(t.id, t.type, 'cancelled')}><Ban className="w-4 h-4 text-red-500" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => t.type === 'expense' ? completePlannedExpense(t.id) : completePlannedIncome(t.id)}><Check className="w-4 h-4 text-green-500" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleCancelPlanned(t.id, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -688,9 +671,7 @@ export default function TransactionsPage() {
                     <Label htmlFor="edit-notes" className="text-right pt-2">Short Note</Label>
                     <Textarea id="edit-notes" placeholder="Any details to remember..." className="col-span-3" value={editNotes} onChange={e => setEditNotes(e.target.value)} />
                 </div>
-                <Button type="submit" className="w-full">
-                  {editingTransaction.status === 'planned' ? 'Update and Mark as Done' : 'Save Changes'}
-                </Button>
+                <Button type="submit" className="w-full">Save Changes</Button>
             </div>
             </form>
           </DialogContent>
@@ -699,5 +680,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    

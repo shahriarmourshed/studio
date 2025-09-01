@@ -28,6 +28,8 @@ interface DataContextType {
   addIncome: (income: Omit<Income, 'id' | 'status'>, status?: Income['status']) => void;
   updateIncome: (income: Income) => void;
   deleteIncome: (incomeId: string) => void;
+  completePlannedExpense: (expenseId: string) => void;
+  completePlannedIncome: (incomeId: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -199,6 +201,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const deleteIncome = (incomeId: string) => {
     setIncomes(incomesData.filter(i => i.id !== incomeId));
   };
+  
+  const completePlannedExpense = (expenseId: string) => {
+    const plannedExpense = expenses.find(e => e.id === expenseId);
+    if (plannedExpense) {
+      addExpense(plannedExpense, 'completed');
+      deleteExpense(expenseId);
+    }
+  };
+  
+  const completePlannedIncome = (incomeId: string) => {
+    const plannedIncome = incomesData.find(i => i.id === incomeId);
+    if (plannedIncome) {
+      addIncome(plannedIncome, 'completed');
+      deleteIncome(incomeId);
+    }
+  };
 
   // Recalculate spent amount whenever expenses change
   useEffect(() => {
@@ -215,7 +233,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [expenses, incomesData]);
   
 
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, updateFamilyMember, deleteFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome };
+  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, updateFamilyMember, deleteFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome, completePlannedExpense, completePlannedIncome };
 
   if (!isMounted) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
