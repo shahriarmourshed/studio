@@ -63,8 +63,6 @@ export default function TransactionsPage() {
     addExpense, 
     incomes, 
     addIncome,
-    updateExpense,
-    updateIncome,
     deleteExpense,
     deleteIncome,
     savingGoal,
@@ -77,12 +75,9 @@ export default function TransactionsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   
   // Dialog states
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isIncomeDialogOpen, setIsIncomeDialogOpen] = useState(false);
   
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [isExpense, setIsExpense] = useState(true);
 
   // Add Expense form state
   const [newExpenseDesc, setNewExpenseDesc] = useState('');
@@ -100,14 +95,6 @@ export default function TransactionsPage() {
   const [newIncomeRecurrent, setNewIncomeRecurrent] = useState(false);
   const [newIncomeNotes, setNewIncomeNotes] = useState('');
 
-  // Edit form state
-  const [editDesc, setEditDesc] = useState('');
-  const [editAmount, setEditAmount] = useState('');
-  const [editCategory, setEditCategory] = useState<ExpenseCategory | IncomeCategory>('Other');
-  const [editDate, setEditDate] = useState('');
-  const [editRecurrent, setEditRecurrent] = useState(false);
-  const [editNotes, setEditNotes] = useState('');
-  
   // Savings Goal state
   const [newSavingGoal, setNewSavingGoal] = useState(savingGoal ? String(savingGoal) : '');
   const [isEditingGoal, setIsEditingGoal] = useState(false);
@@ -146,18 +133,6 @@ export default function TransactionsPage() {
   }, [filteredIncomes, filteredExpenses]);
 
 
-  const handleEditClick = (transaction: Transaction) => {
-    setEditingTransaction(transaction);
-    setIsExpense(transaction.type === 'expense');
-    setEditDesc(transaction.description);
-    setEditAmount(String(transaction.amount));
-    setEditCategory(transaction.category);
-    setEditDate(transaction.date);
-    setEditRecurrent(transaction.recurrent);
-    setEditNotes(transaction.notes || '');
-    setIsEditDialogOpen(true);
-  };
-
   const handleDeleteClick = (transaction: Transaction) => {
     if (transaction.type === 'income') {
       deleteIncome(transaction.id);
@@ -165,35 +140,6 @@ export default function TransactionsPage() {
       deleteExpense(transaction.id);
     }
   }
-
-  const handleUpdateTransaction = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingTransaction) {
-      const commonUpdates = {
-        description: editDesc,
-        amount: parseFloat(editAmount),
-        date: editDate,
-        recurrent: editRecurrent,
-        notes: editNotes,
-      };
-
-      if (isExpense) {
-        updateExpense({
-          ...(editingTransaction as Expense),
-          ...commonUpdates,
-          category: editCategory as ExpenseCategory,
-        });
-      } else {
-        updateIncome({
-          ...(editingTransaction as Income),
-          ...commonUpdates,
-          category: editCategory as IncomeCategory,
-        });
-      }
-      setIsEditDialogOpen(false);
-      setEditingTransaction(null);
-    }
-  };
 
   const handleAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -579,10 +525,6 @@ export default function TransactionsPage() {
                             </TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
-                                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(t)} disabled={t.status === 'cancelled'}>
-                                        <Edit className="h-4 w-4"/>
-                                        <span className="sr-only">Edit</span>
-                                    </Button>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="ghost" size="icon">
@@ -613,63 +555,6 @@ export default function TransactionsPage() {
         </Card>
       </div>
 
-      {editingTransaction && (
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Transaction</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleUpdateTransaction}>
-            <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-desc" className="text-right">Description</Label>
-                <Input id="edit-desc" className="col-span-3" value={editDesc} onChange={e=>setEditDesc(e.target.value)} required/>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-amount" className="text-right">Amount ({getSymbol()})</Label>
-                <Input id="edit-amount" type="number" className="col-span-3" value={editAmount} onChange={e=>setEditAmount(e.target.value)} required/>
-                </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                    <Label className="text-right pt-2">Category</Label>
-                    <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
-                        <RadioGroup value={editCategory} onValueChange={(v) => setEditCategory(v as any)} className="p-4">
-                            {isExpense 
-                                ? (['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
-                                    <div key={category} className="flex items-center space-x-2">
-                                        <RadioGroupItem value={category} id={`edit-exp-${category}`} />
-                                        <Label htmlFor={`edit-exp-${category}`}>{category}</Label>
-                                    </div>
-                                ))
-                                : (['Salary', 'Business', 'Investment', 'Gift', 'Other'] as IncomeCategory[]).map(category => (
-                                  <div key={category} className="flex items-center space-x-2">
-                                      <RadioGroupItem value={category} id={`edit-inc-${category}`} />
-                                      <Label htmlFor={`edit-inc-${category}`}>{category}</Label>
-                                  </div>
-                              ))
-                            }
-                        </RadioGroup>
-                    </ScrollArea>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-date" className="text-right">Date</Label>
-                <Input id="edit-date" type="date" className="col-span-3" value={editDate} onChange={e=>setEditDate(e.target.value)} required/>
-                </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-recurrent" className="text-right">Recurrent</Label>
-                    <div className="col-span-3">
-                        <Switch id="edit-recurrent" checked={editRecurrent} onCheckedChange={setEditRecurrent} />
-                    </div>
-                </div>
-                 <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="edit-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="edit-notes" placeholder="Any details to remember..." className="col-span-3" value={editNotes} onChange={e => setEditNotes(e.target.value)} />
-                </div>
-                <Button type="submit" className="w-full">Save Changes</Button>
-            </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 }
