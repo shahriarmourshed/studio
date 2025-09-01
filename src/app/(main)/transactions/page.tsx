@@ -646,7 +646,7 @@ export default function TransactionsPage() {
                 <Input id="edit-income-description" className="col-span-3" value={editIncomeDesc} onChange={e=>setEditIncomeDesc(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-income-amount" className="text-right">Amount ({getSymbol()})</Label>
+                <Label htmlFor="edit-income-amount" className="text-right">Actual Amount ({getSymbol()})</Label>
                 <Input id="edit-income-amount" type="number" className="col-span-3" value={editIncomeAmount} onChange={e=>setEditIncomeAmount(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
@@ -696,7 +696,7 @@ export default function TransactionsPage() {
                     <Input id="edit-exp-description" className="col-span-3" value={editExpenseDesc} onChange={e=>setEditExpenseDesc(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-exp-amount" className="text-right">Amount ({getSymbol()})</Label>
+                    <Label htmlFor="edit-exp-amount" className="text-right">Actual Amount ({getSymbol()})</Label>
                     <Input id="edit-exp-amount" type="number" className="col-span-3" value={editExpenseAmount} onChange={e=>setEditExpenseAmount(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">

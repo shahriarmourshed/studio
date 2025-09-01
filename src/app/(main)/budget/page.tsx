@@ -58,7 +58,6 @@ import { Badge } from '@/components/ui/badge';
 export default function BudgetPage() {
   const { getSymbol } = useCurrency();
   const { 
-    budget, 
     expenses, 
     addExpense,
     updateExpense,
@@ -245,11 +244,6 @@ export default function BudgetPage() {
     }
   };
 
-
-  if (!budget) {
-     return <div className="flex items-center justify-center h-screen">Loading budget...</div>;
-  }
-
   const totalPlannedIncome = plannedIncomes.reduce((sum, income) => sum + income.amount, 0);
   const totalPlannedExpenses = plannedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
   const plannedSavings = totalPlannedIncome - totalPlannedExpenses;
@@ -280,7 +274,7 @@ export default function BudgetPage() {
                     <Input id="income-description" placeholder="e.g., Monthly Salary" className="col-span-3" value={newIncomeDesc} onChange={e=>setNewIncomeDesc(e.target.value)} required/>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="income-amount" className="text-right">Amount ({getSymbol()})</Label>
+                    <Label htmlFor="income-amount" className="text-right">Budget Amount ({getSymbol()})</Label>
                     <Input id="income-amount" type="number" placeholder="e.g., 50000" className="col-span-3" value={newIncomeAmount} onChange={e=>setNewIncomeAmount(e.target.value)} required/>
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4">
@@ -337,7 +331,7 @@ export default function BudgetPage() {
                     <Input id="description" placeholder="e.g., Weekly Groceries" className="col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="amount" className="text-right">Amount ({getSymbol()})</Label>
+                    <Label htmlFor="amount" className="text-right">Budget Amount ({getSymbol()})</Label>
                     <Input id="amount" type="number" placeholder="e.g., 3500" className="col-span-3" value={newExpenseAmount} onChange={e=>setNewExpenseAmount(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
@@ -593,7 +587,7 @@ export default function BudgetPage() {
                 <Input id="edit-income-description" className="col-span-3" value={editIncomeDesc} onChange={e=>setEditIncomeDesc(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-income-amount" className="text-right">Amount ({getSymbol()})</Label>
+                <Label htmlFor="edit-income-amount" className="text-right">Budget Amount ({getSymbol()})</Label>
                 <Input id="edit-income-amount" type="number" className="col-span-3" value={editIncomeAmount} onChange={e=>setEditIncomeAmount(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
@@ -643,7 +637,7 @@ export default function BudgetPage() {
                     <Input id="edit-exp-description" className="col-span-3" value={editExpenseDesc} onChange={e=>setEditExpenseDesc(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-exp-amount" className="text-right">Amount ({getSymbol()})</Label>
+                    <Label htmlFor="edit-exp-amount" className="text-right">Budget Amount ({getSymbol()})</Label>
                     <Input id="edit-exp-amount" type="number" className="col-span-3" value={editExpenseAmount} onChange={e=>setEditExpenseAmount(e.target.value)} required/>
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
@@ -683,5 +677,3 @@ export default function BudgetPage() {
     </div>
   );
 }
-
-    
