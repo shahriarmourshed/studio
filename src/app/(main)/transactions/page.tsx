@@ -71,6 +71,7 @@ export default function TransactionsPage() {
     setSavingGoal,
     completePlannedExpense,
     completePlannedIncome,
+    cancelPlannedTransaction,
   } = useData();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -267,14 +268,6 @@ export default function TransactionsPage() {
       case 'planned': return 'secondary';
       case 'completed': return 'default';
       case 'cancelled': return 'destructive';
-    }
-  }
-  
-  const handleCancelPlanned = (id: string, type: 'income' | 'expense') => {
-    if (type === 'income') {
-        deleteIncome(id);
-    } else {
-        deleteExpense(id);
     }
   }
 
@@ -543,7 +536,7 @@ export default function TransactionsPage() {
                                 <TableCell className="text-center p-1">
                                     <div className="flex gap-0.5 justify-center">
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => t.type === 'expense' ? completePlannedExpense(t.id) : completePlannedIncome(t.id)}><Check className="w-4 h-4 text-green-500" /></Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleCancelPlanned(t.id, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cancelPlannedTransaction(t.id, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -586,7 +579,7 @@ export default function TransactionsPage() {
                             </TableCell>
                             <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
-                                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(t)}>
+                                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(t)} disabled={t.status === 'cancelled'}>
                                         <Edit className="h-4 w-4"/>
                                         <span className="sr-only">Edit</span>
                                     </Button>

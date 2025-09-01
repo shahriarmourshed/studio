@@ -6,7 +6,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useCurrency } from '@/context/currency-context';
@@ -83,6 +82,7 @@ export default function PlanVsActuals() {
             
             if(item.status === 'completed') {
                 data[category].actual += item.amount;
+                // Use plannedAmount if it exists, otherwise it was an unplanned expense, count its own amount as planned.
                 data[category].planned += item.plannedAmount ?? item.amount;
             } else if (item.status === 'planned') {
                 data[category].planned += item.amount;

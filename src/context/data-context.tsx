@@ -4,7 +4,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { familyMembers as defaultFamilyMembers, products as defaultProducts, budget as defaultBudget, incomes as defaultIncomes, expenses as defaultExpenses } from '@/lib/data';
-import { differenceInDays, differenceInWeeks, differenceInMonths, format, getYear } from 'date-fns';
+import { differenceInDays, differenceInWeeks, differenceInMonths } from 'date-fns';
 
 interface DataContextType {
   budget: Budget | null;
@@ -16,7 +16,7 @@ interface DataContextType {
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
   setReminderDays: (days: number) => void;
-  addExpense: (expense: Omit<Expense, 'id' | 'status'>, status?: Expense['status']) => void;
+  addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount'>, status?: Expense['status']) => void;
   updateExpense: (expense: Expense) => void;
   deleteExpense: (expenseId: string) => void;
   addFamilyMember: (member: Omit<FamilyMember, 'id'>) => void;
@@ -25,11 +25,12 @@ interface DataContextType {
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
-  addIncome: (income: Omit<Income, 'id' | 'status'>, status?: Income['status']) => void;
+  addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount'>, status?: Income['status']) => void;
   updateIncome: (income: Income) => void;
   deleteIncome: (incomeId: string) => void;
-  completePlannedExpense: (expenseId: string) => void;
-  completePlannedIncome: (incomeId: string) => void;
+  completePlannedExpense: (expenseId: string, actualAmount?: number) => void;
+  completePlannedIncome: (incomeId: string, actualAmount?: number) => void;
+  cancelPlannedTransaction: (id: string, type: 'income' | 'expense') => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -141,7 +142,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [isMounted]);
 
 
-  const addExpense = (expense: Omit<Expense, 'id' | 'status'>, status: Expense['status'] = 'planned') => {
+  const addExpense = (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount'>, status: Expense['status'] = 'planned') => {
     const newExpense: Expense = { ...expense, id: new Date().toISOString(), status };
     setExpenses([...expenses, newExpense].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
@@ -189,7 +190,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProducts(productsData.filter(p => p.id !== productId));
   };
 
-  const addIncome = (income: Omit<Income, 'id' | 'status'>, status: Income['status'] = 'planned') => {
+  const addIncome = (income: Omit<Income, 'id' | 'status' | 'plannedAmount'>, status: Income['status'] = 'planned') => {
       const newIncome: Income = { ...income, id: new Date().toISOString(), status };
       setIncomes([...incomesData, newIncome].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   };
@@ -202,21 +203,46 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setIncomes(incomesData.filter(i => i.id !== incomeId));
   };
   
-  const completePlannedExpense = (expenseId: string) => {
-    const plannedExpense = expenses.find(e => e.id === expenseId);
-    if (plannedExpense) {
-      addExpense(plannedExpense, 'completed');
-      deleteExpense(expenseId);
-    }
+  const completePlannedExpense = (expenseId: string, actualAmount?: number) => {
+    setExpenses(
+      expenses.map(e => {
+        if (e.id === expenseId) {
+          return {
+            ...e,
+            status: 'completed',
+            plannedAmount: e.amount,
+            amount: actualAmount ?? e.amount, // Use actual amount if provided, otherwise keep planned
+          };
+        }
+        return e;
+      })
+    );
   };
   
-  const completePlannedIncome = (incomeId: string) => {
-    const plannedIncome = incomesData.find(i => i.id === incomeId);
-    if (plannedIncome) {
-      addIncome(plannedIncome, 'completed');
-      deleteIncome(incomeId);
-    }
+  const completePlannedIncome = (incomeId: string, actualAmount?: number) => {
+    setIncomes(
+      incomesData.map(i => {
+        if (i.id === incomeId) {
+          return {
+            ...i,
+            status: 'completed',
+            plannedAmount: i.amount,
+            amount: actualAmount ?? i.amount,
+          };
+        }
+        return i;
+      })
+    );
   };
+
+  const cancelPlannedTransaction = (id: string, type: 'income' | 'expense') => {
+      if (type === 'expense') {
+          setExpenses(expenses.map(e => e.id === id ? { ...e, status: 'cancelled' } : e));
+      } else {
+          setIncomes(incomesData.map(i => i.id === id ? { ...i, status: 'cancelled' } : i));
+      }
+  }
+
 
   // Recalculate spent amount whenever expenses change
   useEffect(() => {
@@ -233,7 +259,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [expenses, incomesData]);
   
 
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, updateFamilyMember, deleteFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome, completePlannedExpense, completePlannedIncome };
+  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, updateFamilyMember, deleteFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome, completePlannedExpense, completePlannedIncome, cancelPlannedTransaction };
 
   if (!isMounted) {
      return <div className="flex items-center justify-center h-screen">Loading...</div>;
