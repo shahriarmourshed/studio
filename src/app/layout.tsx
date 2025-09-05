@@ -1,9 +1,11 @@
+
 import type { Metadata } from "next";
 import { PT_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { DataProvider } from "@/context/data-context";
 import { ThemeProvider } from "@/context/theme-context";
+import { AuthProvider } from "@/context/auth-context";
 
 const ptSans = PT_Sans({
   subsets: ["latin"],
@@ -30,9 +32,11 @@ export default function RootLayout({
       </head>
       <body className={`${ptSans.variable} font-body antialiased`}>
         <ThemeProvider>
-          <DataProvider>
-            {children}
-          </DataProvider>
+          <AuthProvider>
+            <DataProvider>
+              {children}
+            </DataProvider>
+          </AuthProvider>
           <Toaster />
         </ThemeProvider>
       </body>

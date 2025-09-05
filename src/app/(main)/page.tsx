@@ -30,10 +30,11 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ExpenseCategory } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
-  const { products, expenses, incomes, reminderDays, addExpense } = useData();
+  const { products, expenses, incomes, reminderDays, addExpense, loading } = useData();
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
 
   // Dialog states
@@ -114,6 +115,19 @@ export default function DashboardPage() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [expenses, reminderDays]);
 
+
+  if (loading) {
+      return (
+          <div className="container mx-auto px-0 sm:px-4">
+              <PageHeader title="Welcome to Family Manager!" subtitle="Your family's command center." />
+              <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <Skeleton className="lg:col-span-2 h-96" />
+                  <Skeleton className="lg:col-span-1 h-96" />
+                  <Skeleton className="lg:col-span-1 h-96" />
+              </div>
+          </div>
+      )
+  }
 
   return (
     <div className="container mx-auto px-0 sm:px-4">

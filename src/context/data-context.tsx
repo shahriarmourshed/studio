@@ -1,14 +1,15 @@
 
-
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
-import { familyMembers as defaultFamilyMembers, products as defaultProducts, budget as defaultBudget, incomes as defaultIncomes, expenses as defaultExpenses } from '@/lib/data';
+import { familyMembers as defaultFamilyMembers, products as defaultProducts, expenses as defaultExpenses, incomes as defaultIncomes } from '@/lib/data';
 import { differenceInDays, differenceInWeeks, differenceInMonths } from 'date-fns';
+import { useAuth } from './auth-context';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp } from "firebase/firestore";
 
 interface DataContextType {
-  budget: Budget | null;
   expenses: Expense[];
   familyMembers: FamilyMember[];
   products: Product[];
@@ -17,247 +18,283 @@ interface DataContextType {
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
   setReminderDays: (days: number) => void;
-  addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited'>, status?: Expense['status']) => void;
-  updateExpense: (expense: Expense) => void;
-  deleteExpense: (expenseId: string) => void;
-  addFamilyMember: (member: Omit<FamilyMember, 'id'>) => void;
-  updateFamilyMember: (member: FamilyMember) => void;
-  deleteFamilyMember: (memberId: string) => void;
-  addProduct: (product: Omit<Product, 'id' | 'lastUpdated'>) => void;
-  updateProduct: (product: Product) => void;
-  deleteProduct: (productId: string) => void;
-  addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited'>, status?: Income['status']) => void;
-  updateIncome: (income: Income) => void;
-  deleteIncome: (incomeId: string) => void;
-  completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => void;
-  cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => void;
+  addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status?: Expense['status']) => Promise<void>;
+  updateExpense: (expense: Expense) => Promise<void>;
+  deleteExpense: (expenseId: string) => Promise<void>;
+  addFamilyMember: (member: Omit<FamilyMember, 'id'>) => Promise<void>;
+  updateFamilyMember: (member: FamilyMember) => Promise<void>;
+  deleteFamilyMember: (memberId: string) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => Promise<void>;
+  updateProduct: (product: Product) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
+  addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status?: Income['status']) => Promise<void>;
+  updateIncome: (income: Income) => Promise<void>;
+  deleteIncome: (incomeId: string) => Promise<void>;
+  completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => Promise<void>;
+  cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => Promise<void>;
+  loading: boolean;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T) => void] => {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') {
-      return initialValue;
-    }
-    try {
-      const item = window.localStorage.getItem(key);
-      // Attempt to migrate old data structure
-      if (key === 'family-manager-products' && item) {
-        const parsed = JSON.parse(item);
-        if (Array.isArray(parsed) && parsed.length > 0 && ('dailyNeed' in parsed[0] || 'monthlyNeed' in parsed[0])) {
-          const migrated = parsed.map((p: any) => {
-             const newProduct: Partial<Product> = { ...p };
-             if(p.dailyNeed) {
-                newProduct.consumptionRate = p.dailyNeed;
-                newProduct.consumptionPeriod = 'daily';
-             } else if (p.halfMonthlyNeed) {
-                newProduct.consumptionRate = p.halfMonthlyNeed;
-                newProduct.consumptionPeriod = 'half-monthly';
-             } else if (p.monthlyNeed) {
-                newProduct.consumptionRate = p.monthlyNeed;
-                newProduct.consumptionPeriod = 'monthly';
-             }
-             delete newProduct['dailyNeed' as keyof Product];
-             delete newProduct['halfMonthlyNeed' as keyof Product];
-             delete newProduct['monthlyNeed' as keyof Product];
-             return newProduct;
-          });
-          return migrated as T;
-        }
-      }
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.log(error);
-      return initialValue;
-    }
-  });
-
-  const setValue = (value: T) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  return [storedValue, setValue];
-};
-
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [budget, setBudget] = useLocalStorage<Budget>('family-manager-budget', defaultBudget);
-  const [expenses, setExpenses] = useLocalStorage<Expense[]>('family-manager-expenses', defaultExpenses);
-  const [familyMembersData, setFamilyMembers] = useLocalStorage<FamilyMember[]>('family-manager-family', defaultFamilyMembers);
-  const [productsData, setProducts] = useLocalStorage<Product[]>('family-manager-products', defaultProducts);
-  const [incomesData, setIncomes] = useLocalStorage<Income[]>('family-manager-incomes', defaultIncomes);
-  const [savingGoal, setSavingGoal] = useLocalStorage<number>('family-manager-saving-goal', 10000);
-  const [reminderDays, setReminderDays] = useLocalStorage<number>('family-manager-reminder-days', 3);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
 
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [savingGoal, setSavingGoalState] = useState<number>(10000);
+  const [reminderDays, setReminderDaysState] = useState<number>(3);
+  
+  const userDocRef = user ? doc(db, 'users', user.uid) : null;
+  const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
 
-  const [isMounted, setIsMounted] = useState(false);
+  const collections = {
+      expenses: user ? collection(db, `users/${user.uid}/expenses`) : null,
+      incomes: user ? collection(db, `users/${user.uid}/incomes`) : null,
+      products: user ? collection(db, `users/${user.uid}/products`) : null,
+      familyMembers: user ? collection(db, `users/${user.uid}/familyMembers`) : null,
+  }
+
+  // Fetch initial data and set up listeners
   useEffect(() => {
-    if (!isMounted) {
-      setIsMounted(true);
-      // Run stock calculation only once on mount
-      const calculatedProducts = productsData.map(product => {
-        const today = new Date();
-        const lastUpdatedDate = new Date(product.lastUpdated);
-        let stockUsed = 0;
+    if (!user) {
+      setLoading(false);
+      // Reset states when user logs out
+      setExpenses([]);
+      setIncomes([]);
+      setProducts([]);
+      setFamilyMembers([]);
+      setSavingGoalState(10000);
+      setReminderDaysState(3);
+      return;
+    }
+    
+    setLoading(true);
+    const unsubscribes: (() => void)[] = [];
 
-        if (product.consumptionRate && product.consumptionPeriod) {
-            const daysPassed = differenceInDays(today, lastUpdatedDate);
-            switch(product.consumptionPeriod) {
-                case 'daily':
-                    stockUsed = daysPassed * product.consumptionRate;
-                    break;
-                case 'weekly':
-                    const weeksPassed = differenceInWeeks(today, lastUpdatedDate);
-                    stockUsed = weeksPassed * product.consumptionRate;
-                    break;
-                case 'half-monthly':
-                    stockUsed = (differenceInWeeks(today, lastUpdatedDate) / 2) * product.consumptionRate;
-                    break;
-                case 'monthly':
-                    const monthsPassed = differenceInMonths(today, lastUpdatedDate);
-                    stockUsed = monthsPassed * product.consumptionRate;
-                    break;
+    const setupSubscription = (collectionRef: any, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
+        const q = query(collectionRef, orderBy('createdAt', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setter(data);
+        }, (error) => {
+            console.error(`Error fetching ${collectionRef.path}:`, error);
+        });
+        unsubscribes.push(unsubscribe);
+    };
+
+    // Settings listener
+    if (settingsDocRef) {
+        const unsubscribeSettings = onSnapshot(settingsDocRef, (doc) => {
+            if (doc.exists()) {
+                const settings = doc.data();
+                setSavingGoalState(settings.savingGoal ?? 10000);
+                setReminderDaysState(settings.reminderDays ?? 3);
+            } else {
+                // Initialize default settings
+                setDoc(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
+            }
+        });
+        unsubscribes.push(unsubscribeSettings);
+    }
+    
+    // Data listeners
+    if (collections.expenses) setupSubscription(collections.expenses, setExpenses);
+    if (collections.incomes) setupSubscription(collections.incomes, setIncomes);
+    if (collections.products) setupSubscription(collections.products, setProducts);
+    if (collections.familyMembers) setupSubscription(collections.familyMembers, setFamilyMembers);
+    
+    // Check if user has any data, if not, populate with defaults
+    const initializeData = async () => {
+        if(userDocRef) {
+            const userDocSnap = await getDoc(userDocRef);
+            if (!userDocSnap.exists() || !userDocSnap.data()?.hasBeenInitialized) {
+                // This is a new user, populate with default data
+                const promises = [
+                    ...defaultExpenses.map(item => addDoc(collections.expenses!, { ...item, createdAt: Timestamp.now() })),
+                    ...defaultIncomes.map(item => addDoc(collections.incomes!, { ...item, createdAt: Timestamp.now() })),
+                    ...defaultProducts.map(item => addDoc(collections.products!, { ...item, createdAt: Timestamp.now() })),
+                    ...defaultFamilyMembers.map(item => addDoc(collections.familyMembers!, { ...item, createdAt: Timestamp.now() })),
+                    setDoc(userDocRef, { hasBeenInitialized: true }, { merge: true })
+                ];
+                await Promise.all(promises);
             }
         }
-
-        const newStock = Math.max(0, product.currentStock - stockUsed);
-
-        // Only update if stock has changed to avoid unnecessary re-renders
-        if (newStock !== product.currentStock) {
-          return { ...product, currentStock: newStock, lastUpdated: today.toISOString() };
-        }
-        return product;
-      });
-      setProducts(calculatedProducts);
+        setLoading(false);
     }
+    
+    initializeData();
+
+    return () => {
+      unsubscribes.forEach(unsub => unsub());
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted]);
+  }, [user]);
 
+  const setSavingGoal = async (goal: number) => {
+    if (settingsDocRef) {
+        setSavingGoalState(goal); // Optimistic update
+        await setDoc(settingsDocRef, { savingGoal: goal }, { merge: true });
+    }
+  }
 
-  const addExpense = (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited'>, status: Expense['status'] = 'planned') => {
-    const newExpense: Expense = { ...expense, id: new Date().toISOString(), status };
-    setExpenses([...expenses, newExpense].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  const setReminderDays = async (days: number) => {
+      if (settingsDocRef) {
+          setReminderDaysState(days); // Optimistic update
+          await setDoc(settingsDocRef, { reminderDays: days }, { merge: true });
+      }
+  }
+
+  const addExpense = async (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Expense['status'] = 'planned') => {
+    if (!collections.expenses) return;
+    const newExpense = { ...expense, status, createdAt: Timestamp.now() };
+    await addDoc(collections.expenses, newExpense);
   };
   
-  const updateExpense = (updatedExpense: Expense) => {
-    setExpenses(expenses.map(e => e.id === updatedExpense.id ? {...updatedExpense, edited: true} : e).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  const updateExpense = async (updatedExpense: Expense) => {
+      if (!user) return;
+      const { id, ...dataToUpdate } = updatedExpense;
+      const docRef = doc(db, `users/${user.uid}/expenses`, id);
+      await updateDoc(docRef, {...dataToUpdate, edited: true});
   };
   
-  const deleteExpense = (expenseId: string) => {
-    setExpenses(expenses.filter(e => e.id !== expenseId));
+  const deleteExpense = async (expenseId: string) => {
+      if (!user) return;
+      const docRef = doc(db, `users/${user.uid}/expenses`, expenseId);
+      await deleteDoc(docRef);
   };
 
 
-  const addFamilyMember = (member: Omit<FamilyMember, 'id'>) => {
+  const addFamilyMember = async (member: Omit<FamilyMember, 'id'>) => {
+    if (!collections.familyMembers) return;
     const newMember = { 
       ...member, 
-      id: new Date().toISOString(),
-      avatarUrl: member.avatarUrl || `https://picsum.photos/100/100?random=${Math.random()}`
+      avatarUrl: member.avatarUrl || `https://picsum.photos/100/100?random=${Math.random()}`,
+      createdAt: Timestamp.now()
     };
-    setFamilyMembers([...familyMembersData, newMember]);
+    await addDoc(collections.familyMembers, newMember);
   };
 
-  const updateFamilyMember = (updatedMember: FamilyMember) => {
-    setFamilyMembers(familyMembersData.map(m => m.id === updatedMember.id ? updatedMember : m));
+  const updateFamilyMember = async (updatedMember: FamilyMember) => {
+      if (!user) return;
+      const { id, ...dataToUpdate } = updatedMember;
+      const docRef = doc(db, `users/${user.uid}/familyMembers`, id);
+      await updateDoc(docRef, dataToUpdate);
   };
 
-  const deleteFamilyMember = (memberId: string) => {
-    setFamilyMembers(familyMembersData.filter(m => m.id !== memberId));
+  const deleteFamilyMember = async (memberId: string) => {
+      if (!user) return;
+      const docRef = doc(db, `users/${user.uid}/familyMembers`, memberId);
+      await deleteDoc(docRef);
   };
   
-  const addProduct = (product: Omit<Product, 'id' | 'lastUpdated'>) => {
-      const newProduct: Product = { 
+  const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
+      if (!collections.products) return;
+      const newProduct = { 
         ...product, 
-        id: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
+        createdAt: Timestamp.now()
       };
-      setProducts([...productsData, newProduct]);
+      await addDoc(collections.products, newProduct);
   };
 
-  const updateProduct = (updatedProduct: Product) => {
-    setProducts(productsData.map(p => p.id === updatedProduct.id ? {...updatedProduct, lastUpdated: new Date().toISOString()} : p));
+  const updateProduct = async (updatedProduct: Product) => {
+      if (!user) return;
+      const { id, ...dataToUpdate } = updatedProduct;
+      const docRef = doc(db, `users/${user.uid}/products`, id);
+      await updateDoc(docRef, {...dataToUpdate, lastUpdated: new Date().toISOString()});
   };
 
-  const deleteProduct = (productId: string) => {
-    setProducts(productsData.filter(p => p.id !== productId));
+  const deleteProduct = async (productId: string) => {
+    if (!user) return;
+    const docRef = doc(db, `users/${user.uid}/products`, productId);
+    await deleteDoc(docRef);
   };
 
-  const addIncome = (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited'>, status: Income['status'] = 'planned') => {
-      const newIncome: Income = { ...income, id: new Date().toISOString(), status };
-      setIncomes([...incomesData, newIncome].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  const addIncome = async (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Income['status'] = 'planned') => {
+      if (!collections.incomes) return;
+      const newIncome = { ...income, status, createdAt: Timestamp.now() };
+      await addDoc(collections.incomes, newIncome);
   };
 
-  const updateIncome = (updatedIncome: Income) => {
-    setIncomes(incomesData.map(i => i.id === updatedIncome.id ? {...updatedIncome, edited: true} : i).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  const updateIncome = async (updatedIncome: Income) => {
+    if (!user) return;
+    const { id, ...dataToUpdate } = updatedIncome;
+    const docRef = doc(db, `users/${user.uid}/incomes`, id);
+    await updateDoc(docRef, {...dataToUpdate, edited: true});
   };
 
-  const deleteIncome = (incomeId: string) => {
-    setIncomes(incomesData.filter(i => i.id !== incomeId));
+  const deleteIncome = async (incomeId: string) => {
+    if (!user) return;
+    const docRef = doc(db, `users/${user.uid}/incomes`, incomeId);
+    await deleteDoc(docRef);
   };
   
-  const completePlannedTransaction = (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => {
+  const completePlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => {
+    const collectionRef = type === 'income' ? collections.incomes : collections.expenses;
+    if (!collectionRef) return;
+    
+    const { id, ...originalData } = transaction;
+
     const newActualTransaction = {
-      ...transaction,
-      id: new Date().toISOString(), // new id for the actual transaction
+      ...originalData,
       status: 'completed' as const,
-      plannedId: transaction.id, // link back to the original planned transaction
-      plannedAmount: transaction.amount,
-      amount: actualAmount ?? transaction.amount,
-      date: new Date().toISOString().split('T')[0], // Set to today's date
+      plannedId: id, 
+      plannedAmount: originalData.amount,
+      amount: actualAmount ?? originalData.amount,
+      date: new Date().toISOString().split('T')[0],
+      createdAt: Timestamp.now(),
     };
 
-    if (type === 'income') {
-      setIncomes([...incomesData, newActualTransaction as Income]);
-    } else {
-      setExpenses([...expenses, newActualTransaction as Expense]);
-    }
+    await addDoc(collectionRef, newActualTransaction);
   };
   
-  const cancelPlannedTransaction = (transaction: Income | Expense, type: 'income' | 'expense') => {
+  const cancelPlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense') => {
+    const collectionRef = type === 'income' ? collections.incomes : collections.expenses;
+    if (!collectionRef) return;
+
+    const { id, ...originalData } = transaction;
+
     const newCancelledTransaction = {
-        ...transaction,
-        id: new Date().toISOString(),
+        ...originalData,
         status: 'cancelled' as const,
-        plannedId: transaction.id,
-        plannedAmount: transaction.amount,
+        plannedId: id,
+        plannedAmount: originalData.amount,
         date: new Date().toISOString().split('T')[0],
+        createdAt: Timestamp.now(),
     };
-    if (type === 'income') {
-      setIncomes([...incomesData, newCancelledTransaction as Income]);
-    } else {
-      setExpenses([...expenses, newCancelledTransaction as Expense]);
-    }
+    await addDoc(collectionRef, newCancelledTransaction);
   }
 
 
-  // Recalculate spent amount whenever expenses change
-  useEffect(() => {
-    if(budget) {
-      const totalSpent = expenses
-        .filter(e => e.status === 'completed')
-        .reduce((sum, exp) => sum + exp.amount, 0);
-      const totalIncome = incomesData
-        .filter(i => i.status === 'completed')
-        .reduce((sum, inc) => sum + inc.amount, 0);
-      setBudget({ ...budget, spent: totalSpent, total: totalIncome });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expenses, incomesData]);
-  
-
-  const value = { budget, expenses, familyMembers: familyMembersData, products: productsData, incomes: incomesData, savingGoal, setSavingGoal, reminderDays, setReminderDays, addExpense, updateExpense, deleteExpense, addFamilyMember, updateFamilyMember, deleteFamilyMember, addProduct, updateProduct, deleteProduct, addIncome, updateIncome, deleteIncome, completePlannedTransaction, cancelPlannedTransaction };
-
-  if (!isMounted) {
-     return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  }
+  const value = { 
+    expenses, 
+    familyMembers, 
+    products, 
+    incomes, 
+    savingGoal, 
+    setSavingGoal, 
+    reminderDays, 
+    setReminderDays, 
+    addExpense, 
+    updateExpense, 
+    deleteExpense, 
+    addFamilyMember, 
+    updateFamilyMember, 
+    deleteFamilyMember, 
+    addProduct, 
+    updateProduct, 
+    deleteProduct, 
+    addIncome, 
+    updateIncome, 
+    deleteIncome, 
+    completePlannedTransaction, 
+    cancelPlannedTransaction,
+    loading
+  };
 
   return (
     <DataContext.Provider value={value}>
