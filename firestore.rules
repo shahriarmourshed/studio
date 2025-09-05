@@ -1,8 +1,19 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
+    // Match any document in the 'users' collection
+    match /users/{userId} {
+      // Allow a user to read and write to their own user document.
+      // This is needed for the app to check if a user has been initialized.
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Allow read/write access to all documents in all subcollections 
+      // (expenses, incomes, products, familyMembers, settings)
+      // for the currently authenticated user.
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
   }
 }
