@@ -38,14 +38,21 @@ export default function ShoppingListForm() {
     setLoading(true);
     setResult(null);
 
+    const familyDietaryPreferences = familyMembers.map(m => {
+        let preferences = [];
+        if (m.dietaryRestrictions) preferences.push(m.dietaryRestrictions);
+        if(m.healthConditions) preferences.push(`Health condition: ${m.healthConditions}`);
+        return `${m.name}: ${preferences.join(', ')}`;
+    }).join('; ');
+
     const input: ShoppingListInput = {
       familyMembers: familyMembers.map(m => ({
         name: m.name,
         age: m.age,
-        healthConditions: m.healthConditions,
-        dietaryRestrictions: m.dietaryRestrictions,
+        healthConditions: m.healthConditions || 'none',
+        dietaryRestrictions: m.dietaryRestrictions || 'none',
       })),
-      familyDietaryPreferences: "General preferences based on family member data.", // Placeholder, could be a form field
+      familyDietaryPreferences: familyDietaryPreferences || 'none',
       products: products.map(p => ({
         name: p.name,
         quantity: p.quantity,
@@ -59,7 +66,7 @@ export default function ShoppingListForm() {
       actualIncomes: incomes.filter(i => i.status === 'completed'),
       plannedExpenses: expenses.filter(e => e.status === 'planned'),
       actualExpenses: expenses.filter(e => e.status === 'completed'),
-      savingGoal: savingGoal,
+      savingGoal: savingGoal || 0,
       shoppingListPeriod,
       currencySymbol: getSymbol(),
     };

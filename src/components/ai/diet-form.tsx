@@ -44,8 +44,8 @@ export default function DietForm() {
       familyMembers: familyMembers.map(m => ({
         name: m.name,
         age: m.age,
-        healthConditions: m.healthConditions,
-        dietaryRestrictions: m.dietaryRestrictions,
+        healthConditions: m.healthConditions || 'none',
+        dietaryRestrictions: m.dietaryRestrictions || 'none',
       })),
       products: products.map(p => ({
         name: p.name,
@@ -60,8 +60,8 @@ export default function DietForm() {
       actualIncomes: incomes.filter(i => i.status === 'completed'),
       plannedExpenses: expenses.filter(e => e.status === 'planned'),
       actualExpenses: expenses.filter(e => e.status === 'completed'),
-      savingGoal: savingGoal,
-      preferences,
+      savingGoal: savingGoal || 0,
+      preferences: preferences || 'none',
       dietType,
       currencySymbol: getSymbol(),
     };

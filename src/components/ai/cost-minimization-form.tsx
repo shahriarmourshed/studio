@@ -33,8 +33,8 @@ export default function CostMinimizationForm() {
       familyMembers: familyMembers.map(m => ({
         name: m.name,
         age: m.age,
-        healthConditions: m.healthConditions,
-        dietaryRestrictions: m.dietaryRestrictions,
+        healthConditions: m.healthConditions || 'none',
+        dietaryRestrictions: m.dietaryRestrictions || 'none',
       })),
       plannedIncomes: incomes.filter(i => i.status === 'planned'),
       actualIncomes: incomes.filter(i => i.status === 'completed'),
@@ -49,7 +49,7 @@ export default function CostMinimizationForm() {
         consumptionRate: p.consumptionRate,
         consumptionPeriod: p.consumptionPeriod,
       })),
-      savingGoal: savingGoal,
+      savingGoal: savingGoal || 0,
       currencySymbol: getSymbol(),
     };
 
