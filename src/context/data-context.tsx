@@ -7,7 +7,7 @@ import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { familyMembers as defaultFamilyMembers, products as defaultProducts, expenses as defaultExpenses, incomes as defaultIncomes } from '@/lib/data';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, writeBatch, getDocs, limit } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, writeBatch, getDocs, limit, runTransaction } from "firebase/firestore";
 
 interface DataContextType {
   expenses: Expense[];
@@ -48,9 +48,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [savingGoal, setSavingGoalState] = useState<number>(10000);
   const [reminderDays, setReminderDaysState] = useState<number>(3);
   
-  const getCollectionRef = (collectionName: string) => {
-    return user ? collection(db, `users/${user.uid}/${collectionName}`) : null;
-  }
+  const getCollectionRef = useCallback((collectionName: string) => {
+    if (!user) return null;
+    return collection(db, `users/${user.uid}/${collectionName}`);
+  }, [user]);
   
   // Fetch initial data and set up listeners
   useEffect(() => {
@@ -68,9 +69,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     
     setLoading(true);
     const unsubscribes: (() => void)[] = [];
-    const userDocRef = doc(db, 'users', user.uid);
-    const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
-
 
     const setupSubscription = (collectionName: string, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
         const collectionRef = getCollectionRef(collectionName);
@@ -85,8 +83,51 @@ export function DataProvider({ children }: { children: ReactNode }) {
         unsubscribes.push(unsubscribe);
     };
 
-    // Settings listener
-    if (settingsDocRef) {
+    const initializeData = async () => {
+      try {
+        const settingsDocRef = doc(db, `users/${user.uid}/settings/main`);
+        
+        await runTransaction(db, async (transaction) => {
+          const settingsDoc = await transaction.get(settingsDocRef);
+          
+          if (settingsDoc.exists()) {
+            // Data already initialized, just load settings
+            const settingsData = settingsDoc.data();
+            setSavingGoalState(settingsData.savingGoal ?? 10000);
+            setReminderDaysState(settingsData.reminderDays ?? 3);
+            return;
+          }
+
+          // Data not initialized, create default data
+          const writeDefaults = (collectionName: string, defaultData: any[]) => {
+            const collectionRef = collection(db, `users/${user.uid}/${collectionName}`);
+            defaultData.forEach(item => {
+              const docRef = doc(collectionRef); // Let Firestore generate ID
+              const { id, ...rest } = item;
+              transaction.set(docRef, { ...rest, createdAt: Timestamp.now() });
+            });
+          };
+
+          writeDefaults('expenses', defaultExpenses);
+          writeDefaults('incomes', defaultIncomes);
+          writeDefaults('products', defaultProducts);
+          writeDefaults('familyMembers', defaultFamilyMembers);
+
+          // Set settings
+          transaction.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
+        });
+
+      } catch (error) {
+        console.error("Error during initial data transaction:", error);
+      } finally {
+        // Set up listeners after initialization attempt
+        setupSubscription('expenses', setExpenses);
+        setupSubscription('incomes', setIncomes);
+        setupSubscription('products', setProducts);
+        setupSubscription('familyMembers', setFamilyMembers);
+        
+        // Listener for settings changes
+        const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
         const unsubscribeSettings = onSnapshot(settingsDocRef, (doc) => {
             if (doc.exists()) {
                 const settings = doc.data();
@@ -95,55 +136,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
             }
         });
         unsubscribes.push(unsubscribeSettings);
-    }
-    
-    // Data listeners
-    setupSubscription('expenses', setExpenses);
-    setupSubscription('incomes', setIncomes);
-    setupSubscription('products', setProducts);
-    setupSubscription('familyMembers', setFamilyMembers);
-    
-    // Check if user has any data, if not, populate with defaults
-    const initializeData = async () => {
-        if(userDocRef && settingsDocRef) {
-             const userDocSnap = await getDoc(userDocRef);
-            if (!userDocSnap.exists() || !userDocSnap.data()?.hasBeenInitialized) {
-                const batch = writeBatch(db);
 
-                // Helper to write default data for a collection
-                const writeDefaults = (collectionName: string, defaultData: any[]) => {
-                    const collectionRef = collection(db, `users/${user.uid}/${collectionName}`);
-                    defaultData.forEach(item => {
-                        const docRef = doc(collectionRef); // Let Firestore generate ID
-                        const { id, ...rest } = item;
-                        batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
-                    });
-                };
-                
-                writeDefaults('expenses', defaultExpenses);
-                writeDefaults('incomes', defaultIncomes);
-                writeDefaults('products', defaultProducts);
-                writeDefaults('familyMembers', defaultFamilyMembers);
-
-                // Set settings
-                batch.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
-
-                // Mark user as initialized
-                batch.set(userDocRef, { hasBeenInitialized: true, email: user.email }, { merge: true });
-
-                await batch.commit();
-            }
-        }
         setLoading(false);
-    }
+      }
+    };
     
     initializeData();
 
     return () => {
       unsubscribes.forEach(unsub => unsub());
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, getCollectionRef]);
 
   const setSavingGoal = async (goal: number) => {
     const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
@@ -331,3 +334,5 @@ export function useData() {
   }
   return context;
 }
+
+    
