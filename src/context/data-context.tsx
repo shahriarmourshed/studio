@@ -2,12 +2,11 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { Budget, Expense, FamilyMember, Product, Income } from '@/lib/types';
+import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { familyMembers as defaultFamilyMembers, products as defaultProducts, expenses as defaultExpenses, incomes as defaultIncomes } from '@/lib/data';
-import { differenceInDays, differenceInWeeks, differenceInMonths } from 'date-fns';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, writeBatch } from "firebase/firestore";
 
 interface DataContextType {
   expenses: Expense[];
@@ -51,13 +50,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const userDocRef = user ? doc(db, 'users', user.uid) : null;
   const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
 
-  const collections = {
-      expenses: user ? collection(db, `users/${user.uid}/expenses`) : null,
-      incomes: user ? collection(db, `users/${user.uid}/incomes`) : null,
-      products: user ? collection(db, `users/${user.uid}/products`) : null,
-      familyMembers: user ? collection(db, `users/${user.uid}/familyMembers`) : null,
+  const getCollectionRef = (collectionName: string) => {
+    return user ? collection(db, `users/${user.uid}/${collectionName}`) : null;
   }
-
+  
   // Fetch initial data and set up listeners
   useEffect(() => {
     if (!user) {
@@ -75,7 +71,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     const unsubscribes: (() => void)[] = [];
 
-    const setupSubscription = (collectionRef: any, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
+    const setupSubscription = (collectionName: string, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
+        const collectionRef = getCollectionRef(collectionName);
+        if (!collectionRef) return;
         const q = query(collectionRef, orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -93,34 +91,49 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 const settings = doc.data();
                 setSavingGoalState(settings.savingGoal ?? 10000);
                 setReminderDaysState(settings.reminderDays ?? 3);
-            } else {
-                // Initialize default settings
-                setDoc(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
             }
         });
         unsubscribes.push(unsubscribeSettings);
     }
     
     // Data listeners
-    if (collections.expenses) setupSubscription(collections.expenses, setExpenses);
-    if (collections.incomes) setupSubscription(collections.incomes, setIncomes);
-    if (collections.products) setupSubscription(collections.products, setProducts);
-    if (collections.familyMembers) setupSubscription(collections.familyMembers, setFamilyMembers);
+    setupSubscription('expenses', setExpenses);
+    setupSubscription('incomes', setIncomes);
+    setupSubscription('products', setProducts);
+    setupSubscription('familyMembers', setFamilyMembers);
     
     // Check if user has any data, if not, populate with defaults
     const initializeData = async () => {
-        if(userDocRef) {
+        if(userDocRef && settingsDocRef) {
             const userDocSnap = await getDoc(userDocRef);
             if (!userDocSnap.exists() || !userDocSnap.data()?.hasBeenInitialized) {
-                // This is a new user, populate with default data
-                const promises = [
-                    ...defaultExpenses.map(item => addDoc(collections.expenses!, { ...item, createdAt: Timestamp.now() })),
-                    ...defaultIncomes.map(item => addDoc(collections.incomes!, { ...item, createdAt: Timestamp.now() })),
-                    ...defaultProducts.map(item => addDoc(collections.products!, { ...item, createdAt: Timestamp.now() })),
-                    ...defaultFamilyMembers.map(item => addDoc(collections.familyMembers!, { ...item, createdAt: Timestamp.now() })),
-                    setDoc(userDocRef, { hasBeenInitialized: true }, { merge: true })
-                ];
-                await Promise.all(promises);
+                const batch = writeBatch(db);
+                
+                // Set default data
+                defaultExpenses.forEach(item => {
+                    const docRef = doc(collection(db, `users/${user.uid}/expenses`));
+                    batch.set(docRef, { ...item, createdAt: Timestamp.now() });
+                });
+                defaultIncomes.forEach(item => {
+                    const docRef = doc(collection(db, `users/${user.uid}/incomes`));
+                    batch.set(docRef, { ...item, createdAt: Timestamp.now() });
+                });
+                defaultProducts.forEach(item => {
+                    const docRef = doc(collection(db, `users/${user.uid}/products`));
+                    batch.set(docRef, { ...item, createdAt: Timestamp.now() });
+                });
+                defaultFamilyMembers.forEach(item => {
+                    const docRef = doc(collection(db, `users/${user.uid}/familyMembers`));
+                    batch.set(docRef, { ...item, createdAt: Timestamp.now() });
+                });
+
+                // Set settings
+                batch.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
+
+                // Mark user as initialized
+                batch.set(userDocRef, { hasBeenInitialized: true, email: user.email }, { merge: true });
+
+                await batch.commit();
             }
         }
         setLoading(false);
@@ -149,9 +162,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }
 
   const addExpense = async (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Expense['status'] = 'planned') => {
-    if (!collections.expenses) return;
+    const collectionRef = getCollectionRef('expenses');
+    if (!collectionRef) return;
     const newExpense = { ...expense, status, createdAt: Timestamp.now() };
-    await addDoc(collections.expenses, newExpense);
+    await addDoc(collectionRef, newExpense);
   };
   
   const updateExpense = async (updatedExpense: Expense) => {
@@ -169,13 +183,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
 
   const addFamilyMember = async (member: Omit<FamilyMember, 'id'>) => {
-    if (!collections.familyMembers) return;
+    const collectionRef = getCollectionRef('familyMembers');
+    if (!collectionRef) return;
     const newMember = { 
       ...member, 
       avatarUrl: member.avatarUrl || `https://picsum.photos/100/100?random=${Math.random()}`,
       createdAt: Timestamp.now()
     };
-    await addDoc(collections.familyMembers, newMember);
+    await addDoc(collectionRef, newMember);
   };
 
   const updateFamilyMember = async (updatedMember: FamilyMember) => {
@@ -192,13 +207,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
   
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
-      if (!collections.products) return;
+      const collectionRef = getCollectionRef('products');
+      if (!collectionRef) return;
       const newProduct = { 
         ...product, 
         lastUpdated: new Date().toISOString(),
         createdAt: Timestamp.now()
       };
-      await addDoc(collections.products, newProduct);
+      await addDoc(collectionRef, newProduct);
   };
 
   const updateProduct = async (updatedProduct: Product) => {
@@ -215,9 +231,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const addIncome = async (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Income['status'] = 'planned') => {
-      if (!collections.incomes) return;
+      const collectionRef = getCollectionRef('incomes');
+      if (!collectionRef) return;
       const newIncome = { ...income, status, createdAt: Timestamp.now() };
-      await addDoc(collections.incomes, newIncome);
+      await addDoc(collectionRef, newIncome);
   };
 
   const updateIncome = async (updatedIncome: Income) => {
@@ -234,13 +251,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
   
   const completePlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => {
-    const collectionRef = type === 'income' ? collections.incomes : collections.expenses;
+    const collectionRef = type === 'income' ? getCollectionRef('incomes') : getCollectionRef('expenses');
     if (!collectionRef) return;
     
     const { id, ...originalData } = transaction;
+    // Remove createdAt from originalData if it exists to avoid Firestore errors
+    const { createdAt, ...restData } = originalData as any;
 
     const newActualTransaction = {
-      ...originalData,
+      ...restData,
       status: 'completed' as const,
       plannedId: id, 
       plannedAmount: originalData.amount,
@@ -253,13 +272,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
   
   const cancelPlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense') => {
-    const collectionRef = type === 'income' ? collections.incomes : collections.expenses;
+    const collectionRef = type === 'income' ? getCollectionRef('incomes') : getCollectionRef('expenses');
     if (!collectionRef) return;
 
     const { id, ...originalData } = transaction;
+    const { createdAt, ...restData } = originalData as any;
+
 
     const newCancelledTransaction = {
-        ...originalData,
+        ...restData,
         status: 'cancelled' as const,
         plannedId: id,
         plannedAmount: originalData.amount,

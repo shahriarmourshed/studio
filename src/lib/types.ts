@@ -5,6 +5,7 @@ export type FamilyMember = {
   age: number;
   healthConditions: string;
   dietaryRestrictions: string;
+  createdAt?: any;
 };
 
 export type Product = {
@@ -18,6 +19,7 @@ export type Product = {
   consumptionRate?: number;
   consumptionPeriod?: 'daily' | 'weekly' | 'half-monthly' | 'monthly';
   lastUpdated: string; // ISO string to track when stock was last updated
+  createdAt?: any;
 };
 
 export type ExpenseCategory = 
@@ -43,6 +45,7 @@ export type Expense = {
   plannedAmount?: number;
   plannedId?: string; // ID of the original planned transaction
   edited?: boolean;
+  createdAt?: any;
 };
 
 export type IncomeCategory = 'Salary' | 'Business' | 'Investment' | 'Gift' | 'Other';
@@ -59,6 +62,7 @@ export type Income = {
   plannedAmount?: number;
   plannedId?: string; // ID of the original planned transaction
   edited?: boolean;
+  createdAt?: any;
 };
 
 export type Budget = {
