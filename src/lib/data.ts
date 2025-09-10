@@ -4,7 +4,7 @@ import type { FamilyMember, Product, Expense, Budget, Income } from '@/lib/types
 export const familyMembers: Omit<FamilyMember, 'id' | 'createdAt'>[] = [];
 
 const now = new Date();
-const today = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+const today = now.toISOString().split('T')[0]; // YYY-MM-DD format
 
 export const products: Omit<Product, 'id' | 'createdAt' | 'lastUpdated'>[] = [];
 
