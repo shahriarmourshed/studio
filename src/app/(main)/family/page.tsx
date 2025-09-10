@@ -183,8 +183,8 @@ export default function FamilyPage() {
                 </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAddMember}>
-                <ScrollArea className="max-h-[70vh] p-6">
-                  <div className="grid gap-4">
+                <ScrollArea className="max-h-[70vh]">
+                  <div className="p-6 grid gap-4">
                       <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="name" className="text-right">Name</Label>
                       <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
@@ -301,8 +301,8 @@ export default function FamilyPage() {
               <DialogTitle>Edit Family Member</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdateMember}>
-            <ScrollArea className="max-h-[70vh] p-6">
-              <div className="grid gap-4">
+            <ScrollArea className="max-h-[70vh]">
+              <div className="p-6 grid gap-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-name" className="text-right">Name</Label>
                   <Input id="edit-name" className="col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
@@ -356,5 +356,3 @@ export default function FamilyPage() {
     </div>
   );
 }
-
-    
