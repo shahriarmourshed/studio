@@ -38,6 +38,8 @@ import Image from 'next/image';
 import { useData } from '@/context/data-context';
 import type { FamilyMember } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import avatars from '@/lib/placeholder-avatars.json';
 
 export default function FamilyPage() {
   const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember, clearFamilyMembers } = useData();
@@ -59,16 +61,23 @@ export default function FamilyPage() {
   const [editMemberHealth, setEditMemberHealth] = useState('');
   const [editMemberDiet, setEditMemberDiet] = useState('');
   const [editMemberAvatar, setEditMemberAvatar] = useState('');
-
+  
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMemberName && newMemberAge) {
+      let finalAvatarUrl = newMemberAvatar;
+      if (!finalAvatarUrl) {
+        // Pick a random avatar if none is selected
+        const randomIndex = Math.floor(Math.random() * avatars.avatars.length);
+        finalAvatarUrl = avatars.avatars[randomIndex].url;
+      }
+      
       await addFamilyMember({
         name: newMemberName,
         age: parseInt(newMemberAge),
         healthConditions: newMemberHealth,
         dietaryRestrictions: newMemberDiet,
-        avatarUrl: newMemberAvatar || `https://i.pravatar.cc/150?u=${newMemberName}`
+        avatarUrl: finalAvatarUrl
       });
       resetAddForm();
     }
@@ -153,7 +162,7 @@ export default function FamilyPage() {
                 Add Member
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                 <DialogTitle>Add Family Member</DialogTitle>
                 <DialogDescription>
@@ -170,9 +179,24 @@ export default function FamilyPage() {
                     <Label htmlFor="age" className="text-right">Age</Label>
                     <Input id="age" type="number" placeholder="e.g., 34" className="col-span-3" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="avatar" className="text-right">Avatar URL</Label>
-                    <Input id="avatar" placeholder="https://..." className="col-span-3" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
+                    <div className="grid grid-cols-4 items-start gap-4">
+                      <Label className="text-right pt-2">Avatar</Label>
+                      <div className="col-span-3">
+                          <div className="grid grid-cols-4 gap-2 mb-2">
+                              {avatars.avatars.map(avatar => (
+                                  <button
+                                      type="button"
+                                      key={avatar.id}
+                                      onClick={() => setNewMemberAvatar(avatar.url)}
+                                      className={cn("rounded-full border-2 p-0.5", newMemberAvatar === avatar.url ? "border-primary" : "border-transparent hover:border-primary/50")}
+                                  >
+                                      <Image src={avatar.url} alt={avatar.hint} width={64} height={64} className="rounded-full" data-ai-hint={avatar.hint} />
+                                  </button>
+                              ))}
+                          </div>
+                          <Label htmlFor="avatar-url" className="text-xs text-muted-foreground">Or paste an image URL</Label>
+                          <Input id="avatar-url" placeholder="https://..." className="mt-1" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
+                      </div>
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4">
                     <Label htmlFor="health" className="text-right pt-2">Health Conditions</Label>
@@ -250,7 +274,7 @@ export default function FamilyPage() {
 
        {selectedMember && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle>Edit Family Member</DialogTitle>
             </DialogHeader>
@@ -264,9 +288,24 @@ export default function FamilyPage() {
                   <Label htmlFor="edit-age" className="text-right">Age</Label>
                   <Input id="edit-age" type="number" className="col-span-3" value={editMemberAge} onChange={e => setEditMemberAge(e.target.value)} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="edit-avatar" className="text-right">Avatar URL</Label>
-                  <Input id="edit-avatar" className="col-span-3" value={editMemberAvatar} onChange={e => setEditMemberAvatar(e.target.value)} />
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label className="text-right pt-2">Avatar</Label>
+                  <div className="col-span-3">
+                      <div className="grid grid-cols-4 gap-2 mb-2">
+                          {avatars.avatars.map(avatar => (
+                              <button
+                                  type="button"
+                                  key={avatar.id}
+                                  onClick={() => setEditMemberAvatar(avatar.url)}
+                                  className={cn("rounded-full border-2 p-0.5", editMemberAvatar === avatar.url ? "border-primary" : "border-transparent hover:border-primary/50")}
+                              >
+                                  <Image src={avatar.url} alt={avatar.hint} width={64} height={64} className="rounded-full" data-ai-hint={avatar.hint} />
+                              </button>
+                          ))}
+                      </div>
+                      <Label htmlFor="edit-avatar-url" className="text-xs text-muted-foreground">Or paste an image URL</Label>
+                      <Input id="edit-avatar-url" placeholder="https://..." className="mt-1" value={editMemberAvatar} onChange={e => setEditMemberAvatar(e.target.value)} />
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label htmlFor="edit-health" className="text-right pt-2">Health Conditions</Label>

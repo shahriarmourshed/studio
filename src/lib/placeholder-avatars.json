@@ -1,0 +1,12 @@
+{
+  "avatars": [
+    { "id": "avatar-1", "url": "https://picsum.photos/seed/101/150/150", "hint": "person" },
+    { "id": "avatar-2", "url": "https://picsum.photos/seed/102/150/150", "hint": "person" },
+    { "id": "avatar-3", "url": "https://picsum.photos/seed/103/150/150", "hint": "person" },
+    { "id": "avatar-4", "url": "https://picsum.photos/seed/104/150/150", "hint": "person" },
+    { "id": "avatar-5", "url": "https://picsum.photos/seed/105/150/150", "hint": "person" },
+    { "id": "avatar-6", "url": "https://picsum.photos/seed/106/150/150", "hint": "person" },
+    { "id": "avatar-7", "url": "https://picsum.photos/seed/107/150/150", "hint": "person" },
+    { "id": "avatar-8", "url": "https://picsum.photos/seed/108/150/150", "hint": "person" }
+  ]
+}
