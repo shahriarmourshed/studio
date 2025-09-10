@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc } from "firebase/firestore";
+import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc, writeBatch, getDocs } from "firebase/firestore";
 
 interface DataContextType {
   expenses: Expense[];
@@ -50,7 +50,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return null;
     return collection(db, `users/${user.uid}/${collectionName}`);
   }, [user]);
-  
+
   // Fetch initial data and set up listeners
   useEffect(() => {
     if (!user) {
@@ -295,3 +295,5 @@ export function useData() {
   }
   return context;
 }
+
+    
