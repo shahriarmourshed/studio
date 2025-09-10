@@ -90,28 +90,32 @@ const prompt = ai.definePrompt({
   output: {schema: ShoppingListOutputSchema},
   prompt: `You are a financial planner and nutritionist creating a shopping list for a family. All monetary values are in {{{currencySymbol}}}.
 
-  Here is the family data:
+  **Family Health & Preferences:**
   {{#each familyMembers}}
-  - Name: {{{name}}}, Age: {{{age}}}, Height: {{{height}}}cm, Weight: {{{weight}}}kg, Health: {{{healthConditions}}}, Diet: {{{dietaryRestrictions}}}
+  - Name: {{{name}}}, Age: {{{age}}}, Height: {{{height}}}cm, Weight: {{{weight}}}kg
+    Health: {{{healthConditions}}}, Diet: {{{dietaryRestrictions}}}
   {{/each}}
+  Additional Preferences: {{{familyDietaryPreferences}}}
 
-  Consider the family's dietary preferences: {{{familyDietaryPreferences}}}
-
-  Here is the list of available products, their stock, and consumption patterns:
+  **Product Inventory & Consumption:**
   {{#each products}}
   - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{currencySymbol}}}{{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
 
-  Here is the family's financial situation:
+  **Full Financial Picture:**
   - Monthly Saving Goal: {{{currencySymbol}}}{{{savingGoal}}}
-  - Actual Income so far: {{#each actualIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
-  - Actual Expenses so far: {{#each actualExpenses}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
+  - Planned Income: {{#each plannedIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
+  - Actual Income: {{#each actualIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
+  - Planned Expenses: {{#each plannedExpenses}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
+  - Actual Expenses: {{#each actualExpenses}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
 
-  Generate a shopping list in markdown format for the '{{{shoppingListPeriod}}}' period.
-  - The list should be based on the family's preferences and the product consumption needs provided.
-  - Calculate the items and quantities needed for the specified period to supplement the available products.
-  - Factor in the current stock and consumption rate to determine what needs to be replenished.
-  - Make smart, cost-effective suggestions. For example, suggest cheaper alternatives or brands if the family's spending is high compared to their income and savings goals. Prioritize essential items based on health needs and stock levels.
+  **Your Task:**
+
+  Generate a smart shopping list in markdown format for the '{{{shoppingListPeriod}}}' period.
+  - **Calculate Needs:** Based on the product consumption rates, determine what needs to be replenished for the period, factoring in the current stock.
+  - **Consider Health:** The list must align with the family's health conditions and dietary restrictions.
+  - **Be Budget-Conscious:** Analyze the family's full financial situation. Make cost-effective suggestions. If their spending is high compared to their income and savings goals, suggest cheaper alternatives or brands.
+  - **Prioritize:** The list should prioritize essential items based on health needs and critically low stock levels.
   `,
 });
 

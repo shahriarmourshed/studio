@@ -92,31 +92,21 @@ Analyze the following comprehensive financial, product, and family data. All mon
 
 **Family Profile:**
 {{#each familyMembers}}
-- Name: {{{name}}}, Age: {{{age}}}, Height: {{{height}}}cm, Weight: {{{weight}}}kg, Health: {{{healthConditions}}}, Diet: {{{dietaryRestrictions}}}
+- Name: {{{name}}}, Age: {{{age}}}, Height: {{{height}}}cm, Weight: {{{weight}}}kg
+  Health: {{{healthConditions}}}
+  Diet: {{{dietaryRestrictions}}}
 {{/each}}
 
 **Financial Goal:**
 - Monthly Saving Goal: {{{currencySymbol}}}{{{savingGoal}}}
 
 **Income Analysis:**
-- Planned Income:
-{{#each plannedIncomes}}
-  - {{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}} on {{{date}}}{{#if recurrent}} (recurrent){{/if}}
-{{/each}}
-- Actual Income:
-{{#each actualIncomes}}
-  - {{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}} on {{{date}}} {{#if plannedAmount}}(planned: {{{currencySymbol}}}{{{plannedAmount}}}){{/if}}
-{{/each}}
+- Planned Income: {{#each plannedIncomes}}{{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}}; {{/each}}
+- Actual Income: {{#each actualIncomes}}{{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}}; {{/each}}
 
 **Expense Analysis:**
-- Planned Expenses:
-{{#each plannedExpenses}}
-  - {{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}} on {{{date}}}{{#if recurrent}} (recurrent){{/if}}
-{{/each}}
-- Actual Expenses:
-{{#each actualExpenses}}
-  - {{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}} on {{{date}}} {{#if plannedAmount}}(planned: {{{currencySymbol}}}{{{plannedAmount}}}){{/if}}
-{{/each}}
+- Planned Expenses: {{#each plannedExpenses}}{{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}}; {{/each}}
+- Actual Expenses: {{#each actualExpenses}}{{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}}; {{/each}}
 
 **Product & Inventory Analysis:**
 {{#each products}}
@@ -125,11 +115,11 @@ Analyze the following comprehensive financial, product, and family data. All mon
 
 **Your Task:**
 
-Based on all the data provided, generate a detailed list of cost-minimization suggestions. Your advice should be:
-1.  **Insightful:** Identify where the actual spending deviates most from the planned budget.
-2.  **Actionable:** Provide specific, concrete steps the family can take.
-3.  **Personalized:** Tailor your advice to their specific income, expenses, saving goals, product consumption habits, and family composition (e.g., suggest cost-saving family activities, or budget-friendly meals that align with health needs). For example, if they overspend on 'Entertainment', suggest cheaper alternatives. If they buy a product frequently, suggest bulk buying. If their savings are falling short of their goal, highlight the areas with the most potential for reduction.
-4.  **Holistic:** Consider the interplay between their shopping habits (from the product list), their expenses, and their family's health requirements.
+Based on a deep analysis of all the data provided, generate a detailed list of cost-minimization suggestions. Your advice must be:
+1.  **Holistic:** Synthesize information from all sections. For example, connect high spending in the 'Groceries' category with the product inventory to suggest specific cheaper alternatives or bulk buying opportunities.
+2.  **Insightful:** Identify where actual spending deviates most from the planned budget. Point out specific categories or products where spending is highest.
+3.  **Actionable:** Provide specific, concrete steps the family can take. Instead of "spend less on entertainment," suggest "try a free park day or a movie night at home instead of going to the cinema, which could save you {{{currencySymbol}}}50."
+4.  **Personalized:** Tailor your advice to the family's specific income, expenses, saving goals, product consumption habits, and health needs. If their savings are falling short, highlight the areas with the most potential for reduction.
 `,
 });
 

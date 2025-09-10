@@ -98,7 +98,7 @@ const prompt = ai.definePrompt({
   
   All monetary values are in {{{currencySymbol}}}.
 
-  **Full Family Data (for context):**
+  **Full Family Data (for context, even when generating for one person):**
   {{#each familyMembers}}
   - Name: {{{name}}}, Age: {{{age}}}, Height: {{{height}}}cm, Weight: {{{weight}}}kg
     Health: {{{healthConditions}}}
@@ -110,7 +110,7 @@ const prompt = ai.definePrompt({
   - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{currencySymbol}}}{{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
   
-  **Family Financial Overview:**
+  **Family Financial Overview (use this for budget context):**
   - Monthly Saving Goal: {{{currencySymbol}}}{{{savingGoal}}}
   - Planned Income: {{#each plannedIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
   - Actual Income: {{#each actualIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
@@ -121,18 +121,18 @@ const prompt = ai.definePrompt({
   **Diet Type requested:** {{{dietType}}}
 
   **Your Task:**
-  Generate a detailed and personalized weekly diet chart in markdown format. It should include breakfast, lunch, dinner, and snacks for each day of the week.
+  Generate a detailed and personalized weekly diet chart in markdown format. It must include breakfast, lunch, dinner, and snacks for each day of the week.
   
   - **CRITICAL**: The diet chart must be safe and healthy. 
   
   {{#if selectedMemberName}}
-  - **FOCUS**: The diet plan must be strictly tailored for **{{{selectedMemberName}}}**. Pay close attention to their specific health conditions and dietary restrictions listed above. Prioritize these needs above all else. While keeping the meals compatible with the rest of the family is a plus, the primary focus is the selected member's health. Use the full family's data for context on budget and available food.
+  - **FOCUS**: The diet plan must be strictly tailored for **{{{selectedMemberName}}}**. Pay close attention to their specific health conditions and dietary restrictions listed above. Prioritize these needs above all else. Use the full family's data (finances, products) for holistic context on budget and available food.
   {{else}}
-  - **FOCUS**: The diet chart should be balanced to consider all family members' health conditions and dietary restrictions. Create a plan that works for everyone.
+  - **FOCUS**: The diet chart should be balanced to consider ALL family members' health conditions and dietary restrictions. Create a plan that works for everyone.
   {{/if}}
 
   - Based on the '{{{dietType}}}', adjust the meal suggestions:
-    - 'cost-optimized' should prioritize cheaper meals, using the provided product prices and overall family budget to make decisions. Consider the family's saving goal and suggest meals that help them stay on track.
+    - 'cost-optimized' should prioritize cheaper meals, using the provided product prices and overall family budget to make decisions. Consider the family's saving goal.
     - 'standard' should be a balanced approach to health and cost.
     - 'as-per-products' should strictly use only the products listed as available in stock. Do not suggest buying anything new.
     - 'health-focused' should prioritize meals that are particularly beneficial for the specified health conditions and dietary restrictions. This is the top priority for this diet type, even if it costs a bit more (but still be reasonable within the family's budget).
