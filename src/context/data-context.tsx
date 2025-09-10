@@ -7,7 +7,7 @@ import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { familyMembers as defaultFamilyMembers, products as defaultProducts, expenses as defaultExpenses, incomes as defaultIncomes } from '@/lib/data';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, writeBatch } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, writeBatch, getDocs, limit } from "firebase/firestore";
 
 interface DataContextType {
   expenses: Expense[];
@@ -21,7 +21,7 @@ interface DataContextType {
   addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status?: Expense['status']) => Promise<void>;
   updateExpense: (expense: Expense) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
-  addFamilyMember: (member: Omit<FamilyMember, 'id'>) => Promise<void>;
+  addFamilyMember: (member: Omit<FamilyMember, 'id' | 'createdAt'>) => Promise<void>;
   updateFamilyMember: (member: FamilyMember) => Promise<void>;
   deleteFamilyMember: (memberId: string) => Promise<void>;
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => Promise<void>;
@@ -106,31 +106,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
     // Check if user has any data, if not, populate with defaults
     const initializeData = async () => {
         if(userDocRef && settingsDocRef) {
-            const userDocSnap = await getDoc(userDocRef);
+             const userDocSnap = await getDoc(userDocRef);
             if (!userDocSnap.exists() || !userDocSnap.data()?.hasBeenInitialized) {
                 const batch = writeBatch(db);
-                
-                // Set default data
-                defaultExpenses.forEach(item => {
-                    const docRef = doc(collection(db, `users/${user.uid}/expenses`));
-                    const { id, ...rest } = item;
-                    batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
-                });
-                defaultIncomes.forEach(item => {
-                    const docRef = doc(collection(db, `users/${user.uid}/incomes`));
-                    const { id, ...rest } = item;
-                    batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
-                });
-                defaultProducts.forEach(item => {
-                    const docRef = doc(collection(db, `users/${user.uid}/products`));
-                    const { id, ...rest } = item;
-                    batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
-                });
-                defaultFamilyMembers.forEach(item => {
-                    const docRef = doc(collection(db, `users/${user.uid}/familyMembers`));
-                    const { id, ...rest } = item;
-                    batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
-                });
+
+                // Helper to check if a collection is empty before writing
+                const writeDefaults = async (collectionName: string, defaultData: any[]) => {
+                    const collectionRef = collection(db, `users/${user.uid}/${collectionName}`);
+                    const snapshot = await getDocs(query(collectionRef, limit(1)));
+                    if (snapshot.empty) {
+                        defaultData.forEach(item => {
+                            const docRef = doc(collectionRef);
+                            const { id, ...rest } = item;
+                            batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
+                        });
+                    }
+                };
+
+                await writeDefaults('expenses', defaultExpenses);
+                await writeDefaults('incomes', defaultIncomes);
+                await writeDefaults('products', defaultProducts);
+                await writeDefaults('familyMembers', defaultFamilyMembers);
 
                 // Set settings
                 batch.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
