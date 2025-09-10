@@ -119,8 +119,15 @@ const prompt = ai.definePrompt({
   Diet Type: {{{dietType}}}
 
   Generate a detailed and personalized weekly diet chart in markdown format. It should include breakfast, lunch, dinner, and snacks for each day of the week.
-  - The diet chart should be safe and healthy, considering all family members' health conditions and dietary restrictions.
-  - {{#if selectedMemberName}}Focus the diet plan on **{{{selectedMemberName}}}**, but ensure it is generally compatible with the rest of the family where possible.{{/if}}
+  
+  - The diet chart must be safe and healthy. 
+  
+  {{#if selectedMemberName}}
+  - **CRITICAL**: The diet plan must be strictly tailored for **{{{selectedMemberName}}}**. Pay close attention to their specific health conditions and dietary restrictions listed above. Prioritize these needs above all else. While keeping the meals compatible with the rest of the family is a plus, the primary focus is the selected member's health.
+  {{else}}
+  - The diet chart should consider all family members' health conditions and dietary restrictions.
+  {{/if}}
+
   - It should utilize the available products and align with the specified product needs.
   - Based on the '{{{dietType}}}', adjust the meal suggestions.
     - 'cost-optimized' should prioritize cheaper meals, using the provided product prices and overall family budget to make decisions. Consider the family's saving goal and suggest meals that help them stay on track.
