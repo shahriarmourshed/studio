@@ -41,7 +41,6 @@ import type { FamilyMember } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import avatars from '@/lib/placeholder-avatars.json';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function FamilyPage() {
   const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember, clearFamilyMembers } = useData();
@@ -178,14 +177,13 @@ export default function FamilyPage() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
                 <DialogHeader>
-                <DialogTitle>Add Family Member</DialogTitle>
-                <DialogDescription>
-                    Enter the details of the new family member.
-                </DialogDescription>
+                  <DialogTitle>Add Family Member</DialogTitle>
+                  <DialogDescription>
+                      Enter the details of the new family member.
+                  </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddMember} className="flex-1 overflow-hidden">
-                  <ScrollArea className="h-full pr-6">
-                    <div className="grid gap-4 py-4">
+                <form onSubmit={handleAddMember} className="flex-1 overflow-y-auto">
+                    <div className="grid gap-4 py-4 px-1">
                         <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="name" className="text-right">Name</Label>
                         <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
@@ -226,10 +224,9 @@ export default function FamilyPage() {
                         <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
                         </div>
                     </div>
-                  </ScrollArea>
-                <DialogFooter className="pt-4 border-t">
-                  <Button type="submit" className="w-full">Save Member</Button>
-                </DialogFooter>
+                  <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
+                    <Button type="submit" className="w-full">Save Member</Button>
+                  </DialogFooter>
                 </form>
             </DialogContent>
             </Dialog>
@@ -301,9 +298,8 @@ export default function FamilyPage() {
               <DialogTitle>Edit Family Member</DialogTitle>
               <DialogDescription>Update the details of {selectedMember.name}.</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleUpdateMember} className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full pr-6">
-              <div className="grid gap-4 py-4">
+            <form onSubmit={handleUpdateMember} className="flex-1 overflow-y-auto">
+              <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-name" className="text-right">Name</Label>
                   <Input id="edit-name" className="col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
@@ -344,8 +340,7 @@ export default function FamilyPage() {
                   <Textarea id="edit-diet" className="col-span-3" value={editMemberDiet} onChange={e => setEditMemberDiet(e.target.value)} />
                 </div>
               </div>
-              </ScrollArea>
-              <DialogFooter className="pt-4 border-t">
+              <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
                 <Button type="submit" className="w-full">Save Changes</Button>
               </DialogFooter>
             </form>
