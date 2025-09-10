@@ -51,6 +51,8 @@ export default function FamilyPage() {
   // Add form state
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberAge, setNewMemberAge] = useState('');
+  const [newMemberHeight, setNewMemberHeight] = useState('');
+  const [newMemberWeight, setNewMemberWeight] = useState('');
   const [newMemberHealth, setNewMemberHealth] = useState('');
   const [newMemberDiet, setNewMemberDiet] = useState('');
   const [newMemberAvatar, setNewMemberAvatar] = useState('');
@@ -58,13 +60,15 @@ export default function FamilyPage() {
   // Edit form state
   const [editMemberName, setEditMemberName] = useState('');
   const [editMemberAge, setEditMemberAge] = useState('');
+  const [editMemberHeight, setEditMemberHeight] = useState('');
+  const [editMemberWeight, setEditMemberWeight] = useState('');
   const [editMemberHealth, setEditMemberHealth] = useState('');
   const [editMemberDiet, setEditMemberDiet] = useState('');
   const [editMemberAvatar, setEditMemberAvatar] = useState('');
   
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMemberName && newMemberAge) {
+    if (newMemberName && newMemberAge && newMemberHeight && newMemberWeight) {
       let finalAvatarUrl = newMemberAvatar;
       if (!finalAvatarUrl) {
         // Pick a random avatar if none is selected
@@ -75,6 +79,8 @@ export default function FamilyPage() {
       await addFamilyMember({
         name: newMemberName,
         age: parseInt(newMemberAge),
+        height: parseInt(newMemberHeight),
+        weight: parseInt(newMemberWeight),
         healthConditions: newMemberHealth,
         dietaryRestrictions: newMemberDiet,
         avatarUrl: finalAvatarUrl
@@ -86,6 +92,8 @@ export default function FamilyPage() {
   const resetAddForm = () => {
     setNewMemberName('');
     setNewMemberAge('');
+    setNewMemberHeight('');
+    setNewMemberWeight('');
     setNewMemberHealth('');
     setNewMemberDiet('');
     setNewMemberAvatar('');
@@ -96,6 +104,8 @@ export default function FamilyPage() {
     setSelectedMember(member);
     setEditMemberName(member.name);
     setEditMemberAge(String(member.age));
+    setEditMemberHeight(String(member.height));
+    setEditMemberWeight(String(member.weight));
     setEditMemberHealth(member.healthConditions);
     setEditMemberDiet(member.dietaryRestrictions);
     setEditMemberAvatar(member.avatarUrl);
@@ -109,6 +119,8 @@ export default function FamilyPage() {
         ...selectedMember,
         name: editMemberName,
         age: parseInt(editMemberAge),
+        height: parseInt(editMemberHeight),
+        weight: parseInt(editMemberWeight),
         healthConditions: editMemberHealth,
         dietaryRestrictions: editMemberDiet,
         avatarUrl: editMemberAvatar,
@@ -176,8 +188,12 @@ export default function FamilyPage() {
                     <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="age" className="text-right">Age</Label>
-                    <Input id="age" type="number" placeholder="e.g., 34" className="col-span-3" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
+                        <Label htmlFor="age" className="text-right">Vitals</Label>
+                        <div className="col-span-3 grid grid-cols-3 gap-2">
+                            <Input id="age" type="number" placeholder="Age" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
+                            <Input id="height" type="number" placeholder="Height (cm)" value={newMemberHeight} onChange={e => setNewMemberHeight(e.target.value)} required />
+                            <Input id="weight" type="number" placeholder="Weight (kg)" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
+                        </div>
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4">
                       <Label className="text-right pt-2">Avatar</Label>
@@ -228,7 +244,7 @@ export default function FamilyPage() {
                 />
                 <div className="flex-1">
                   <CardTitle>{member.name}</CardTitle>
-                  <CardDescription>Age: {member.age}</CardDescription>
+                  <CardDescription>Age: {member.age} &bull; {member.height}cm &bull; {member.weight}kg</CardDescription>
                 </div>
                 <div className="flex gap-1">
                      <Button variant="ghost" size="icon" onClick={() => handleEditClick(member)}>
@@ -285,8 +301,12 @@ export default function FamilyPage() {
                   <Input id="edit-name" className="col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="edit-age" className="text-right">Age</Label>
-                  <Input id="edit-age" type="number" className="col-span-3" value={editMemberAge} onChange={e => setEditMemberAge(e.target.value)} required />
+                    <Label htmlFor="edit-age" className="text-right">Vitals</Label>
+                    <div className="col-span-3 grid grid-cols-3 gap-2">
+                        <Input id="edit-age" type="number" placeholder="Age" value={editMemberAge} onChange={e => setEditMemberAge(e.target.value)} required />
+                        <Input id="edit-height" type="number" placeholder="Height (cm)" value={editMemberHeight} onChange={e => setEditMemberHeight(e.target.value)} required />
+                        <Input id="edit-weight" type="number" placeholder="Weight (kg)" value={editMemberWeight} onChange={e => setEditMemberWeight(e.target.value)} required />
+                    </div>
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label className="text-right pt-2">Avatar</Label>

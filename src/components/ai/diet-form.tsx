@@ -50,6 +50,8 @@ export default function DietForm() {
       familyMembers: familyMembers.map(m => ({
         name: m.name,
         age: m.age,
+        height: m.height,
+        weight: m.weight,
         healthConditions: m.healthConditions || 'none',
         dietaryRestrictions: m.dietaryRestrictions || 'none',
       })),

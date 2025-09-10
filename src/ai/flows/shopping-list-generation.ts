@@ -26,6 +26,8 @@ const ProductSchema = z.object({
 const FamilyMemberSchema = z.object({
   name: z.string(),
   age: z.number(),
+  height: z.number().describe('Height in centimeters.'),
+  weight: z.number().describe('Weight in kilograms.'),
   healthConditions: z.string(),
   dietaryRestrictions: z.string(),
 });
@@ -90,7 +92,7 @@ const prompt = ai.definePrompt({
 
   Here is the family data:
   {{#each familyMembers}}
-  - Name: {{{name}}}, Age: {{{age}}}, Health: {{{healthConditions}}}, Diet: {{{dietaryRestrictions}}}
+  - Name: {{{name}}}, Age: {{{age}}}, Height: {{{height}}}cm, Weight: {{{weight}}}kg, Health: {{{healthConditions}}}, Diet: {{{dietaryRestrictions}}}
   {{/each}}
 
   Consider the family's dietary preferences: {{{familyDietaryPreferences}}}

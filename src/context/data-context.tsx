@@ -294,7 +294,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updateExpense, 
     deleteExpense, 
     addProduct, 
-    updateProduct, 
+    updateProduct,
     deleteProduct,
     clearProducts,
     addIncome, 

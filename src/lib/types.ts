@@ -1,8 +1,11 @@
+
 export type FamilyMember = {
   id: string;
   name: string;
   avatarUrl: string;
   age: number;
+  height: number; // in cm
+  weight: number; // in kg
   healthConditions: string;
   dietaryRestrictions: string;
   createdAt?: any;
