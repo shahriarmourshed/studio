@@ -191,7 +191,7 @@ export default function FamilyPage() {
                         <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="age" className="text-right">Vitals</Label>
+                            <Label htmlFor="age" className="text-right">Age / Vitals</Label>
                             <div className="col-span-3 grid grid-cols-3 gap-2">
                                 <Input id="age" type="number" placeholder="Age" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
                                 <Input id="height" type="number" placeholder="Height (cm)" value={newMemberHeight} onChange={e => setNewMemberHeight(e.target.value)} required />
@@ -309,7 +309,7 @@ export default function FamilyPage() {
                   <Input id="edit-name" className="col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-age" className="text-right">Vitals</Label>
+                    <Label htmlFor="edit-age" className="text-right">Age / Vitals</Label>
                     <div className="col-span-3 grid grid-cols-3 gap-2">
                         <Input id="edit-age" type="number" placeholder="Age" value={editMemberAge} onChange={e => setEditMemberAge(e.target.value)} required />
                         <Input id="edit-height" type="number" placeholder="Height (cm)" value={editMemberHeight} onChange={e => setEditMemberHeight(e.target.value)} required />
