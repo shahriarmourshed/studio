@@ -1,7 +1,7 @@
 
 import {genkit, GenkitError} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
-import { firebase } from '@genkit-ai/firebase';
+import { firebasePlugin } from '@genkit-ai/firebase/plugin';
 import {runWith} from 'genkit/context';
 import {getFirestore} from 'firebase-admin/firestore';
 
@@ -9,7 +9,7 @@ const GEMINI_API_KEY = Symbol('GEMINI_API_KEY');
 
 export const ai = genkit({
   plugins: [
-    firebase(),
+    firebasePlugin(),
     googleAI({
       apiVersion: 'v1beta',
       apiKey: async () => {
