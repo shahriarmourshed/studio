@@ -29,6 +29,9 @@ export default function CostMinimizationForm() {
     setLoading(true);
     setResult(null);
 
+    const plainIncomes = incomes.map(({ createdAt, ...rest }) => rest);
+    const plainExpenses = expenses.map(({ createdAt, ...rest }) => rest);
+
     const input: CostMinimizationInput = {
       familyMembers: familyMembers.map(m => ({
         name: m.name,
@@ -36,10 +39,10 @@ export default function CostMinimizationForm() {
         healthConditions: m.healthConditions || 'none',
         dietaryRestrictions: m.dietaryRestrictions || 'none',
       })),
-      plannedIncomes: incomes.filter(i => i.status === 'planned'),
-      actualIncomes: incomes.filter(i => i.status === 'completed'),
-      plannedExpenses: expenses.filter(e => e.status === 'planned'),
-      actualExpenses: expenses.filter(e => e.status === 'completed'),
+      plannedIncomes: plainIncomes.filter(i => i.status === 'planned'),
+      actualIncomes: plainIncomes.filter(i => i.status === 'completed'),
+      plannedExpenses: plainExpenses.filter(e => e.status === 'planned'),
+      actualExpenses: plainExpenses.filter(e => e.status === 'completed'),
       products: products.map(p => ({
         name: p.name,
         quantity: p.quantity,

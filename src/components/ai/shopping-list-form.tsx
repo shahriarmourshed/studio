@@ -45,6 +45,9 @@ export default function ShoppingListForm() {
         return `${m.name}: ${preferences.join(', ')}`;
     }).join('; ');
 
+    const plainIncomes = incomes.map(({ createdAt, ...rest }) => rest);
+    const plainExpenses = expenses.map(({ createdAt, ...rest }) => rest);
+
     const input: ShoppingListInput = {
       familyMembers: familyMembers.map(m => ({
         name: m.name,
@@ -62,10 +65,10 @@ export default function ShoppingListForm() {
         consumptionRate: p.consumptionRate,
         consumptionPeriod: p.consumptionPeriod,
       })),
-      plannedIncomes: incomes.filter(i => i.status === 'planned'),
-      actualIncomes: incomes.filter(i => i.status === 'completed'),
-      plannedExpenses: expenses.filter(e => e.status === 'planned'),
-      actualExpenses: expenses.filter(e => e.status === 'completed'),
+      plannedIncomes: plainIncomes.filter(i => i.status === 'planned'),
+      actualIncomes: plainIncomes.filter(i => i.status === 'completed'),
+      plannedExpenses: plainExpenses.filter(e => e.status === 'planned'),
+      actualExpenses: plainExpenses.filter(e => e.status === 'completed'),
       savingGoal: savingGoal || 0,
       shoppingListPeriod,
       currencySymbol: getSymbol(),
