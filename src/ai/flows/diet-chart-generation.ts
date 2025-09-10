@@ -62,7 +62,7 @@ const DietChartInputSchema = z.object({
   savingGoal: z.number().describe('The monthly saving goal.'),
   preferences: z.string().describe('General dietary preferences for the family (e.g., more vegetarian meals, low spice).'),
   dietType: z
-    .enum(['cost-optimized', 'standard', 'as-per-products'])
+    .enum(['cost-optimized', 'standard', 'as-per-products', 'health-focused'])
     .describe('The type of diet plan to generate.'),
   currencySymbol: z.string().describe('The currency symbol used in the application.'),
 });
@@ -133,6 +133,7 @@ const prompt = ai.definePrompt({
     - 'cost-optimized' should prioritize cheaper meals, using the provided product prices and overall family budget to make decisions. Consider the family's saving goal and suggest meals that help them stay on track.
     - 'standard' should be a balanced approach to health and cost.
     - 'as-per-products' should strictly use only the products listed as available in stock.
+    - 'health-focused' should prioritize meals that are particularly beneficial for the specified health conditions and dietary restrictions. This is the top priority for this diet type.
   `,
   config: {
     safetySettings: [

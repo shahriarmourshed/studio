@@ -28,7 +28,7 @@ import { useCurrency } from '@/context/currency-context';
 
 export default function DietForm() {
   const [preferences, setPreferences] = useState('');
-  const [dietType, setDietType] = useState<'cost-optimized' | 'standard' | 'as-per-products'>('standard');
+  const [dietType, setDietType] = useState<'cost-optimized' | 'standard' | 'as-per-products' | 'health-focused'>('standard');
   const [selectedMemberId, setSelectedMemberId] = useState<string>('all');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DietChartOutput | null>(null);
@@ -132,6 +132,7 @@ export default function DietForm() {
               <SelectContent>
                 <SelectItem value="standard">Standard</SelectItem>
                 <SelectItem value="cost-optimized">Cost Optimized</SelectItem>
+                <SelectItem value="health-focused">Health Focused</SelectItem>
                 <SelectItem value="as-per-products">As Per Products</SelectItem>
               </SelectContent>
             </Select>
