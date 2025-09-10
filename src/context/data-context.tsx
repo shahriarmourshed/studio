@@ -45,7 +45,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
-  const [savingGoal, setSavingGoalState] = useState<number>(10000);
+  const [savingGoal, setSavingGoalState] = useState<number>(0);
   const [reminderDays, setReminderDaysState] = useState<number>(3);
   
   const getCollectionRef = useCallback((collectionName: string) => {
@@ -62,7 +62,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIncomes([]);
       setProducts([]);
       setFamilyMembers([]);
-      setSavingGoalState(10000);
+      setSavingGoalState(0);
       setReminderDaysState(3);
       return;
     }
@@ -94,11 +94,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const unsubscribeSettings = onSnapshot(settingsDocRef, (doc) => {
         if (doc.exists()) {
             const settings = doc.data();
-            setSavingGoalState(settings.savingGoal ?? 10000);
+            setSavingGoalState(settings.savingGoal ?? 0);
             setReminderDaysState(settings.reminderDays ?? 3);
         } else {
             // If settings don't exist, create them
-            setDoc(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
+            setDoc(settingsDocRef, { savingGoal: 0, reminderDays: 3 });
         }
     });
     unsubscribes.push(unsubscribeSettings);
