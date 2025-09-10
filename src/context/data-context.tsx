@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -112,19 +113,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 // Set default data
                 defaultExpenses.forEach(item => {
                     const docRef = doc(collection(db, `users/${user.uid}/expenses`));
-                    batch.set(docRef, { ...item, createdAt: Timestamp.now() });
+                    const { id, ...rest } = item;
+                    batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
                 });
                 defaultIncomes.forEach(item => {
                     const docRef = doc(collection(db, `users/${user.uid}/incomes`));
-                    batch.set(docRef, { ...item, createdAt: Timestamp.now() });
+                    const { id, ...rest } = item;
+                    batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
                 });
                 defaultProducts.forEach(item => {
                     const docRef = doc(collection(db, `users/${user.uid}/products`));
-                    batch.set(docRef, { ...item, createdAt: Timestamp.now() });
+                    const { id, ...rest } = item;
+                    batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
                 });
                 defaultFamilyMembers.forEach(item => {
                     const docRef = doc(collection(db, `users/${user.uid}/familyMembers`));
-                    batch.set(docRef, { ...item, createdAt: Timestamp.now() });
+                    const { id, ...rest } = item;
+                    batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
                 });
 
                 // Set settings
@@ -190,7 +195,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       avatarUrl: member.avatarUrl || `https://picsum.photos/100/100?random=${Math.random()}`,
       createdAt: Timestamp.now()
     };
-    await addDoc(collectionRef, newMember);
+    const { id, ...rest } = newMember as any; // Firestore will generate the ID, so we don't include it.
+    await addDoc(collectionRef, rest);
   };
 
   const updateFamilyMember = async (updatedMember: FamilyMember) => {
@@ -331,3 +337,5 @@ export function useData() {
   }
   return context;
 }
+
+    
