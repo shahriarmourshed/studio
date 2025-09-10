@@ -1,12 +1,14 @@
 {
   "avatars": [
-    { "id": "avatar-1", "url": "https://picsum.photos/seed/101/150/150", "hint": "person" },
-    { "id": "avatar-2", "url": "https://picsum.photos/seed/102/150/150", "hint": "person" },
-    { "id": "avatar-3", "url": "https://picsum.photos/seed/103/150/150", "hint": "person" },
-    { "id": "avatar-4", "url": "https://picsum.photos/seed/104/150/150", "hint": "person" },
-    { "id": "avatar-5", "url": "https://picsum.photos/seed/105/150/150", "hint": "person" },
-    { "id": "avatar-6", "url": "https://picsum.photos/seed/106/150/150", "hint": "person" },
-    { "id": "avatar-7", "url": "https://picsum.photos/seed/107/150/150", "hint": "person" },
-    { "id": "avatar-8", "url": "https://picsum.photos/seed/108/150/150", "hint": "person" }
+    { "id": "avatar-baby-1", "url": "https://picsum.photos/seed/baby1/150/150", "hint": "baby" },
+    { "id": "avatar-baby-2", "url": "https://picsum.photos/seed/baby2/150/150", "hint": "baby" },
+    { "id": "avatar-teen-girl-1", "url": "https://picsum.photos/seed/teengirl1/150/150", "hint": "teen girl" },
+    { "id": "avatar-teen-girl-2", "url": "https://picsum.photos/seed/teengirl2/150/150", "hint": "teen girl" },
+    { "id": "avatar-teen-boy-1", "url": "https://picsum.photos/seed/teenboy1/150/150", "hint": "teen boy" },
+    { "id": "avatar-teen-boy-2", "url": "https://picsum.photos/seed/teenboy2/150/150", "hint": "teen boy" },
+    { "id": "avatar-female-1", "url": "https://picsum.photos/seed/woman1/150/150", "hint": "woman" },
+    { "id": "avatar-female-2", "url": "https://picsum.photos/seed/woman2/150/150", "hint": "woman" },
+    { "id": "avatar-male-1", "url": "https://picsum.photos/seed/man1/150/150", "hint": "man" },
+    { "id": "avatar-male-2", "url": "https://picsum.photos/seed/man2/150/150", "hint": "man" }
   ]
 }
