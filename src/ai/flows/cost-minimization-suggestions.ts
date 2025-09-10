@@ -42,8 +42,16 @@ const IncomeSchema = z.object({
     plannedAmount: z.number().optional().describe('The originally planned amount, if it was a planned income.'),
 });
 
+const FamilyMemberSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+  healthConditions: z.string(),
+  dietaryRestrictions: z.string(),
+});
+
 
 const CostMinimizationInputSchema = z.object({
+  familyMembers: z.array(FamilyMemberSchema).describe('A list of all family members and their health data.'),
   plannedIncomes: z.array(IncomeSchema).describe('The list of all planned incomes for the period.'),
   actualIncomes: z.array(IncomeSchema).describe('The list of all actual (completed) incomes for the period.'),
   plannedExpenses: z.array(ExpenseSchema).describe('The list of all planned expenses for the period.'),
@@ -75,7 +83,12 @@ const prompt = ai.definePrompt({
   output: {schema: CostMinimizationOutputSchema},
   prompt: `You are an expert financial advisor for families. Your goal is to provide actionable and personalized suggestions to help a family save money and meet their financial goals.
 
-Analyze the following comprehensive financial and product data for the family:
+Analyze the following comprehensive financial, product, and family data:
+
+**Family Profile:**
+{{#each familyMembers}}
+- Name: {{{name}}}, Age: {{{age}}}, Health: {{{healthConditions}}}, Diet: {{{dietaryRestrictions}}}
+{{/each}}
 
 **Financial Goal:**
 - Monthly Saving Goal: {{{savingGoal}}}
@@ -110,8 +123,8 @@ Analyze the following comprehensive financial and product data for the family:
 Based on all the data provided, generate a detailed list of cost-minimization suggestions. Your advice should be:
 1.  **Insightful:** Identify where the actual spending deviates most from the planned budget.
 2.  **Actionable:** Provide specific, concrete steps the family can take.
-3.  **Personalized:** Tailor your advice to their specific income, expenses, saving goals, and product consumption habits. For example, if they overspend on 'Entertainment', suggest cheaper alternatives. If they buy a product frequently, suggest bulk buying. If their savings are falling short of their goal, highlight the areas with the most potential for reduction.
-4.  **Holistic:** Consider the interplay between their shopping habits (from the product list) and their expenses.
+3.  **Personalized:** Tailor your advice to their specific income, expenses, saving goals, product consumption habits, and family composition (e.g., suggest cost-saving family activities, or budget-friendly meals that align with health needs). For example, if they overspend on 'Entertainment', suggest cheaper alternatives. If they buy a product frequently, suggest bulk buying. If their savings are falling short of their goal, highlight the areas with the most potential for reduction.
+4.  **Holistic:** Consider the interplay between their shopping habits (from the product list), their expenses, and their family's health requirements.
 `,
 });
 

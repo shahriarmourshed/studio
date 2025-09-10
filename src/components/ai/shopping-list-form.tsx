@@ -29,7 +29,7 @@ export default function ShoppingListForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ShoppingListOutput | null>(null);
   const { toast } = useToast();
-  const { products } = useData();
+  const { products, familyMembers, incomes, expenses, savingGoal } = useData();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +37,13 @@ export default function ShoppingListForm() {
     setResult(null);
 
     const input: ShoppingListInput = {
-      familyDietaryPreferences: "General",
+      familyMembers: familyMembers.map(m => ({
+        name: m.name,
+        age: m.age,
+        healthConditions: m.healthConditions,
+        dietaryRestrictions: m.dietaryRestrictions,
+      })),
+      familyDietaryPreferences: "General preferences based on family member data.", // Placeholder, could be a form field
       products: products.map(p => ({
         name: p.name,
         quantity: p.quantity,
@@ -47,6 +53,11 @@ export default function ShoppingListForm() {
         consumptionRate: p.consumptionRate,
         consumptionPeriod: p.consumptionPeriod,
       })),
+      plannedIncomes: incomes.filter(i => i.status === 'planned'),
+      actualIncomes: incomes.filter(i => i.status === 'completed'),
+      plannedExpenses: expenses.filter(e => e.status === 'planned'),
+      actualExpenses: expenses.filter(e => e.status === 'completed'),
+      savingGoal: savingGoal,
       shoppingListPeriod,
     };
 
@@ -70,7 +81,7 @@ export default function ShoppingListForm() {
       <CardHeader>
         <CardTitle>Shopping List Generator</CardTitle>
         <CardDescription>
-          Create a shopping list based on your needs and preferences.
+          Create a smart shopping list based on your inventory, budget, and family needs.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -90,7 +101,7 @@ export default function ShoppingListForm() {
             </Select>
           </div>
           <p className="text-sm text-muted-foreground">
-            Note: The AI will use your current product list to generate the shopping list.
+            Note: The AI will use your family data, budget, and current product list to generate the shopping list.
           </p>
         </CardContent>
         <CardFooter>

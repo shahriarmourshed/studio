@@ -20,7 +20,7 @@ export default function CostMinimizationForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CostMinimizationOutput | null>(null);
   const { toast } = useToast();
-  const { products, expenses, incomes, savingGoal } = useData();
+  const { products, expenses, incomes, savingGoal, familyMembers } = useData();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +28,12 @@ export default function CostMinimizationForm() {
     setResult(null);
 
     const input: CostMinimizationInput = {
+      familyMembers: familyMembers.map(m => ({
+        name: m.name,
+        age: m.age,
+        healthConditions: m.healthConditions,
+        dietaryRestrictions: m.dietaryRestrictions,
+      })),
       plannedIncomes: incomes.filter(i => i.status === 'planned'),
       actualIncomes: incomes.filter(i => i.status === 'completed'),
       plannedExpenses: expenses.filter(e => e.status === 'planned'),
@@ -70,7 +76,7 @@ export default function CostMinimizationForm() {
       <form onSubmit={handleSubmit}>
         <CardContent>
            <p className="text-sm text-muted-foreground">
-              Click the button below to get personalized suggestions. The AI will use all your data, including planned and actual transactions, product inventory, and your savings goal.
+              Click the button below to get personalized suggestions. The AI will use all your data, including family profiles, planned and actual transactions, product inventory, and your savings goal.
             </p>
         </CardContent>
         <CardFooter>
@@ -91,7 +97,7 @@ export default function CostMinimizationForm() {
                     <CardTitle>Here are some suggestions to save money:</CardTitle>
                  </CardHeader>
                  <CardContent>
-                    <p className="text-sm whitespace-pre-wrap font-body">{result.suggestions}</p>
+                    <pre className="bg-muted p-4 rounded-lg whitespace-pre-wrap font-body text-sm">{result.suggestions}</pre>
                  </CardContent>
             </Card>
         </CardContent>

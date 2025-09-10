@@ -31,7 +31,7 @@ export default function DietForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DietChartOutput | null>(null);
   const { toast } = useToast();
-  const { products, familyMembers } = useData();
+  const { products, familyMembers, incomes, expenses, savingGoal } = useData();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +54,11 @@ export default function DietForm() {
         consumptionRate: p.consumptionRate,
         consumptionPeriod: p.consumptionPeriod,
       })),
+      plannedIncomes: incomes.filter(i => i.status === 'planned'),
+      actualIncomes: incomes.filter(i => i.status === 'completed'),
+      plannedExpenses: expenses.filter(e => e.status === 'planned'),
+      actualExpenses: expenses.filter(e => e.status === 'completed'),
+      savingGoal: savingGoal,
       preferences,
       dietType,
     };
@@ -78,7 +83,7 @@ export default function DietForm() {
       <CardHeader>
         <CardTitle>Diet Chart Generator</CardTitle>
         <CardDescription>
-          Based on your family's health data and product list, we'll create a personalized weekly diet plan.
+          Based on your family's health data, budget, and product list, we'll create a personalized weekly diet plan.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -106,7 +111,7 @@ export default function DietForm() {
             </Select>
           </div>
           <p className="text-sm text-muted-foreground">
-            Note: The AI will use your family member profiles and current product needs list.
+            Note: The AI will use your family member profiles, budget, and current product needs list for a holistic plan.
           </p>
         </CardContent>
         <CardFooter>

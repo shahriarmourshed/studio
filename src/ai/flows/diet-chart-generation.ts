@@ -29,13 +29,35 @@ const FamilyMemberSchema = z.object({
   dietaryRestrictions: z.string(),
 });
 
+const ExpenseSchema = z.object({
+    description: z.string(),
+    amount: z.number(),
+    category: z.string(),
+    date: z.string(),
+    recurrent: z.boolean(),
+    notes: z.string().optional(),
+    plannedAmount: z.number().optional().describe('The originally planned amount, if it was a planned expense.'),
+});
+
+const IncomeSchema = z.object({
+    description: z.string(),
+    amount: z.number(),
+    category: z.string(),
+    date: z.string(),
+    recurrent: z.boolean(),
+    notes: z.string().optional(),
+    plannedAmount: z.number().optional().describe('The originally planned amount, if it was a planned income.'),
+});
+
+
 const DietChartInputSchema = z.object({
-  familyMembers: z
-    .array(FamilyMemberSchema)
-    .describe('A list of all family members and their health data.'),
-  products: z
-    .array(ProductSchema)
-    .describe('List of available products, including stock levels, prices, and consumption patterns.'),
+  familyMembers: z.array(FamilyMemberSchema).describe('A list of all family members and their health data.'),
+  products: z.array(ProductSchema).describe('List of available products, including stock levels, prices, and consumption patterns.'),
+  plannedIncomes: z.array(IncomeSchema).describe('The list of all planned incomes for the period.'),
+  actualIncomes: z.array(IncomeSchema).describe('The list of all actual (completed) incomes for the period.'),
+  plannedExpenses: z.array(ExpenseSchema).describe('The list of all planned expenses for the period.'),
+  actualExpenses: z.array(ExpenseSchema).describe('The list of all actual (completed) expenses for the period.'),
+  savingGoal: z.number().describe('The monthly saving goal.'),
   preferences: z.string().describe('General dietary preferences for the family (e.g., more vegetarian meals, low spice).'),
   dietType: z
     .enum(['cost-optimized', 'standard', 'as-per-products'])
@@ -60,7 +82,7 @@ const prompt = ai.definePrompt({
   name: 'dietChartPrompt',
   input: {schema: DietChartInputSchema},
   output: {schema: DietChartOutputSchema},
-  prompt: `You are a nutritionist creating a weekly diet chart for a family.
+  prompt: `You are a nutritionist and financial planner creating a weekly diet chart for a family.
 
   Here is the family data:
   {{#each familyMembers}}
@@ -73,6 +95,13 @@ const prompt = ai.definePrompt({
   {{#each products}}
   - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
+  
+  Here is the family's financial situation:
+  - Monthly Saving Goal: {{{savingGoal}}}
+  - Planned Income: {{#each plannedIncomes}} {{{description}}}: {{{amount}}}; {{/each}}
+  - Actual Income: {{#each actualIncomes}} {{{description}}}: {{{amount}}}; {{/each}}
+  - Planned Expenses: {{#each plannedExpenses}} {{{description}}}: {{{amount}}}; {{/each}}
+  - Actual Expenses: {{#each actualExpenses}} {{{description}}}: {{{amount}}}; {{/each}}
 
   General Family Preferences: {{{preferences}}}
   Diet Type: {{{dietType}}}
@@ -81,7 +110,7 @@ const prompt = ai.definePrompt({
   - The diet chart should be safe and healthy, considering all family members' health conditions and dietary restrictions.
   - It should utilize the available products and align with the specified product needs.
   - Based on the '{{{dietType}}}', adjust the meal suggestions.
-    - 'cost-optimized' should prioritize cheaper meals, using the provided product prices to make decisions.
+    - 'cost-optimized' should prioritize cheaper meals, using the provided product prices and overall family budget to make decisions. Consider the family's saving goal and suggest meals that help them stay on track.
     - 'standard' should be a balanced approach to health and cost.
     - 'as-per-products' should strictly use only the products listed as available in stock.
   `,
