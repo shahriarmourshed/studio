@@ -227,7 +227,7 @@ export default function FamilyPage() {
                         </div>
                     </div>
                   </ScrollArea>
-                <DialogFooter className="pt-4">
+                <DialogFooter className="pt-4 border-t">
                   <Button type="submit" className="w-full">Save Member</Button>
                 </DialogFooter>
                 </form>
@@ -345,7 +345,7 @@ export default function FamilyPage() {
                 </div>
               </div>
               </ScrollArea>
-              <DialogFooter className="pt-4">
+              <DialogFooter className="pt-4 border-t">
                 <Button type="submit" className="w-full">Save Changes</Button>
               </DialogFooter>
             </form>
@@ -356,5 +356,3 @@ export default function FamilyPage() {
     </div>
   );
 }
-
-    
