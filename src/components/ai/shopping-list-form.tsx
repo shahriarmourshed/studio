@@ -29,17 +29,15 @@ export default function ShoppingListForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ShoppingListOutput | null>(null);
   const { toast } = useToast();
-  const { familyMembers, products } = useData();
+  const { products } = useData();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setResult(null);
 
-    const familyDietaryPreferences = familyMembers.map(m => `${m.name}: ${m.dietaryRestrictions}`).join(', ');
-
     const input: ShoppingListInput = {
-      familyDietaryPreferences,
+      familyDietaryPreferences: "General",
       products: products.map(p => ({
         name: p.name,
         quantity: p.quantity,
@@ -72,7 +70,7 @@ export default function ShoppingListForm() {
       <CardHeader>
         <CardTitle>Shopping List Generator</CardTitle>
         <CardDescription>
-          Create a shopping list based on your family's needs and preferences.
+          Create a shopping list based on your needs and preferences.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -92,7 +90,7 @@ export default function ShoppingListForm() {
             </Select>
           </div>
           <p className="text-sm text-muted-foreground">
-            Note: The AI will use your family's dietary restrictions and current product list to generate the shopping list.
+            Note: The AI will use your current product list to generate the shopping list.
           </p>
         </CardContent>
         <CardFooter>

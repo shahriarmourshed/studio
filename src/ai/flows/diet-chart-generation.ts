@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview Generates a personalized weekly diet chart and shopping list based on family health data and product needs.
+ * @fileOverview Generates a personalized weekly diet chart and shopping list based on product needs.
  *
  * - generateDietChart - A function that generates the diet chart and shopping list.
  * - DietChartInput - The input type for the generateDietChart function.
@@ -11,18 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-
-const HealthDataSchema = z.object({
-  memberId: z.string().describe('Unique identifier for the family member.'),
-  name: z.string().describe("Name of the family member."),
-  age: z.number().describe('Age of the family member.'),
-  healthConditions: z
-    .string()
-    .describe('Any specific health conditions of the member.'),
-  dietaryRestrictions: z
-    .string()
-    .describe('Any dietary restrictions of the member (e.g., allergies).'),
-});
 
 const ProductSchema = z.object({
   name: z.string().describe('Name of the product.'),
@@ -35,9 +23,6 @@ const ProductSchema = z.object({
 });
 
 const DietChartInputSchema = z.object({
-  familyHealthData: z
-    .array(HealthDataSchema)
-    .describe('Health data for each family member.'),
   products: z
     .array(ProductSchema)
     .describe('List of available products, including stock levels, prices, and consumption patterns.'),
@@ -67,11 +52,6 @@ const prompt = ai.definePrompt({
   output: {schema: DietChartOutputSchema},
   prompt: `You are a nutritionist creating a weekly diet chart for a family.
 
-  Consider the following health data for each family member:
-  {{#each familyHealthData}}
-  - Name: {{{name}}}, Age: {{{age}}}, Health Conditions: {{{healthConditions}}}, Dietary Restrictions: {{{dietaryRestrictions}}}
-  {{/each}}
-
   Here is the list of available products, their stock, and prices:
   {{#each products}}
   - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
@@ -81,7 +61,6 @@ const prompt = ai.definePrompt({
   Diet Type: {{{dietType}}}
 
   Generate a detailed and personalized weekly diet chart in markdown format. It should include breakfast, lunch, dinner, and snacks for each day of the week.
-  - The diet chart must take into account each family member's dietary restrictions and name.
   - The diet chart should utilize the available products and align with the specified product needs.
   - Optimize the diet to be as healthy as possible.
   - Based on the '{{{dietType}}}', adjust the meal suggestions.

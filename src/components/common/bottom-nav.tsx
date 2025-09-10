@@ -7,7 +7,6 @@ import {
   ShoppingBasket,
   Wallet,
   Sparkles,
-  Users,
   User,
   ListChecks,
 } from 'lucide-react';
@@ -19,7 +18,6 @@ const navItems = [
   { href: '/budget', label: 'Budget', icon: Wallet },
   { href: '/transactions', label: 'Transactions', icon: ListChecks },
   { href: '/ai', label: 'AI', icon: Sparkles },
-  { href: '/family', label: 'Family', icon: Users },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
