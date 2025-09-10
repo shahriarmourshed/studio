@@ -145,7 +145,7 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle>Account</CardTitle>
              <CardDescription>Manage your account settings.</CardDescription>
-          </Header>
+          </CardHeader>
           <CardContent>
              <div className="flex items-center justify-between">
                 <div>
