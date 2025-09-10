@@ -28,6 +28,7 @@ interface DataContextType {
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'createdAt'>) => Promise<void>;
   updateFamilyMember: (member: FamilyMember) => Promise<void>;
   deleteFamilyMember: (memberId: string) => Promise<void>;
+  clearFamilyMembers: () => Promise<void>;
   completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => Promise<void>;
   cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => Promise<void>;
   loading: boolean;
@@ -214,6 +215,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await deleteDoc(docRef);
   };
 
+  const clearFamilyMembers = async () => {
+    const collectionRef = getCollectionRef('familyMembers');
+    if (!collectionRef) return;
+
+    const snapshot = await getDocs(collectionRef);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
+    await batch.commit();
+  };
+
   const completePlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => {
     const collectionRef = type === 'income' ? getCollectionRef('incomes') : getCollectionRef('expenses');
     if (!collectionRef) return;
@@ -276,6 +289,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addFamilyMember,
     updateFamilyMember,
     deleteFamilyMember,
+    clearFamilyMembers,
     completePlannedTransaction, 
     cancelPlannedTransaction,
     loading
@@ -295,5 +309,3 @@ export function useData() {
   }
   return context;
 }
-
-    

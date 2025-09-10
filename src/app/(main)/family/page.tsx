@@ -33,13 +33,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Edit, Trash2, ShieldAlert } from "lucide-react";
 import Image from 'next/image';
 import { useData } from '@/context/data-context';
 import type { FamilyMember } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 export default function FamilyPage() {
-  const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember } = useData();
+  const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember, clearFamilyMembers } = useData();
+  const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
@@ -110,51 +112,82 @@ export default function FamilyPage() {
   const handleDeleteMember = (memberId: string) => {
     deleteFamilyMember(memberId);
   }
+  
+  const handleClearAll = async () => {
+    await clearFamilyMembers();
+    toast({
+        title: "Success",
+        description: "All family members have been deleted.",
+    })
+  }
 
   return (
     <div className="container mx-auto">
       <PageHeader title="Family Members" subtitle="Manage your family's profiles.">
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setIsAddDialogOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Member
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Family Member</DialogTitle>
-              <DialogDescription>
-                Enter the details of the new family member.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddMember}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">Name</Label>
-                  <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
+        <div className="flex items-center gap-2">
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                        <ShieldAlert className="mr-2 h-4 w-4"/>
+                        Clear All
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete all family members from your database. This is a one-time action to clean up persistent demo data.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearAll}>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+                <Button onClick={() => setIsAddDialogOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Member
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                <DialogTitle>Add Family Member</DialogTitle>
+                <DialogDescription>
+                    Enter the details of the new family member.
+                </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddMember}>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">Name</Label>
+                    <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="age" className="text-right">Age</Label>
+                    <Input id="age" type="number" placeholder="e.g., 34" className="col-span-3" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="avatar" className="text-right">Avatar URL</Label>
+                    <Input id="avatar" placeholder="https://..." className="col-span-3" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="health" className="text-right pt-2">Health Conditions</Label>
+                    <Textarea id="health" placeholder="e.g., High blood pressure" className="col-span-3" value={newMemberHealth} onChange={e => setNewMemberHealth(e.target.value)} />
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="diet" className="text-right pt-2">Dietary Restrictions</Label>
+                    <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
+                    </div>
+                    <Button type="submit" className="w-full">Save Member</Button>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="age" className="text-right">Age</Label>
-                  <Input id="age" type="number" placeholder="e.g., 34" className="col-span-3" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
-                </div>
-                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="avatar" className="text-right">Avatar URL</Label>
-                  <Input id="avatar" placeholder="https://..." className="col-span-3" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="health" className="text-right pt-2">Health Conditions</Label>
-                  <Textarea id="health" placeholder="e.g., High blood pressure" className="col-span-3" value={newMemberHealth} onChange={e => setNewMemberHealth(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="diet" className="text-right pt-2">Dietary Restrictions</Label>
-                  <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
-                </div>
-                <Button type="submit" className="w-full">Save Member</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                </form>
+            </DialogContent>
+            </Dialog>
+        </div>
       </PageHeader>
       
       <div className="px-4 sm:px-0">
