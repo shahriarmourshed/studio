@@ -40,6 +40,7 @@ import type { FamilyMember } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import avatars from '@/lib/placeholder-avatars.json';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function FamilyPage() {
   const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember, clearFamilyMembers } = useData();
@@ -182,47 +183,52 @@ export default function FamilyPage() {
                 </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAddMember}>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">Name</Label>
-                    <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="age" className="text-right">Vitals</Label>
-                        <div className="col-span-3 grid grid-cols-3 gap-2">
-                            <Input id="age" type="number" placeholder="Age" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
-                            <Input id="height" type="number" placeholder="Height (cm)" value={newMemberHeight} onChange={e => setNewMemberHeight(e.target.value)} required />
-                            <Input id="weight" type="number" placeholder="Weight (kg)" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                      <Label className="text-right pt-2">Avatar</Label>
-                      <div className="col-span-3">
-                          <div className="grid grid-cols-5 gap-2 mb-2">
-                              {avatars.avatars.map(avatar => (
-                                  <button
-                                      type="button"
-                                      key={avatar.id}
-                                      onClick={() => setNewMemberAvatar(avatar.url)}
-                                      className={cn("rounded-full border-2 p-0.5", newMemberAvatar === avatar.url ? "border-primary" : "border-transparent hover:border-primary/50")}
-                                  >
-                                      <Image src={avatar.url} alt={avatar.hint} width={48} height={48} className="rounded-full" data-ai-hint={avatar.hint} />
-                                  </button>
-                              ))}
-                          </div>
-                          <Label htmlFor="avatar-url" className="text-xs text-muted-foreground">Or paste an image URL</Label>
-                          <Input id="avatar-url" placeholder="https://..." className="mt-1" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
+                <ScrollArea className="max-h-[70vh] p-4">
+                  <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="name" className="text-right">Name</Label>
+                      <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
                       </div>
-                    </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="health" className="text-right pt-2">Health Conditions</Label>
-                    <Textarea id="health" placeholder="e.g., High blood pressure" className="col-span-3" value={newMemberHealth} onChange={e => setNewMemberHealth(e.target.value)} />
-                    </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="diet" className="text-right pt-2">Dietary Restrictions</Label>
-                    <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
-                    </div>
-                    <Button type="submit" className="w-full">Save Member</Button>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="age" className="text-right">Vitals</Label>
+                          <div className="col-span-3 grid grid-cols-3 gap-2">
+                              <Input id="age" type="number" placeholder="Age" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
+                              <Input id="height" type="number" placeholder="Height (cm)" value={newMemberHeight} onChange={e => setNewMemberHeight(e.target.value)} required />
+                              <Input id="weight" type="number" placeholder="Weight (kg)" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
+                          </div>
+                      </div>
+                      <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Avatar</Label>
+                        <div className="col-span-3">
+                            <div className="grid grid-cols-5 gap-2 mb-2">
+                                {avatars.avatars.map(avatar => (
+                                    <button
+                                        type="button"
+                                        key={avatar.id}
+                                        onClick={() => setNewMemberAvatar(avatar.url)}
+                                        className={cn("rounded-full border-2 p-0.5", newMemberAvatar === avatar.url ? "border-primary" : "border-transparent hover:border-primary/50")}
+                                    >
+                                        <Image src={avatar.url} alt={avatar.hint} width={48} height={48} className="rounded-full" data-ai-hint={avatar.hint} />
+                                    </button>
+                                ))}
+                            </div>
+                            <Label htmlFor="avatar-url" className="text-xs text-muted-foreground">Or paste an image URL</Label>
+                            <Input id="avatar-url" placeholder="https://..." className="mt-1" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-4 items-start gap-4">
+                      <Label htmlFor="health" className="text-right pt-2">Health Conditions</Label>
+                      <Textarea id="health" placeholder="e.g., High blood pressure" className="col-span-3" value={newMemberHealth} onChange={e => setNewMemberHealth(e.target.value)} />
+                      </div>
+                      <div className="grid grid-cols-4 items-start gap-4">
+                      <Label htmlFor="diet" className="text-right pt-2">Dietary Restrictions</Label>
+                      <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
+                      </div>
+                      
+                  </div>
+                </ScrollArea>
+                <div className="p-4 border-t">
+                  <Button type="submit" className="w-full">Save Member</Button>
                 </div>
                 </form>
             </DialogContent>
@@ -295,6 +301,7 @@ export default function FamilyPage() {
               <DialogTitle>Edit Family Member</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdateMember}>
+            <ScrollArea className="max-h-[70vh] p-4">
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-name" className="text-right">Name</Label>
@@ -335,6 +342,10 @@ export default function FamilyPage() {
                   <Label htmlFor="edit-diet" className="text-right pt-2">Dietary Restrictions</Label>
                   <Textarea id="edit-diet" className="col-span-3" value={editMemberDiet} onChange={e => setEditMemberDiet(e.target.value)} />
                 </div>
+                
+              </div>
+              </ScrollArea>
+              <div className="p-4 border-t">
                 <Button type="submit" className="w-full">Save Changes</Button>
               </div>
             </form>
