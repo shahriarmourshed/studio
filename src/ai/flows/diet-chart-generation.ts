@@ -62,6 +62,7 @@ const DietChartInputSchema = z.object({
   dietType: z
     .enum(['cost-optimized', 'standard', 'as-per-products'])
     .describe('The type of diet plan to generate.'),
+  currencySymbol: z.string().describe('The currency symbol used in the application.'),
 });
 
 export type DietChartInput = z.infer<typeof DietChartInputSchema>;
@@ -82,7 +83,7 @@ const prompt = ai.definePrompt({
   name: 'dietChartPrompt',
   input: {schema: DietChartInputSchema},
   output: {schema: DietChartOutputSchema},
-  prompt: `You are a nutritionist and financial planner creating a weekly diet chart for a family.
+  prompt: `You are a nutritionist and financial planner creating a weekly diet chart for a family. All monetary values are in {{{currencySymbol}}}.
 
   Here is the family data:
   {{#each familyMembers}}
@@ -93,15 +94,15 @@ const prompt = ai.definePrompt({
 
   Here is the list of available products, their stock, and prices:
   {{#each products}}
-  - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
+  - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{currencySymbol}}}{{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
   
   Here is the family's financial situation:
-  - Monthly Saving Goal: {{{savingGoal}}}
-  - Planned Income: {{#each plannedIncomes}} {{{description}}}: {{{amount}}}; {{/each}}
-  - Actual Income: {{#each actualIncomes}} {{{description}}}: {{{amount}}}; {{/each}}
-  - Planned Expenses: {{#each plannedExpenses}} {{{description}}}: {{{amount}}}; {{/each}}
-  - Actual Expenses: {{#each actualExpenses}} {{{description}}}: {{{amount}}}; {{/each}}
+  - Monthly Saving Goal: {{{currencySymbol}}}{{{savingGoal}}}
+  - Planned Income: {{#each plannedIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
+  - Actual Income: {{#each actualIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
+  - Planned Expenses: {{#each plannedExpenses}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
+  - Actual Expenses: {{#each actualExpenses}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
 
   General Family Preferences: {{{preferences}}}
   Diet Type: {{{dietType}}}

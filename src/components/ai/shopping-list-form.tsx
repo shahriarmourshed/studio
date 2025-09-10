@@ -23,6 +23,7 @@ import { useData } from '@/context/data-context';
 import { Loader2,ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '../ui/label';
+import { useCurrency } from '@/context/currency-context';
 
 export default function ShoppingListForm() {
   const [shoppingListPeriod, setShoppingListPeriod] = useState<'daily' | 'weekly' | 'half-monthly' | 'monthly'>('weekly');
@@ -30,6 +31,7 @@ export default function ShoppingListForm() {
   const [result, setResult] = useState<ShoppingListOutput | null>(null);
   const { toast } = useToast();
   const { products, familyMembers, incomes, expenses, savingGoal } = useData();
+  const { getSymbol } = useCurrency();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +61,7 @@ export default function ShoppingListForm() {
       actualExpenses: expenses.filter(e => e.status === 'completed'),
       savingGoal: savingGoal,
       shoppingListPeriod,
+      currencySymbol: getSymbol(),
     };
 
     try {

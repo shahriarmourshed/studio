@@ -15,12 +15,14 @@ import { costMinimizationSuggestions, CostMinimizationInput, CostMinimizationOut
 import { useData } from '@/context/data-context';
 import { Loader2, Lightbulb } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/context/currency-context';
 
 export default function CostMinimizationForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CostMinimizationOutput | null>(null);
   const { toast } = useToast();
   const { products, expenses, incomes, savingGoal, familyMembers } = useData();
+  const { getSymbol } = useCurrency();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +50,7 @@ export default function CostMinimizationForm() {
         consumptionPeriod: p.consumptionPeriod,
       })),
       savingGoal: savingGoal,
+      currencySymbol: getSymbol(),
     };
 
     try {

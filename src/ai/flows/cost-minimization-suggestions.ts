@@ -58,6 +58,7 @@ const CostMinimizationInputSchema = z.object({
   actualExpenses: z.array(ExpenseSchema).describe('The list of all actual (completed) expenses for the period.'),
   products: z.array(ProductSchema).describe('A list of all available products and their details.'),
   savingGoal: z.number().describe('The monthly saving goal.'),
+  currencySymbol: z.string().describe('The currency symbol used in the application.'),
 });
 
 export type CostMinimizationInput = z.infer<typeof CostMinimizationInputSchema>;
@@ -83,7 +84,7 @@ const prompt = ai.definePrompt({
   output: {schema: CostMinimizationOutputSchema},
   prompt: `You are an expert financial advisor for families. Your goal is to provide actionable and personalized suggestions to help a family save money and meet their financial goals.
 
-Analyze the following comprehensive financial, product, and family data:
+Analyze the following comprehensive financial, product, and family data. All monetary values are in {{{currencySymbol}}}.
 
 **Family Profile:**
 {{#each familyMembers}}
@@ -91,31 +92,31 @@ Analyze the following comprehensive financial, product, and family data:
 {{/each}}
 
 **Financial Goal:**
-- Monthly Saving Goal: {{{savingGoal}}}
+- Monthly Saving Goal: {{{currencySymbol}}}{{{savingGoal}}}
 
 **Income Analysis:**
 - Planned Income:
 {{#each plannedIncomes}}
-  - {{{description}}} ({{{category}}}): {{{amount}}} on {{{date}}}{{#if recurrent}} (recurrent){{/if}}
+  - {{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}} on {{{date}}}{{#if recurrent}} (recurrent){{/if}}
 {{/each}}
 - Actual Income:
 {{#each actualIncomes}}
-  - {{{description}}} ({{{category}}}): {{{amount}}} on {{{date}}} {{#if plannedAmount}}(planned: {{{plannedAmount}}}){{/if}}
+  - {{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}} on {{{date}}} {{#if plannedAmount}}(planned: {{{currencySymbol}}}{{{plannedAmount}}}){{/if}}
 {{/each}}
 
 **Expense Analysis:**
 - Planned Expenses:
 {{#each plannedExpenses}}
-  - {{{description}}} ({{{category}}}): {{{amount}}} on {{{date}}}{{#if recurrent}} (recurrent){{/if}}
+  - {{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}} on {{{date}}}{{#if recurrent}} (recurrent){{/if}}
 {{/each}}
 - Actual Expenses:
 {{#each actualExpenses}}
-  - {{{description}}} ({{{category}}}): {{{amount}}} on {{{date}}} {{#if plannedAmount}}(planned: {{{plannedAmount}}}){{/if}}
+  - {{{description}}} ({{{category}}}): {{{currencySymbol}}}{{{amount}}} on {{{date}}} {{#if plannedAmount}}(planned: {{{currencySymbol}}}{{{plannedAmount}}}){{/if}}
 {{/each}}
 
 **Product & Inventory Analysis:**
 {{#each products}}
-- Product: {{{name}}}, Last Bought: {{{quantity}}}{{{unit}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
+- Product: {{{name}}}, Last Bought: {{{quantity}}}{{{unit}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{currencySymbol}}}{{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
 {{/each}}
 
 **Your Task:**

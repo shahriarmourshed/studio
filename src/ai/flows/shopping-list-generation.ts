@@ -61,6 +61,7 @@ const ShoppingListInputSchema = z.object({
   shoppingListPeriod: z
     .enum(['daily', 'weekly', 'half-monthly', 'monthly'])
     .describe('The desired period for the shopping list.'),
+  currencySymbol: z.string().describe('The currency symbol used in the application.'),
 });
 
 export type ShoppingListInput = z.infer<typeof ShoppingListInputSchema>;
@@ -83,7 +84,7 @@ const prompt = ai.definePrompt({
   name: 'shoppingListPrompt',
   input: {schema: ShoppingListInputSchema},
   output: {schema: ShoppingListOutputSchema},
-  prompt: `You are a financial planner and nutritionist creating a shopping list for a family.
+  prompt: `You are a financial planner and nutritionist creating a shopping list for a family. All monetary values are in {{{currencySymbol}}}.
 
   Here is the family data:
   {{#each familyMembers}}
@@ -94,13 +95,13 @@ const prompt = ai.definePrompt({
 
   Here is the list of available products, their stock, and consumption patterns:
   {{#each products}}
-  - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
+  - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{currencySymbol}}}{{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
 
   Here is the family's financial situation:
-  - Monthly Saving Goal: {{{savingGoal}}}
-  - Actual Income so far: {{#each actualIncomes}} {{{description}}}: {{{amount}}}; {{/each}}
-  - Actual Expenses so far: {{#each actualExpenses}} {{{description}}}: {{{amount}}}; {{/each}}
+  - Monthly Saving Goal: {{{currencySymbol}}}{{{savingGoal}}}
+  - Actual Income so far: {{#each actualIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
+  - Actual Expenses so far: {{#each actualExpenses}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
 
   Generate a shopping list in markdown format for the '{{{shoppingListPeriod}}}' period.
   - The list should be based on the family's preferences and the product consumption needs provided.

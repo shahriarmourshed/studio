@@ -24,6 +24,7 @@ import { generateDietChart, DietChartInput, DietChartOutput } from '@/ai/flows/d
 import { useData } from '@/context/data-context';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrency } from '@/context/currency-context';
 
 export default function DietForm() {
   const [preferences, setPreferences] = useState('');
@@ -32,6 +33,7 @@ export default function DietForm() {
   const [result, setResult] = useState<DietChartOutput | null>(null);
   const { toast } = useToast();
   const { products, familyMembers, incomes, expenses, savingGoal } = useData();
+  const { getSymbol } = useCurrency();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +63,7 @@ export default function DietForm() {
       savingGoal: savingGoal,
       preferences,
       dietType,
+      currencySymbol: getSymbol(),
     };
 
     try {
