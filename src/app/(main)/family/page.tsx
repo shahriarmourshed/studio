@@ -175,16 +175,16 @@ export default function FamilyPage() {
                 Add Member
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-2xl p-0">
+                <DialogHeader className="p-6 pb-0">
                 <DialogTitle>Add Family Member</DialogTitle>
                 <DialogDescription>
                     Enter the details of the new family member.
                 </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAddMember}>
-                <ScrollArea className="max-h-[70vh] p-4">
-                  <div className="grid gap-4 py-4">
+                <ScrollArea className="max-h-[70vh] p-6">
+                  <div className="grid gap-4">
                       <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="name" className="text-right">Name</Label>
                       <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
@@ -227,8 +227,8 @@ export default function FamilyPage() {
                       
                   </div>
                 </ScrollArea>
-                <div className="p-4 border-t">
-                  <Button type="submit" className="w-full">Save Member</Button>
+                <div className="p-6 pt-0 border-t">
+                  <Button type="submit" className="w-full mt-6">Save Member</Button>
                 </div>
                 </form>
             </DialogContent>
@@ -296,13 +296,13 @@ export default function FamilyPage() {
 
        {selectedMember && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-2xl">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-2xl p-0">
+            <DialogHeader className="p-6 pb-0">
               <DialogTitle>Edit Family Member</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdateMember}>
-            <ScrollArea className="max-h-[70vh] p-4">
-              <div className="grid gap-4 py-4">
+            <ScrollArea className="max-h-[70vh] p-6">
+              <div className="grid gap-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-name" className="text-right">Name</Label>
                   <Input id="edit-name" className="col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
@@ -345,8 +345,8 @@ export default function FamilyPage() {
                 
               </div>
               </ScrollArea>
-              <div className="p-4 border-t">
-                <Button type="submit" className="w-full">Save Changes</Button>
+              <div className="p-6 pt-0 border-t">
+                <Button type="submit" className="w-full mt-6">Save Changes</Button>
               </div>
             </form>
           </DialogContent>
@@ -356,3 +356,5 @@ export default function FamilyPage() {
     </div>
   );
 }
+
+    
