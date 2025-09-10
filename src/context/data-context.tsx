@@ -111,8 +111,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 const collectionRef = collection(db, `users/${user.uid}/${coll.name}`);
                 coll.data.forEach(item => {
                     const newDocRef = doc(collectionRef); // Firestore generates a unique ID
-                    const newId = newDocRef.id;
-                    const dataWithId = { ...item, id: newId, createdAt: Timestamp.now() };
+                    const dataWithId = { ...item, id: newDocRef.id, createdAt: Timestamp.now() };
                     transaction.set(newDocRef, dataWithId);
                 });
             });
