@@ -29,6 +29,7 @@ import { useCurrency } from '@/context/currency-context';
 export default function DietForm() {
   const [preferences, setPreferences] = useState('');
   const [dietType, setDietType] = useState<'cost-optimized' | 'standard' | 'as-per-products'>('standard');
+  const [selectedMemberId, setSelectedMemberId] = useState<string>('all');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DietChartOutput | null>(null);
   const { toast } = useToast();
@@ -42,6 +43,8 @@ export default function DietForm() {
 
     const plainIncomes = incomes.map(({ createdAt, ...rest }) => rest);
     const plainExpenses = expenses.map(({ createdAt, ...rest }) => rest);
+    
+    const selectedMember = familyMembers.find(m => m.id === selectedMemberId);
 
     const input: DietChartInput = {
       familyMembers: familyMembers.map(m => ({
@@ -50,6 +53,7 @@ export default function DietForm() {
         healthConditions: m.healthConditions || 'none',
         dietaryRestrictions: m.dietaryRestrictions || 'none',
       })),
+      selectedMemberName: selectedMemberId === 'all' ? undefined : selectedMember?.name,
       products: products.map(p => ({
         name: p.name,
         quantity: p.quantity,
@@ -94,6 +98,22 @@ export default function DietForm() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="member">Generate For</Label>
+            <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
+              <SelectTrigger id="member">
+                <SelectValue placeholder="Select a family member" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Members</SelectItem>
+                {familyMembers.map(member => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="preferences">General Family Dietary Preferences</Label>
             <Textarea

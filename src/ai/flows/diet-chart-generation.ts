@@ -53,6 +53,7 @@ const IncomeSchema = z.object({
 
 const DietChartInputSchema = z.object({
   familyMembers: z.array(FamilyMemberSchema).describe('A list of all family members and their health data.'),
+  selectedMemberName: z.string().optional().describe('The name of the family member to generate the diet chart for. If "all", generate for all members.'),
   products: z.array(ProductSchema).describe('List of available products, including stock levels, prices, and consumption patterns.'),
   plannedIncomes: z.array(IncomeSchema).describe('The list of all planned incomes for the period.'),
   actualIncomes: z.array(IncomeSchema).describe('The list of all actual (completed) incomes for the period.'),
@@ -85,7 +86,15 @@ const prompt = ai.definePrompt({
   model: 'googleai/gemini-1.5-flash',
   input: {schema: DietChartInputSchema},
   output: {schema: DietChartOutputSchema},
-  prompt: `You are a nutritionist and financial planner creating a weekly diet chart for a family. All monetary values are in {{{currencySymbol}}}.
+  prompt: `You are a nutritionist and financial planner creating a weekly diet chart.
+  
+  {{#if selectedMemberName}}
+  This diet chart is specifically for: **{{{selectedMemberName}}}**.
+  {{else}}
+  This diet chart is for the entire family.
+  {{/if}}
+  
+  All monetary values are in {{{currencySymbol}}}.
 
   Here is the family data:
   {{#each familyMembers}}
@@ -111,6 +120,7 @@ const prompt = ai.definePrompt({
 
   Generate a detailed and personalized weekly diet chart in markdown format. It should include breakfast, lunch, dinner, and snacks for each day of the week.
   - The diet chart should be safe and healthy, considering all family members' health conditions and dietary restrictions.
+  - {{#if selectedMemberName}}Focus the diet plan on **{{{selectedMemberName}}}**, but ensure it is generally compatible with the rest of the family where possible.{{/if}}
   - It should utilize the available products and align with the specified product needs.
   - Based on the '{{{dietType}}}', adjust the meal suggestions.
     - 'cost-optimized' should prioritize cheaper meals, using the provided product prices and overall family budget to make decisions. Consider the family's saving goal and suggest meals that help them stay on track.
