@@ -48,9 +48,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [savingGoal, setSavingGoalState] = useState<number>(10000);
   const [reminderDays, setReminderDaysState] = useState<number>(3);
   
-  const userDocRef = user ? doc(db, 'users', user.uid) : null;
-  const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
-
   const getCollectionRef = (collectionName: string) => {
     return user ? collection(db, `users/${user.uid}/${collectionName}`) : null;
   }
@@ -71,6 +68,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     
     setLoading(true);
     const unsubscribes: (() => void)[] = [];
+    const userDocRef = doc(db, 'users', user.uid);
+    const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
+
 
     const setupSubscription = (collectionName: string, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
         const collectionRef = getCollectionRef(collectionName);
@@ -153,6 +153,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const setSavingGoal = async (goal: number) => {
+    const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
     if (settingsDocRef) {
         setSavingGoalState(goal); // Optimistic update
         await setDoc(settingsDocRef, { savingGoal: goal }, { merge: true });
@@ -160,6 +161,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }
 
   const setReminderDays = async (days: number) => {
+      const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
       if (settingsDocRef) {
           setReminderDaysState(days); // Optimistic update
           await setDoc(settingsDocRef, { reminderDays: days }, { merge: true });
@@ -195,8 +197,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       avatarUrl: member.avatarUrl || `https://picsum.photos/100/100?random=${Math.random()}`,
       createdAt: Timestamp.now()
     };
-    const { id, ...rest } = newMember as any; // Firestore will generate the ID, so we don't include it.
-    await addDoc(collectionRef, rest);
+    await addDoc(collectionRef, newMember);
   };
 
   const updateFamilyMember = async (updatedMember: FamilyMember) => {
@@ -337,5 +338,3 @@ export function useData() {
   }
   return context;
 }
-
-    

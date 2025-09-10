@@ -29,7 +29,7 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message,
+        description: error.message || "An unknown error occurred.",
       });
     } finally {
         setLoading(false);

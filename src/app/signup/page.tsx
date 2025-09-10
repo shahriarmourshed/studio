@@ -30,7 +30,7 @@ export default function SignupPage() {
       toast({
         variant: "destructive",
         title: "Signup Failed",
-        description: error.message,
+        description: error.message || "An unknown error occurred.",
       });
     } finally {
         setLoading(false);

@@ -76,7 +76,7 @@ export default function ProductsPage() {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newProductName && newProductQuantity && newProductCurrentStock && newProductPrice) {
-      addProduct({
+      await addProduct({
         name: newProductName,
         quantity: parseFloat(newProductQuantity),
         currentStock: parseFloat(newProductCurrentStock),

@@ -66,7 +66,7 @@ export default function FamilyPage() {
         dietaryRestrictions: newMemberDiet,
         avatarUrl: newMemberAvatarUrl,
       };
-      addFamilyMember(newMember);
+      await addFamilyMember(newMember);
       resetAddForm();
     }
   };
