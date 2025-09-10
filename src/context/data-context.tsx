@@ -90,14 +90,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
             const settingsDoc = await transaction.get(settingsDocRef);
 
             if (settingsDoc.exists()) {
-                // User document and data already exist, so do nothing.
+                // User document and data already exist, so just read settings.
                 const settingsData = settingsDoc.data();
                 setSavingGoalState(settingsData.savingGoal ?? 10000);
                 setReminderDaysState(settingsData.reminderDays ?? 3);
                 return;
             }
 
-            // Document does not exist, it's a new user. Initialize data.
+            // Document does not exist, it's a new user. Initialize all data.
+            transaction.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3, hasBeenInitialized: true });
+            
             const collectionsToInitialize = [
                 { name: 'products', data: defaultProducts },
                 { name: 'familyMembers', data: defaultFamilyMembers },
@@ -109,12 +111,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 const collectionRef = collection(db, `users/${user.uid}/${coll.name}`);
                 coll.data.forEach(item => {
                     const newDocRef = doc(collectionRef); // Firestore generates a unique ID
-                    transaction.set(newDocRef, { ...item, createdAt: Timestamp.now() });
+                    const newId = newDocRef.id;
+                    const dataWithId = { ...item, id: newId, createdAt: Timestamp.now() };
+                    transaction.set(newDocRef, dataWithId);
                 });
             });
-
-            // Finally, create the settings document to mark initialization as complete.
-            transaction.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3, hasBeenInitialized: true });
         });
       } catch (error) {
         console.error("Error during initial data transaction:", error);
@@ -166,8 +167,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addExpense = async (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Expense['status'] = 'planned') => {
     const collectionRef = getCollectionRef('expenses');
     if (!collectionRef) return;
-    const newExpense = { ...expense, status, createdAt: Timestamp.now() };
-    await addDoc(collectionRef, newExpense);
+    const docRef = doc(collectionRef);
+    const newExpense = { ...expense, id: docRef.id, status, createdAt: Timestamp.now() };
+    await setDoc(docRef, newExpense);
   };
   
   const updateExpense = async (updatedExpense: Expense) => {
@@ -187,12 +189,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
     const collectionRef = getCollectionRef('familyMembers');
     if (!collectionRef) return;
+    const docRef = doc(collectionRef);
     const newMember = { 
-      ...member, 
+      ...member,
+      id: docRef.id, 
       avatarUrl: member.avatarUrl || `https://picsum.photos/100/100?random=${Math.random()}`,
       createdAt: Timestamp.now()
     };
-    await addDoc(collectionRef, newMember);
+    await setDoc(docRef, newMember);
   };
 
   const updateFamilyMember = async (updatedMember: FamilyMember) => {
@@ -211,12 +215,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
       const collectionRef = getCollectionRef('products');
       if (!collectionRef) return;
+      const docRef = doc(collectionRef);
       const newProduct = { 
-        ...product, 
+        ...product,
+        id: docRef.id, 
         lastUpdated: new Date().toISOString(),
         createdAt: Timestamp.now()
       };
-      await addDoc(collectionRef, newProduct);
+      await setDoc(docRef, newProduct);
   };
 
   const updateProduct = async (updatedProduct: Product) => {
@@ -235,8 +241,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addIncome = async (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Income['status'] = 'planned') => {
       const collectionRef = getCollectionRef('incomes');
       if (!collectionRef) return;
-      const newIncome = { ...income, status, createdAt: Timestamp.now() };
-      await addDoc(collectionRef, newIncome);
+      const docRef = doc(collectionRef);
+      const newIncome = { ...income, id: docRef.id, status, createdAt: Timestamp.now() };
+      await setDoc(docRef, newIncome);
   };
 
   const updateIncome = async (updatedIncome: Income) => {
@@ -333,5 +340,3 @@ export function useData() {
   }
   return context;
 }
-
-    
