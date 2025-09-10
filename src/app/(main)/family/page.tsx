@@ -59,7 +59,7 @@ export default function FamilyPage() {
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMemberName && newMemberAge) {
-      const newMember: Omit<FamilyMember, 'id'> = {
+      const newMember: Omit<FamilyMember, 'id' | 'createdAt'> = {
         name: newMemberName,
         age: parseInt(newMemberAge, 10),
         healthConditions: newMemberHealth,

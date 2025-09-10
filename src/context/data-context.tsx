@@ -189,7 +189,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
 
-  const addFamilyMember = async (member: Omit<FamilyMember, 'id'>) => {
+  const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
     const collectionRef = getCollectionRef('familyMembers');
     if (!collectionRef) return;
     const newMember = { 
