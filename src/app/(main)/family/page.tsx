@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -175,61 +176,60 @@ export default function FamilyPage() {
                 Add Member
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl p-0">
-                <DialogHeader className="p-6 pb-0">
+            <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
+                <DialogHeader>
                 <DialogTitle>Add Family Member</DialogTitle>
                 <DialogDescription>
                     Enter the details of the new family member.
                 </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddMember}>
-                <ScrollArea className="max-h-[70vh]">
-                  <div className="p-6 grid gap-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="name" className="text-right">Name</Label>
-                      <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="age" className="text-right">Vitals</Label>
-                          <div className="col-span-3 grid grid-cols-3 gap-2">
-                              <Input id="age" type="number" placeholder="Age" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
-                              <Input id="height" type="number" placeholder="Height (cm)" value={newMemberHeight} onChange={e => setNewMemberHeight(e.target.value)} required />
-                              <Input id="weight" type="number" placeholder="Weight (kg)" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
-                          </div>
-                      </div>
-                      <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">Avatar</Label>
-                        <div className="col-span-3">
-                            <div className="grid grid-cols-5 gap-2 mb-2">
-                                {avatars.avatars.map(avatar => (
-                                    <button
-                                        type="button"
-                                        key={avatar.id}
-                                        onClick={() => setNewMemberAvatar(avatar.url)}
-                                        className={cn("rounded-full border-2 p-0.5", newMemberAvatar === avatar.url ? "border-primary" : "border-transparent hover:border-primary/50")}
-                                    >
-                                        <Image src={avatar.url} alt={avatar.hint} width={48} height={48} className="rounded-full" data-ai-hint={avatar.hint} />
-                                    </button>
-                                ))}
-                            </div>
-                            <Label htmlFor="avatar-url" className="text-xs text-muted-foreground">Or paste an image URL</Label>
-                            <Input id="avatar-url" placeholder="https://..." className="mt-1" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
+                <form onSubmit={handleAddMember} className="flex-1 overflow-hidden">
+                  <ScrollArea className="h-full pr-6">
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">Name</Label>
+                        <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
                         </div>
-                      </div>
-                      <div className="grid grid-cols-4 items-start gap-4">
-                      <Label htmlFor="health" className="text-right pt-2">Health Conditions</Label>
-                      <Textarea id="health" placeholder="e.g., High blood pressure" className="col-span-3" value={newMemberHealth} onChange={e => setNewMemberHealth(e.target.value)} />
-                      </div>
-                      <div className="grid grid-cols-4 items-start gap-4">
-                      <Label htmlFor="diet" className="text-right pt-2">Dietary Restrictions</Label>
-                      <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
-                      </div>
-                      
-                  </div>
-                </ScrollArea>
-                <div className="p-6 pt-0 border-t">
-                  <Button type="submit" className="w-full mt-6">Save Member</Button>
-                </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="age" className="text-right">Vitals</Label>
+                            <div className="col-span-3 grid grid-cols-3 gap-2">
+                                <Input id="age" type="number" placeholder="Age" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
+                                <Input id="height" type="number" placeholder="Height (cm)" value={newMemberHeight} onChange={e => setNewMemberHeight(e.target.value)} required />
+                                <Input id="weight" type="number" placeholder="Weight (kg)" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-start gap-4">
+                          <Label className="text-right pt-2">Avatar</Label>
+                          <div className="col-span-3">
+                              <div className="grid grid-cols-5 gap-2 mb-2">
+                                  {avatars.avatars.map(avatar => (
+                                      <button
+                                          type="button"
+                                          key={avatar.id}
+                                          onClick={() => setNewMemberAvatar(avatar.url)}
+                                          className={cn("rounded-full border-2 p-0.5", newMemberAvatar === avatar.url ? "border-primary" : "border-transparent hover:border-primary/50")}
+                                      >
+                                          <Image src={avatar.url} alt={avatar.hint} width={48} height={48} className="rounded-full" data-ai-hint={avatar.hint} />
+                                      </button>
+                                  ))}
+                              </div>
+                              <Label htmlFor="avatar-url" className="text-xs text-muted-foreground">Or paste an image URL</Label>
+                              <Input id="avatar-url" placeholder="https://..." className="mt-1" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-start gap-4">
+                        <Label htmlFor="health" className="text-right pt-2">Health Conditions</Label>
+                        <Textarea id="health" placeholder="e.g., High blood pressure" className="col-span-3" value={newMemberHealth} onChange={e => setNewMemberHealth(e.target.value)} />
+                        </div>
+                        <div className="grid grid-cols-4 items-start gap-4">
+                        <Label htmlFor="diet" className="text-right pt-2">Dietary Restrictions</Label>
+                        <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
+                        </div>
+                    </div>
+                  </ScrollArea>
+                <DialogFooter className="pt-4">
+                  <Button type="submit" className="w-full">Save Member</Button>
+                </DialogFooter>
                 </form>
             </DialogContent>
             </Dialog>
@@ -296,13 +296,14 @@ export default function FamilyPage() {
 
        {selectedMember && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-2xl p-0">
-            <DialogHeader className="p-6 pb-0">
+          <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
+            <DialogHeader>
               <DialogTitle>Edit Family Member</DialogTitle>
+              <DialogDescription>Update the details of {selectedMember.name}.</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleUpdateMember}>
-            <ScrollArea className="max-h-[70vh]">
-              <div className="p-6 grid gap-4">
+            <form onSubmit={handleUpdateMember} className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full pr-6">
+              <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-name" className="text-right">Name</Label>
                   <Input id="edit-name" className="col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
@@ -342,12 +343,11 @@ export default function FamilyPage() {
                   <Label htmlFor="edit-diet" className="text-right pt-2">Dietary Restrictions</Label>
                   <Textarea id="edit-diet" className="col-span-3" value={editMemberDiet} onChange={e => setEditMemberDiet(e.target.value)} />
                 </div>
-                
               </div>
               </ScrollArea>
-              <div className="p-6 pt-0 border-t">
-                <Button type="submit" className="w-full mt-6">Save Changes</Button>
-              </div>
+              <DialogFooter className="pt-4">
+                <Button type="submit" className="w-full">Save Changes</Button>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -356,3 +356,5 @@ export default function FamilyPage() {
     </div>
   );
 }
+
+    
