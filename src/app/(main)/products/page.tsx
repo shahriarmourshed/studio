@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import PageHeader from "@/components/common/page-header";
@@ -39,15 +40,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Edit, Trash2, ShieldAlert } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Product } from '@/lib/types';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProductsPage() {
   const { getSymbol, convert } = useCurrency();
-  const { products, addProduct, updateProduct, deleteProduct } = useData();
+  const { products, addProduct, updateProduct, deleteProduct, clearProducts } = useData();
+  const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -146,95 +149,125 @@ export default function ProductsPage() {
     return 'N/A';
   }
 
+  const handleClearAll = async () => {
+    await clearProducts();
+    toast({
+        title: "Success",
+        description: "All products have been deleted.",
+    })
+  }
+
   return (
     <div className="container mx-auto">
       <PageHeader title="Product Needs" subtitle="Manage your monthly essentials.">
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setIsAddDialogOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Product
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Add a New Product</DialogTitle>
-              <DialogDescription>
-                Enter the details of the new product you need to track.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddProduct}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Name</Label>
-                <Input id="name" placeholder="e.g., Basmati Rice" className="col-span-3" value={newProductName} onChange={e => setNewProductName(e.target.value)} required />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="quantity" className="text-right">Purchased</Label>
-                <Input id="quantity" type="number" placeholder="e.g., 25" className="col-span-3" value={newProductQuantity} onChange={e => setNewProductQuantity(e.target.value)} required/>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="currentStock" className="text-right">Current Stock</Label>
-                <Input id="currentStock" type="number" placeholder="e.g., 20" className="col-span-3" value={newProductCurrentStock} onChange={e => setNewProductCurrentStock(e.target.value)} required/>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="unit" className="text-right">Unit</Label>
-                <Select value={newProductUnit} onValueChange={(value: Product['unit']) => setNewProductUnit(value)}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <ScrollArea className="h-48">
-                      <SelectItem value="kg">kg</SelectItem>
-                      <SelectItem value="g">g</SelectItem>
-                      <SelectItem value="l">l</SelectItem>
-                      <SelectItem value="ml">ml</SelectItem>
-                      <SelectItem value="piece">piece</SelectItem>
-                      <SelectItem value="pack">pack</SelectItem>
-                      <SelectItem value="dozen">dozen</SelectItem>
-                      <SelectItem value="box">box</SelectItem>
-                      <SelectItem value="bottle">bottle</SelectItem>
-                      <SelectItem value="can">can</SelectItem>
-                      <SelectItem value="roll">roll</SelectItem>
-                    </ScrollArea>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="price" className="text-right">Price ({getSymbol()})</Label>
-                <Input id="price" type="number" placeholder="e.g., 2500" className="col-span-3" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} required />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="purchaseDate" className="text-right">Purchase Date</Label>
-                <Input id="purchaseDate" type="date" className="col-span-3" value={newProductPurchaseDate} onChange={e => setNewProductPurchaseDate(e.target.value)} required />
-              </div>
-
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Consumption</Label>
-                <div className="col-span-3 grid grid-cols-2 gap-2">
-                    <Select value={newProductConsumptionPeriod} onValueChange={(v) => setNewProductConsumptionPeriod(v as Product['consumptionPeriod'])}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Period" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                            <SelectItem value="half-monthly">Half-monthly</SelectItem>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                        </SelectContent>
+        <div className="flex items-center gap-2">
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                        <ShieldAlert className="mr-2 h-4 w-4"/>
+                        Clear All
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete all products from your database.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearAll}>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+                <Button onClick={() => setIsAddDialogOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Product
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                <DialogTitle>Add a New Product</DialogTitle>
+                <DialogDescription>
+                    Enter the details of the new product you need to track.
+                </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddProduct}>
+                <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">Name</Label>
+                    <Input id="name" placeholder="e.g., Basmati Rice" className="col-span-3" value={newProductName} onChange={e => setNewProductName(e.target.value)} required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="quantity" className="text-right">Purchased</Label>
+                    <Input id="quantity" type="number" placeholder="e.g., 25" className="col-span-3" value={newProductQuantity} onChange={e => setNewProductQuantity(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="currentStock" className="text-right">Current Stock</Label>
+                    <Input id="currentStock" type="number" placeholder="e.g., 20" className="col-span-3" value={newProductCurrentStock} onChange={e => setNewProductCurrentStock(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="unit" className="text-right">Unit</Label>
+                    <Select value={newProductUnit} onValueChange={(value: Product['unit']) => setNewProductUnit(value)}>
+                    <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <ScrollArea className="h-48">
+                        <SelectItem value="kg">kg</SelectItem>
+                        <SelectItem value="g">g</SelectItem>
+                        <SelectItem value="l">l</SelectItem>
+                        <SelectItem value="ml">ml</SelectItem>
+                        <SelectItem value="piece">piece</SelectItem>
+                        <SelectItem value="pack">pack</SelectItem>
+                        <SelectItem value="dozen">dozen</SelectItem>
+                        <SelectItem value="box">box</SelectItem>
+                        <SelectItem value="bottle">bottle</SelectItem>
+                        <SelectItem value="can">can</SelectItem>
+                        <SelectItem value="roll">roll</SelectItem>
+                        </ScrollArea>
+                    </SelectContent>
                     </Select>
-                    <div className="relative">
-                        <Input id="consumptionRate" type="number" placeholder="Amount" className="pr-12" value={newProductConsumptionRate} onChange={e => setNewProductConsumptionRate(e.target.value)} />
-                        <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{newProductUnit}</span>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="price" className="text-right">Price ({getSymbol()})</Label>
+                    <Input id="price" type="number" placeholder="e.g., 2500" className="col-span-3" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="purchaseDate" className="text-right">Purchase Date</Label>
+                    <Input id="purchaseDate" type="date" className="col-span-3" value={newProductPurchaseDate} onChange={e => setNewProductPurchaseDate(e.target.value)} required />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Consumption</Label>
+                    <div className="col-span-3 grid grid-cols-2 gap-2">
+                        <Select value={newProductConsumptionPeriod} onValueChange={(v) => setNewProductConsumptionPeriod(v as Product['consumptionPeriod'])}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Period" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="daily">Daily</SelectItem>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                                <SelectItem value="half-monthly">Half-monthly</SelectItem>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <div className="relative">
+                            <Input id="consumptionRate" type="number" placeholder="Amount" className="pr-12" value={newProductConsumptionRate} onChange={e => setNewProductConsumptionRate(e.target.value)} />
+                            <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{newProductUnit}</span>
+                        </div>
                     </div>
                 </div>
-              </div>
-             
-              <Button type="submit" className="w-full">Save Product</Button>
-            </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                
+                <Button type="submit" className="w-full">Save Product</Button>
+                </div>
+                </form>
+            </DialogContent>
+            </Dialog>
+        </div>
       </PageHeader>
       
       <div className="px-4 sm:px-0">

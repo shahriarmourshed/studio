@@ -22,6 +22,7 @@ interface DataContextType {
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
+  clearProducts: () => Promise<void>;
   addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status?: Income['status']) => Promise<void>;
   updateIncome: (income: Income) => Promise<void>;
   deleteIncome: (incomeId: string) => Promise<void>;
@@ -172,6 +173,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const docRef = doc(db, `users/${user.uid}/products`, productId);
     await deleteDoc(docRef);
   };
+  
+  const clearProducts = async () => {
+    const collectionRef = getCollectionRef('products');
+    if (!collectionRef) return;
+
+    const snapshot = await getDocs(collectionRef);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+    });
+    await batch.commit();
+  };
 
   const addIncome = async (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Income['status'] = 'planned') => {
       const collectionRef = getCollectionRef('incomes');
@@ -282,7 +295,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     deleteExpense, 
     addProduct, 
     updateProduct, 
-    deleteProduct, 
+    deleteProduct,
+    clearProducts,
     addIncome, 
     updateIncome, 
     deleteIncome, 
