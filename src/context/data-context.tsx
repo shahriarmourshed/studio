@@ -110,23 +110,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
             if (!userDocSnap.exists() || !userDocSnap.data()?.hasBeenInitialized) {
                 const batch = writeBatch(db);
 
-                // Helper to check if a collection is empty before writing
-                const writeDefaults = async (collectionName: string, defaultData: any[]) => {
+                // Helper to write default data for a collection
+                const writeDefaults = (collectionName: string, defaultData: any[]) => {
                     const collectionRef = collection(db, `users/${user.uid}/${collectionName}`);
-                    const snapshot = await getDocs(query(collectionRef, limit(1)));
-                    if (snapshot.empty) {
-                        defaultData.forEach(item => {
-                            const docRef = doc(collectionRef);
-                            const { id, ...rest } = item;
-                            batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
-                        });
-                    }
+                    defaultData.forEach(item => {
+                        const docRef = doc(collectionRef); // Let Firestore generate ID
+                        const { id, ...rest } = item;
+                        batch.set(docRef, { ...rest, createdAt: Timestamp.now() });
+                    });
                 };
-
-                await writeDefaults('expenses', defaultExpenses);
-                await writeDefaults('incomes', defaultIncomes);
-                await writeDefaults('products', defaultProducts);
-                await writeDefaults('familyMembers', defaultFamilyMembers);
+                
+                writeDefaults('expenses', defaultExpenses);
+                writeDefaults('incomes', defaultIncomes);
+                writeDefaults('products', defaultProducts);
+                writeDefaults('familyMembers', defaultFamilyMembers);
 
                 // Set settings
                 batch.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
