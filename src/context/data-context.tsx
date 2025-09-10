@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, runTransaction, setDoc, getDocs, where, limit } from "firebase/firestore";
+import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc } from "firebase/firestore";
 
 interface DataContextType {
   expenses: Expense[];
@@ -81,49 +81,28 @@ export function DataProvider({ children }: { children: ReactNode }) {
         unsubscribes.push(unsubscribe);
     };
 
-    const initializeData = async () => {
-      if (!user) return;
-      try {
-        await runTransaction(db, async (transaction) => {
-            const settingsDocRef = doc(db, `users/${user.uid}/settings/main`);
-            const settingsDoc = await transaction.get(settingsDocRef);
-
-            if (settingsDoc.exists()) {
-                // User document and data already exist, so just read settings.
-                const settingsData = settingsDoc.data();
-                setSavingGoalState(settingsData.savingGoal ?? 10000);
-                setReminderDaysState(settingsData.reminderDays ?? 3);
-                return;
-            }
-
-            // Document does not exist, it's a new user. Initialize all data.
-            transaction.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3, hasBeenInitialized: true });
-        });
-      } catch (error) {
-        console.error("Error during initial data transaction:", error);
-      } finally {
-        // Set up listeners after initialization attempt
-        setupSubscription('expenses', setExpenses);
-        setupSubscription('incomes', setIncomes);
-        setupSubscription('products', setProducts);
-        setupSubscription('familyMembers', setFamilyMembers);
-        
-        // Listener for settings changes
-        const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
-        const unsubscribeSettings = onSnapshot(settingsDocRef, (doc) => {
-            if (doc.exists()) {
-                const settings = doc.data();
-                setSavingGoalState(settings.savingGoal ?? 10000);
-                setReminderDaysState(settings.reminderDays ?? 3);
-            }
-        });
-        unsubscribes.push(unsubscribeSettings);
-
-        setLoading(false);
-      }
-    };
+    // Set up listeners for all collections
+    setupSubscription('expenses', setExpenses);
+    setupSubscription('incomes', setIncomes);
+    setupSubscription('products', setProducts);
+    setupSubscription('familyMembers', setFamilyMembers);
     
-    initializeData();
+    // Listener for settings changes
+    const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
+    const unsubscribeSettings = onSnapshot(settingsDocRef, (doc) => {
+        if (doc.exists()) {
+            const settings = doc.data();
+            setSavingGoalState(settings.savingGoal ?? 10000);
+            setReminderDaysState(settings.reminderDays ?? 3);
+        } else {
+            // If settings don't exist, create them
+            setDoc(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
+        }
+    });
+    unsubscribes.push(unsubscribeSettings);
+
+    setLoading(false);
+
 
     return () => {
       unsubscribes.forEach(unsub => unsub());
@@ -217,9 +196,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
     const collectionRef = getCollectionRef('familyMembers');
     if (!collectionRef) return;
-    const docRef = doc(collectionRef);
-    const newMember = { ...member, id: docRef.id, createdAt: Timestamp.now() };
-    await setDoc(docRef, newMember);
+    const newDocRef = doc(collectionRef); // Generate a new doc ref with a unique ID
+    const newMember = { ...member, id: newDocRef.id, createdAt: Timestamp.now() };
+    await setDoc(newDocRef, newMember); // Use the new ref to set the document
   };
 
   const updateFamilyMember = async (member: FamilyMember) => {
@@ -316,6 +295,3 @@ export function useData() {
   }
   return context;
 }
-
-    
-    
