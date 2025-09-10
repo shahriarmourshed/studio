@@ -22,11 +22,21 @@ const ProductSchema = z.object({
   consumptionPeriod: z.enum(['daily', 'weekly', 'half-monthly', 'monthly']).optional().describe('The consumption period of the product.'),
 });
 
+const FamilyMemberSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+  healthConditions: z.string(),
+  dietaryRestrictions: z.string(),
+});
+
 const DietChartInputSchema = z.object({
+  familyMembers: z
+    .array(FamilyMemberSchema)
+    .describe('A list of all family members and their health data.'),
   products: z
     .array(ProductSchema)
     .describe('List of available products, including stock levels, prices, and consumption patterns.'),
-  preferences: z.string().describe('Dietary Preferences'),
+  preferences: z.string().describe('General dietary preferences for the family (e.g., more vegetarian meals, low spice).'),
   dietType: z
     .enum(['cost-optimized', 'standard', 'as-per-products'])
     .describe('The type of diet plan to generate.'),
@@ -52,17 +62,24 @@ const prompt = ai.definePrompt({
   output: {schema: DietChartOutputSchema},
   prompt: `You are a nutritionist creating a weekly diet chart for a family.
 
+  Here is the family data:
+  {{#each familyMembers}}
+  - Name: {{{name}}}, Age: {{{age}}}
+    Health: {{{healthConditions}}}
+    Restrictions: {{{dietaryRestrictions}}}
+  {{/each}}
+
   Here is the list of available products, their stock, and prices:
   {{#each products}}
   - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
 
-  Dietary Preferences: {{{preferences}}}
+  General Family Preferences: {{{preferences}}}
   Diet Type: {{{dietType}}}
 
   Generate a detailed and personalized weekly diet chart in markdown format. It should include breakfast, lunch, dinner, and snacks for each day of the week.
-  - The diet chart should utilize the available products and align with the specified product needs.
-  - Optimize the diet to be as healthy as possible.
+  - The diet chart should be safe and healthy, considering all family members' health conditions and dietary restrictions.
+  - It should utilize the available products and align with the specified product needs.
   - Based on the '{{{dietType}}}', adjust the meal suggestions.
     - 'cost-optimized' should prioritize cheaper meals, using the provided product prices to make decisions.
     - 'standard' should be a balanced approach to health and cost.

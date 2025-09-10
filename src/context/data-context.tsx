@@ -3,15 +3,16 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
-import { products as defaultProducts, expenses as defaultExpenses, incomes as defaultIncomes } from '@/lib/data';
+import { products as defaultProducts, expenses as defaultExpenses, incomes as defaultIncomes, familyMembers as defaultFamilyMembers } from '@/lib/data';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, runTransaction } from "firebase/firestore";
+import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, runTransaction, setDoc, writeBatch, getDocs, where, limit } from "firebase/firestore";
 
 interface DataContextType {
   expenses: Expense[];
   products: Product[];
   incomes: Income[];
+  familyMembers: FamilyMember[];
   savingGoal: number;
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
@@ -25,6 +26,9 @@ interface DataContextType {
   addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status?: Income['status']) => Promise<void>;
   updateIncome: (income: Income) => Promise<void>;
   deleteIncome: (incomeId: string) => Promise<void>;
+  addFamilyMember: (member: Omit<FamilyMember, 'id' | 'createdAt'>) => Promise<void>;
+  updateFamilyMember: (member: FamilyMember) => Promise<void>;
+  deleteFamilyMember: (memberId: string) => Promise<void>;
   completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => Promise<void>;
   cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => Promise<void>;
   loading: boolean;
@@ -39,6 +43,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [savingGoal, setSavingGoalState] = useState<number>(10000);
   const [reminderDays, setReminderDaysState] = useState<number>(3);
   
@@ -55,6 +60,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setExpenses([]);
       setIncomes([]);
       setProducts([]);
+      setFamilyMembers([]);
       setSavingGoalState(10000);
       setReminderDaysState(3);
       return;
@@ -98,6 +104,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 { name: 'products', data: defaultProducts },
                 { name: 'expenses', data: defaultExpenses },
                 { name: 'incomes', data: defaultIncomes },
+                { name: 'familyMembers', data: defaultFamilyMembers },
             ];
             
             collectionsToInitialize.forEach(coll => {
@@ -116,6 +123,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setupSubscription('expenses', setExpenses);
         setupSubscription('incomes', setIncomes);
         setupSubscription('products', setProducts);
+        setupSubscription('familyMembers', setFamilyMembers);
         
         // Listener for settings changes
         const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
@@ -223,6 +231,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await deleteDoc(docRef);
   };
   
+  const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
+    const collectionRef = getCollectionRef('familyMembers');
+    if (!collectionRef) return;
+    const docRef = doc(collectionRef);
+    const newMember = { ...member, id: docRef.id, createdAt: Timestamp.now() };
+    await setDoc(docRef, newMember);
+  };
+
+  const updateFamilyMember = async (member: FamilyMember) => {
+    if (!user) return;
+    const { id, ...dataToUpdate } = member;
+    const docRef = doc(db, `users/${user.uid}/familyMembers`, id);
+    await updateDoc(docRef, dataToUpdate);
+  };
+
+  const deleteFamilyMember = async (memberId: string) => {
+    if (!user) return;
+    const docRef = doc(db, `users/${user.uid}/familyMembers`, memberId);
+    await deleteDoc(docRef);
+  };
+
   const completePlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => {
     const collectionRef = type === 'income' ? getCollectionRef('incomes') : getCollectionRef('expenses');
     if (!collectionRef) return;
@@ -268,6 +297,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     expenses, 
     products, 
     incomes, 
+    familyMembers,
     savingGoal, 
     setSavingGoal, 
     reminderDays, 
@@ -281,6 +311,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addIncome, 
     updateIncome, 
     deleteIncome, 
+    addFamilyMember,
+    updateFamilyMember,
+    deleteFamilyMember,
     completePlannedTransaction, 
     cancelPlannedTransaction,
     loading
