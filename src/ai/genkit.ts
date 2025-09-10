@@ -1,7 +1,7 @@
 
 import {genkit, GenkitError} from 'genkit';
 import {googleAI} from '@genkit-ai/googleai';
-import { firebasePlugin } from '@genkit-ai/firebase/plugin';
+import { firebasePlugin } from '@genkit-ai/firebase';
 import {runWith} from 'genkit/context';
 import {getFirestore} from 'firebase-admin/firestore';
 
