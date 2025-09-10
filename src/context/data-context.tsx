@@ -3,10 +3,9 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
-import { products as defaultProducts, expenses as defaultExpenses, incomes as defaultIncomes, familyMembers as defaultFamilyMembers } from '@/lib/data';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, runTransaction, setDoc, writeBatch, getDocs, where, limit } from "firebase/firestore";
+import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, runTransaction, setDoc, getDocs, where, limit } from "firebase/firestore";
 
 interface DataContextType {
   expenses: Expense[];
@@ -99,22 +98,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
             // Document does not exist, it's a new user. Initialize all data.
             transaction.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3, hasBeenInitialized: true });
-            
-            const collectionsToInitialize = [
-                { name: 'products', data: defaultProducts },
-                { name: 'expenses', data: defaultExpenses },
-                { name: 'incomes', data: defaultIncomes },
-                { name: 'familyMembers', data: defaultFamilyMembers },
-            ];
-            
-            collectionsToInitialize.forEach(coll => {
-                const collectionRef = collection(db, `users/${user.uid}/${coll.name}`);
-                coll.data.forEach(item => {
-                    const newDocRef = doc(collectionRef); // Firestore generates a unique ID
-                    const dataWithId = { ...item, id: newDocRef.id, createdAt: Timestamp.now() };
-                    transaction.set(newDocRef, dataWithId);
-                });
-            });
         });
       } catch (error) {
         console.error("Error during initial data transaction:", error);
@@ -333,3 +316,5 @@ export function useData() {
   }
   return context;
 }
+
+    
