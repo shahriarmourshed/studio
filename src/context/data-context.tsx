@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -84,39 +83,39 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
 
     const initializeData = async () => {
+      if (!user) return;
       try {
-        const settingsDocRef = doc(db, `users/${user.uid}/settings/main`);
-        
         await runTransaction(db, async (transaction) => {
-          const settingsDoc = await transaction.get(settingsDocRef);
-          
-          if (settingsDoc.exists()) {
-            // Data already initialized, just load settings
-            const settingsData = settingsDoc.data();
-            setSavingGoalState(settingsData.savingGoal ?? 10000);
-            setReminderDaysState(settingsData.reminderDays ?? 3);
-            return;
-          }
+            const settingsDocRef = doc(db, `users/${user.uid}/settings/main`);
+            const settingsDoc = await transaction.get(settingsDocRef);
 
-          // Data not initialized, create default data
-          const writeDefaults = (collectionName: string, defaultData: any[]) => {
-            const collectionRef = collection(db, `users/${user.uid}/${collectionName}`);
-            defaultData.forEach(item => {
-              const docRef = doc(collectionRef); // Let Firestore generate ID
-              const { id, ...rest } = item;
-              transaction.set(docRef, { ...rest, createdAt: Timestamp.now() });
+            if (settingsDoc.exists()) {
+                // User document and data already exist, so do nothing.
+                const settingsData = settingsDoc.data();
+                setSavingGoalState(settingsData.savingGoal ?? 10000);
+                setReminderDaysState(settingsData.reminderDays ?? 3);
+                return;
+            }
+
+            // Document does not exist, it's a new user. Initialize data.
+            const collectionsToInitialize = [
+                { name: 'products', data: defaultProducts },
+                { name: 'familyMembers', data: defaultFamilyMembers },
+                { name: 'expenses', data: defaultExpenses },
+                { name: 'incomes', data: defaultIncomes },
+            ];
+            
+            collectionsToInitialize.forEach(coll => {
+                const collectionRef = collection(db, `users/${user.uid}/${coll.name}`);
+                coll.data.forEach(item => {
+                    const newDocRef = doc(collectionRef); // Firestore generates a unique ID
+                    transaction.set(newDocRef, { ...item, createdAt: Timestamp.now() });
+                });
             });
-          };
 
-          writeDefaults('expenses', defaultExpenses);
-          writeDefaults('incomes', defaultIncomes);
-          writeDefaults('products', defaultProducts);
-          writeDefaults('familyMembers', defaultFamilyMembers);
-
-          // Set settings
-          transaction.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3 });
+            // Finally, create the settings document to mark initialization as complete.
+            transaction.set(settingsDocRef, { savingGoal: 10000, reminderDays: 3, hasBeenInitialized: true });
         });
-
       } catch (error) {
         console.error("Error during initial data transaction:", error);
       } finally {
