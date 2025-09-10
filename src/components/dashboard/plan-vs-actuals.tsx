@@ -164,7 +164,7 @@ export default function PlanVsActuals() {
             <SelectContent>
                 <SelectItem value="all">All Months</SelectItem>
                 {monthNames.map((month, index) => (
-                    <SelectItem key={index} value={String(index)}>{month}</SelectItem>
+                    <SelectItem key={`month-${index}`} value={String(index)}>{month}</SelectItem>
                 ))}
             </SelectContent>
         </Select>
@@ -177,7 +177,7 @@ export default function PlanVsActuals() {
             </SelectTrigger>
             <SelectContent>
                 {yearsWithData.map(year => (
-                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                    <SelectItem key={`year-${year}`} value={String(year)}>{year}</SelectItem>
                 ))}
             </SelectContent>
         </Select>
