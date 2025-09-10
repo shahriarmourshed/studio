@@ -70,7 +70,7 @@ export default function DietForm() {
       plannedExpenses: plainExpenses.filter(e => e.status === 'planned'),
       actualExpenses: plainExpenses.filter(e => e.status === 'completed'),
       savingGoal: savingGoal || 0,
-      preferences: preferences || 'none',
+      preferences: preferences || 'No specific preferences.',
       dietType,
       currencySymbol: getSymbol(),
     };
@@ -140,7 +140,7 @@ export default function DietForm() {
             </Select>
           </div>
           <p className="text-sm text-muted-foreground">
-            Note: The AI will use your family member profiles, budget, and current product needs list for a holistic plan.
+            Note: The AI will use all of your family, financial, and product data to generate a holistic plan.
           </p>
         </CardContent>
         <CardFooter>

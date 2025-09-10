@@ -55,7 +55,7 @@ const IncomeSchema = z.object({
 
 const DietChartInputSchema = z.object({
   familyMembers: z.array(FamilyMemberSchema).describe('A list of all family members and their health data.'),
-  selectedMemberName: z.string().optional().describe('The name of the family member to generate the diet chart for. If "all", generate for all members.'),
+  selectedMemberName: z.string().optional().describe('The name of the family member to generate the diet chart for. If not provided, generate for all members.'),
   products: z.array(ProductSchema).describe('List of available products, including stock levels, prices, and consumption patterns.'),
   plannedIncomes: z.array(IncomeSchema).describe('The list of all planned incomes for the period.'),
   actualIncomes: z.array(IncomeSchema).describe('The list of all actual (completed) incomes for the period.'),
@@ -98,44 +98,44 @@ const prompt = ai.definePrompt({
   
   All monetary values are in {{{currencySymbol}}}.
 
-  Here is the family data:
+  **Full Family Data (for context):**
   {{#each familyMembers}}
   - Name: {{{name}}}, Age: {{{age}}}, Height: {{{height}}}cm, Weight: {{{weight}}}kg
     Health: {{{healthConditions}}}
     Restrictions: {{{dietaryRestrictions}}}
   {{/each}}
 
-  Here is the list of available products, their stock, and prices:
+  **Available Products & Inventory:**
   {{#each products}}
   - Product: {{{name}}}, Stock: {{{currentStock}}}{{{unit}}}, Price: {{{currencySymbol}}}{{{price}}}, Consumption: {{#if consumptionRate}}{{{consumptionRate}}}{{{unit}}} per {{{consumptionPeriod}}}{{else}}N/A{{/if}}
   {{/each}}
   
-  Here is the family's financial situation:
+  **Family Financial Overview:**
   - Monthly Saving Goal: {{{currencySymbol}}}{{{savingGoal}}}
   - Planned Income: {{#each plannedIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
   - Actual Income: {{#each actualIncomes}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
   - Planned Expenses: {{#each plannedExpenses}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
   - Actual Expenses: {{#each actualExpenses}} {{{description}}}: {{{currencySymbol}}}{{{amount}}}; {{/each}}
 
-  General Family Preferences: {{{preferences}}}
-  Diet Type: {{{dietType}}}
+  **Family Preferences:** {{{preferences}}}
+  **Diet Type requested:** {{{dietType}}}
 
+  **Your Task:**
   Generate a detailed and personalized weekly diet chart in markdown format. It should include breakfast, lunch, dinner, and snacks for each day of the week.
   
-  - The diet chart must be safe and healthy. 
+  - **CRITICAL**: The diet chart must be safe and healthy. 
   
   {{#if selectedMemberName}}
-  - **CRITICAL**: The diet plan must be strictly tailored for **{{{selectedMemberName}}}**. Pay close attention to their specific health conditions and dietary restrictions listed above. Prioritize these needs above all else. While keeping the meals compatible with the rest of the family is a plus, the primary focus is the selected member's health.
+  - **FOCUS**: The diet plan must be strictly tailored for **{{{selectedMemberName}}}**. Pay close attention to their specific health conditions and dietary restrictions listed above. Prioritize these needs above all else. While keeping the meals compatible with the rest of the family is a plus, the primary focus is the selected member's health. Use the full family's data for context on budget and available food.
   {{else}}
-  - The diet chart should consider all family members' health conditions and dietary restrictions.
+  - **FOCUS**: The diet chart should be balanced to consider all family members' health conditions and dietary restrictions. Create a plan that works for everyone.
   {{/if}}
 
-  - It should utilize the available products and align with the specified product needs.
-  - Based on the '{{{dietType}}}', adjust the meal suggestions.
+  - Based on the '{{{dietType}}}', adjust the meal suggestions:
     - 'cost-optimized' should prioritize cheaper meals, using the provided product prices and overall family budget to make decisions. Consider the family's saving goal and suggest meals that help them stay on track.
     - 'standard' should be a balanced approach to health and cost.
-    - 'as-per-products' should strictly use only the products listed as available in stock.
-    - 'health-focused' should prioritize meals that are particularly beneficial for the specified health conditions and dietary restrictions. This is the top priority for this diet type.
+    - 'as-per-products' should strictly use only the products listed as available in stock. Do not suggest buying anything new.
+    - 'health-focused' should prioritize meals that are particularly beneficial for the specified health conditions and dietary restrictions. This is the top priority for this diet type, even if it costs a bit more (but still be reasonable within the family's budget).
   `,
   config: {
     safetySettings: [
