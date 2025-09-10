@@ -182,7 +182,7 @@ export default function FamilyPage() {
                     <div className="grid grid-cols-4 items-start gap-4">
                       <Label className="text-right pt-2">Avatar</Label>
                       <div className="col-span-3">
-                          <div className="grid grid-cols-4 gap-2 mb-2">
+                          <div className="grid grid-cols-5 gap-2 mb-2">
                               {avatars.avatars.map(avatar => (
                                   <button
                                       type="button"
@@ -190,7 +190,7 @@ export default function FamilyPage() {
                                       onClick={() => setNewMemberAvatar(avatar.url)}
                                       className={cn("rounded-full border-2 p-0.5", newMemberAvatar === avatar.url ? "border-primary" : "border-transparent hover:border-primary/50")}
                                   >
-                                      <Image src={avatar.url} alt={avatar.hint} width={64} height={64} className="rounded-full" data-ai-hint={avatar.hint} />
+                                      <Image src={avatar.url} alt={avatar.hint} width={48} height={48} className="rounded-full" data-ai-hint={avatar.hint} />
                                   </button>
                               ))}
                           </div>
@@ -222,8 +222,8 @@ export default function FamilyPage() {
                 <Image
                   src={member.avatarUrl}
                   alt={member.name}
-                  width={64}
-                  height={64}
+                  width={48}
+                  height={48}
                   className="rounded-full"
                 />
                 <div className="flex-1">
@@ -291,7 +291,7 @@ export default function FamilyPage() {
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label className="text-right pt-2">Avatar</Label>
                   <div className="col-span-3">
-                      <div className="grid grid-cols-4 gap-2 mb-2">
+                      <div className="grid grid-cols-5 gap-2 mb-2">
                           {avatars.avatars.map(avatar => (
                               <button
                                   type="button"
@@ -299,7 +299,7 @@ export default function FamilyPage() {
                                   onClick={() => setEditMemberAvatar(avatar.url)}
                                   className={cn("rounded-full border-2 p-0.5", editMemberAvatar === avatar.url ? "border-primary" : "border-transparent hover:border-primary/50")}
                               >
-                                  <Image src={avatar.url} alt={avatar.hint} width={64} height={64} className="rounded-full" data-ai-hint={avatar.hint} />
+                                  <Image src={avatar.url} alt={avatar.hint} width={48} height={48} className="rounded-full" data-ai-hint={avatar.hint} />
                               </button>
                           ))}
                       </div>
