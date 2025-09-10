@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const ProductSchema = z.object({
   name: z.string().describe('Name of the product.'),
@@ -81,6 +82,7 @@ export async function generateDietChart(input: DietChartInput): Promise<DietChar
 
 const prompt = ai.definePrompt({
   name: 'dietChartPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: {schema: DietChartInputSchema},
   output: {schema: DietChartOutputSchema},
   prompt: `You are a nutritionist and financial planner creating a weekly diet chart for a family. All monetary values are in {{{currencySymbol}}}.

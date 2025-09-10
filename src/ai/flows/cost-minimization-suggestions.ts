@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const ProductSchema = z.object({
   name: z.string().describe('Name of the product.'),
@@ -80,6 +81,7 @@ export async function costMinimizationSuggestions(
 
 const prompt = ai.definePrompt({
   name: 'costMinimizationPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: {schema: CostMinimizationInputSchema},
   output: {schema: CostMinimizationOutputSchema},
   prompt: `You are an expert financial advisor for families. Your goal is to provide actionable and personalized suggestions to help a family save money and meet their financial goals.

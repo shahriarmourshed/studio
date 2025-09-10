@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const ProductSchema = z.object({
   name: z.string().describe('Name of the product.'),
@@ -82,6 +83,7 @@ export async function generateShoppingList(input: ShoppingListInput): Promise<Sh
 
 const prompt = ai.definePrompt({
   name: 'shoppingListPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: {schema: ShoppingListInputSchema},
   output: {schema: ShoppingListOutputSchema},
   prompt: `You are a financial planner and nutritionist creating a shopping list for a family. All monetary values are in {{{currencySymbol}}}.
