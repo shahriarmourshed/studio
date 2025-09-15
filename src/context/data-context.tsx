@@ -6,6 +6,7 @@ import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc, writeBatch, getDocs, getDoc } from "firebase/firestore";
+import { differenceInDays, differenceInWeeks, differenceInMonths } from 'date-fns';
 
 interface DataContextType {
   expenses: Expense[];
@@ -53,6 +54,41 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return collection(db, `users/${user.uid}/${collectionName}`);
   }, [user]);
 
+  const calculateAutoReducedStock = (product: Product): Product => {
+    if (!product.consumptionRate || !product.consumptionPeriod || !product.lastUpdated) {
+        return product;
+    }
+
+    const now = new Date();
+    const lastUpdatedDate = new Date(product.lastUpdated);
+    let periodsPassed = 0;
+
+    switch (product.consumptionPeriod) {
+        case 'daily':
+            periodsPassed = differenceInDays(now, lastUpdatedDate);
+            break;
+        case 'weekly':
+            periodsPassed = differenceInWeeks(now, lastUpdatedDate);
+            break;
+        case 'half-monthly':
+            // Approximate as 2 weeks
+            periodsPassed = Math.floor(differenceInDays(now, lastUpdatedDate) / 14);
+            break;
+        case 'monthly':
+            periodsPassed = differenceInMonths(now, lastUpdatedDate);
+            break;
+    }
+
+    if (periodsPassed > 0) {
+        const consumedAmount = periodsPassed * product.consumptionRate;
+        const newStock = Math.max(0, product.currentStock - consumedAmount);
+        return { ...product, currentStock: newStock };
+    }
+
+    return product;
+  };
+
+
   // Fetch initial data and set up listeners
   useEffect(() => {
     if (!user) {
@@ -70,12 +106,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     const unsubscribes: (() => void)[] = [];
 
-    const setupSubscription = (collectionName: string, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
+    const setupSubscription = (collectionName: string, setter: React.Dispatch<React.SetStateAction<any[]>>, processData?: (data: any[]) => any[]) => {
         const collectionRef = getCollectionRef(collectionName);
         if (!collectionRef) return;
         const q = query(collectionRef, orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (processData) {
+              data = processData(data);
+            }
             setter(data);
         }, (error) => {
             console.error(`Error fetching ${collectionRef.path}:`, error);
@@ -86,7 +125,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     // Set up listeners for all collections
     setupSubscription('expenses', setExpenses);
     setupSubscription('incomes', setIncomes);
-    setupSubscription('products', setProducts);
+    setupSubscription('products', setProducts, (data) => data.map(calculateAutoReducedStock));
     setupSubscription('familyMembers', setFamilyMembers);
     
     // Listener for settings changes
