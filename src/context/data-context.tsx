@@ -253,7 +253,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!expenseToDelete) return;
 
     // Find the original base transaction ID. 
-    // If the item has a plannedId, it's a projection, so that's the base ID.
+    // If the item has a plannedId (it's a projection), that's the base ID.
     // If not, it's the base item itself, so its own ID is the base ID.
     const baseId = expenseToDelete.plannedId || expenseToDelete.id;
 
@@ -329,7 +329,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!incomeToDelete) return;
     
     // Find the original base transaction ID. 
-    // If the item has a plannedId, it's a projection, so that's the base ID.
+    // If the item has a plannedId (it's a projection), that's the base ID.
     // If not, it's the base item itself, so its own ID is the base ID.
     const baseId = incomeToDelete.plannedId || incomeToDelete.id;
     
@@ -458,3 +458,5 @@ export function useData() {
   }
   return context;
 }
+
+    
