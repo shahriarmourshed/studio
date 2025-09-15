@@ -249,10 +249,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   
   const deleteExpense = async (expenseId: string) => {
     if (!user) return;
+    // Find the transaction in the local state to determine if it's a projection or an original.
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // If the item is a projection, find its original ID. Otherwise, use its own ID.
+    // If it's a projection (it has a plannedId), the ID we need to delete is plannedId.
+    // If it's an original (it does not have a plannedId), the ID to delete is its own id.
     const originalId = expenseToDelete.plannedId || expenseToDelete.id;
   
     // Delete the original base transaction to stop all future projections.
@@ -324,10 +326,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const deleteIncome = async (incomeId: string) => {
     if (!user) return;
+    // Find the transaction in the local state to determine if it's a projection or an original.
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
-  
-    // If the item is a projection, find its original ID. Otherwise, use its own ID.
+
+    // If it's a projection (it has a plannedId), the ID we need to delete is plannedId.
+    // If it's an original (it does not have a plannedId), the ID to delete is its own id.
     const originalId = incomeToDelete.plannedId || incomeToDelete.id;
   
     // Delete the original base transaction to stop all future projections.
@@ -456,5 +460,3 @@ export function useData() {
   }
   return context;
 }
-
-    
