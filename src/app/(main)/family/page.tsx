@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Edit, Trash2, ShieldAlert } from "lucide-react";
+import { PlusCircle, Edit, Trash2, ShieldAlert, Gift } from "lucide-react";
 import Image from 'next/image';
 import { useData } from '@/context/data-context';
 import type { FamilyMember } from '@/lib/types';
@@ -42,6 +42,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import avatars from '@/lib/placeholder-avatars.json';
 import { format, differenceInYears, parseISO } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
 
 export default function FamilyPage() {
   const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember, clearFamilyMembers } = useData();
@@ -59,6 +60,8 @@ export default function FamilyPage() {
   const [newMemberHealth, setNewMemberHealth] = useState('');
   const [newMemberDiet, setNewMemberDiet] = useState('');
   const [newMemberAvatar, setNewMemberAvatar] = useState('');
+  const [newEventName, setNewEventName] = useState('');
+  const [newEventDate, setNewEventDate] = useState('');
 
   // Edit form state
   const [editMemberName, setEditMemberName] = useState('');
@@ -69,6 +72,8 @@ export default function FamilyPage() {
   const [editMemberHealth, setEditMemberHealth] = useState('');
   const [editMemberDiet, setEditMemberDiet] = useState('');
   const [editMemberAvatar, setEditMemberAvatar] = useState('');
+  const [editEventName, setEditEventName] = useState('');
+  const [editEventDate, setEditEventDate] = useState('');
   
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +93,9 @@ export default function FamilyPage() {
         weight: parseInt(newMemberWeight),
         healthConditions: newMemberHealth,
         dietaryRestrictions: newMemberDiet,
-        avatarUrl: finalAvatarUrl
+        avatarUrl: finalAvatarUrl,
+        specialEventName: newEventName,
+        specialEventDate: newEventDate,
       });
       resetAddForm();
     }
@@ -103,6 +110,8 @@ export default function FamilyPage() {
     setNewMemberHealth('');
     setNewMemberDiet('');
     setNewMemberAvatar('');
+    setNewEventName('');
+    setNewEventDate('');
     setIsAddDialogOpen(false);
   }
 
@@ -116,6 +125,8 @@ export default function FamilyPage() {
     setEditMemberHealth(member.healthConditions);
     setEditMemberDiet(member.dietaryRestrictions);
     setEditMemberAvatar(member.avatarUrl);
+    setEditEventName(member.specialEventName || '');
+    setEditEventDate(member.specialEventDate || '');
     setIsEditDialogOpen(true);
   };
 
@@ -132,6 +143,8 @@ export default function FamilyPage() {
         healthConditions: editMemberHealth,
         dietaryRestrictions: editMemberDiet,
         avatarUrl: editMemberAvatar,
+        specialEventName: editEventName,
+        specialEventDate: editEventDate,
       });
       setIsEditDialogOpen(false);
       setSelectedMember(null);
@@ -259,6 +272,15 @@ export default function FamilyPage() {
                         <Label htmlFor="diet" className="text-right pt-2">Dietary Restrictions</Label>
                         <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
                         </div>
+                        <Separator className="my-2" />
+                         <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="event-name" className="text-right">Special Event Name</Label>
+                            <Input id="event-name" placeholder="e.g., Anniversary" className="col-span-3" value={newEventName} onChange={e => setNewEventName(e.target.value)} />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="event-date" className="text-right">Special Event Date</Label>
+                            <Input id="event-date" type="date" className="col-span-3" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} />
+                        </div>
                     </div>
                   <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
                     <Button type="submit" className="w-full">Save Member</Button>
@@ -321,6 +343,12 @@ export default function FamilyPage() {
                   <h4 className="font-semibold">Dietary Restrictions</h4>
                   <p className="text-sm text-muted-foreground">{member.dietaryRestrictions || 'None specified'}</p>
                 </div>
+                {member.specialEventName && member.specialEventDate && (
+                    <div className="mt-2 pt-2 border-t">
+                        <h4 className="font-semibold flex items-center gap-2"><Gift className="w-4 h-4 text-primary" /> Special Event</h4>
+                        <p className="text-sm text-muted-foreground">{member.specialEventName} on {format(parseISO(member.specialEventDate), 'MMMM do')}</p>
+                    </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -388,6 +416,15 @@ export default function FamilyPage() {
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label htmlFor="edit-diet" className="text-right pt-2">Dietary Restrictions</Label>
                   <Textarea id="edit-diet" className="col-span-3" value={editMemberDiet} onChange={e => setEditMemberDiet(e.target.value)} />
+                </div>
+                 <Separator className="my-2" />
+                 <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-event-name" className="text-right">Special Event Name</Label>
+                    <Input id="edit-event-name" placeholder="e.g., Anniversary" className="col-span-3" value={editEventName} onChange={e => setEditEventName(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-event-date" className="text-right">Special Event Date</Label>
+                    <Input id="edit-event-date" type="date" className="col-span-3" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
                 </div>
               </div>
               <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">

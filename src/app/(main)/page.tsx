@@ -10,12 +10,12 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Utensils, ChevronRight, AlertCircle } from 'lucide-react';
+import { PlusCircle, Utensils, ChevronRight, AlertCircle, Gift } from 'lucide-react';
 import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
 import { useData } from '@/context/data-context';
-import { getYear, isFuture, differenceInDays, format } from 'date-fns';
+import { getYear, isFuture, differenceInDays, format, parseISO, setYear as setYearDate, differenceInDays as dateDiff } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog,
@@ -32,11 +32,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { ExpenseCategory, Income, Expense, Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
-  const { products, expenses, incomes, reminderDays, addExpense, loading } = useData();
+  const { products, expenses, incomes, reminderDays, addExpense, loading, familyMembers } = useData();
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
 
   // Dialog states
@@ -128,6 +128,53 @@ export default function DashboardPage() {
         p.lowStockThreshold !== undefined && p.currentStock <= p.lowStockThreshold
     );
   }, [products]);
+  
+  const upcomingEvents = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentYear = today.getFullYear();
+    const events = [];
+
+    for (const member of familyMembers) {
+      // Check for birthday
+      if (member.birthday) {
+        try {
+          const birthdayDate = parseISO(member.birthday);
+          const nextBirthday = setYearDate(birthdayDate, currentYear);
+          if (nextBirthday < today) {
+            nextBirthday.setFullYear(currentYear + 1);
+          }
+          if (dateDiff(nextBirthday, today) <= 365) {
+            events.push({
+              member,
+              eventName: 'Birthday',
+              eventDate: nextBirthday,
+              daysLeft: dateDiff(nextBirthday, today),
+            });
+          }
+        } catch (e) { console.error("Invalid birthday date for", member.name) }
+      }
+      // Check for special event
+      if (member.specialEventDate && member.specialEventName) {
+         try {
+            const eventDate = parseISO(member.specialEventDate);
+            const nextEvent = setYearDate(eventDate, currentYear);
+            if (nextEvent < today) {
+                nextEvent.setFullYear(currentYear + 1);
+            }
+             if (dateDiff(nextEvent, today) <= 365) {
+                events.push({
+                    member,
+                    eventName: member.specialEventName,
+                    eventDate: nextEvent,
+                    daysLeft: dateDiff(nextEvent, today),
+                });
+             }
+        } catch (e) { console.error("Invalid special event date for", member.name)}
+      }
+    }
+    return events.sort((a, b) => a.daysLeft - b.daysLeft);
+  }, [familyMembers]);
 
 
   if (loading) {
@@ -139,6 +186,7 @@ export default function DashboardPage() {
                   <Skeleton className="lg:col-span-1 h-96" />
                   <Skeleton className="lg:col-span-1 h-96" />
                   {lowStockProducts.length > 0 && <Skeleton className="lg:col-span-4 h-48" />}
+                  <Skeleton className="lg:col-span-4 h-48" />
               </div>
           </div>
       )
@@ -308,6 +356,44 @@ export default function DashboardPage() {
                 </CardContent>
             </Card>
         )}
+        
+        <Card className="lg:col-span-4">
+            <CardHeader>
+                <CardTitle className="flex items-center">
+                    <Gift className="mr-2 h-5 w-5 text-primary" />
+                    Upcoming Events
+                </CardTitle>
+                <CardDescription>Upcoming birthdays and special events for your family.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {upcomingEvents.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {upcomingEvents.slice(0,10).map((event, index) => (
+                             <Card key={index} className="flex flex-col items-center justify-center p-4 text-center">
+                                <Image
+                                    src={event.member.avatarUrl}
+                                    alt={event.member.name}
+                                    width={64}
+                                    height={64}
+                                    className="rounded-full mb-2"
+                                />
+                                <p className="font-semibold">{event.member.name}</p>
+                                <p className="text-sm text-primary">{event.eventName}</p>
+                                <p className="text-xs text-muted-foreground">{format(event.eventDate, 'MMMM do')}</p>
+                                <p className="text-2xl font-bold mt-1">
+                                    {event.daysLeft === 0 ? 'Today!' : event.daysLeft}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {event.daysLeft > 0 && `day${event.daysLeft > 1 ? 's' : ''} left`}
+                                </p>
+                             </Card>
+                        ))}
+                    </div>
+                ): (
+                    <p className="text-sm text-muted-foreground text-center py-8">No upcoming family events.</p>
+                )}
+            </CardContent>
+        </Card>
       </div>
     </div>
   );

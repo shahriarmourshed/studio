@@ -8,6 +8,8 @@ export type FamilyMember = {
   weight: number; // in kg
   healthConditions: string;
   dietaryRestrictions: string;
+  specialEventName?: string;
+  specialEventDate?: string; // ISO string date
   createdAt?: any;
 };
 
