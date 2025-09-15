@@ -7,7 +7,7 @@ import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc, writeBatch, getDocs, getDoc } from "firebase/firestore";
-import { differenceInDays, differenceInWeeks, differenceInMonths, isFuture, getMonth, getYear, set, addMonths, format } from 'date-fns';
+import { differenceInDays, differenceInWeeks, differenceInMonths, isFuture, getMonth, getYear, set, addMonths, format, lastDayOfMonth, subMonths } from 'date-fns';
 
 interface DataContextType {
   expenses: Expense[];
@@ -53,8 +53,14 @@ const generateRecurrentTransactions = <T extends Income | Expense>(
   
   recurrentPlanned.forEach(t => {
       let nextDate = addMonths(new Date(t.date), 1);
+      const recurrenceEndDate = t.recurrenceEndDate ? new Date(t.recurrenceEndDate) : null;
       
       while (nextDate <= endDate) {
+          // Stop if we've passed the recurrence end date
+          if (recurrenceEndDate && nextDate > recurrenceEndDate) {
+              break;
+          }
+        
           const year = getYear(nextDate);
           const month = getMonth(nextDate);
 
@@ -243,7 +249,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
   }
   
-  const addExpense = async (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Expense['status'] = 'planned') => {
+  const addExpense = async (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt' | 'recurrenceEndDate'>, status: Expense['status'] = 'planned') => {
     const collectionRef = getCollectionRef('expenses');
     if (!collectionRef) return;
     const docRef = doc(collectionRef);
@@ -272,14 +278,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    if ((expenseToDelete as any).isRecurrentProjection) {
-        // It's a future projection, so create a 'cancelled' record for that specific month
-        cancelPlannedTransaction(expenseToDelete, 'expense');
-    } else {
-        // It's a base transaction (either single or the source of a recurrent series)
-        const docRef = doc(db, `users/${user.uid}/expenses`, expenseToDelete.id);
-        await deleteDoc(docRef);
+    // Get the original base transaction ID
+    const baseId = (expenseToDelete as any).isRecurrentProjection
+        ? expenseToDelete.plannedId
+        : expenseToDelete.id;
+    if (!baseId) return;
+
+    const baseDocRef = doc(db, `users/${user.uid}/expenses`, baseId);
+    const baseDocSnap = await getDoc(baseDocRef);
+    const isBaseRecurrent = baseDocSnap.exists() && baseDocSnap.data().recurrent;
+
+    // If it's not a recurrent transaction, just delete it
+    if (!isBaseRecurrent && !(expenseToDelete as any).isRecurrentProjection) {
+      await deleteDoc(doc(db, `users/${user.uid}/expenses`, expenseToDelete.id));
+      return;
     }
+
+    // It is a recurrent transaction. End the recurrence.
+    const deletionDate = new Date(expenseToDelete.date);
+    const monthBeforeDeletion = subMonths(deletionDate, 1);
+    const endRecurrenceDate = format(lastDayOfMonth(monthBeforeDeletion), 'yyyy-MM-dd');
+
+    await updateDoc(baseDocRef, {
+      recurrenceEndDate: endRecurrenceDate
+    });
   };
 
   
@@ -321,7 +343,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await batch.commit();
   };
 
-  const addIncome = async (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Income['status'] = 'planned') => {
+  const addIncome = async (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt' | 'recurrenceEndDate'>, status: Income['status'] = 'planned') => {
       const collectionRef = getCollectionRef('incomes');
       if (!collectionRef) return;
       const docRef = doc(collectionRef);
@@ -350,16 +372,31 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
 
-    if ((incomeToDelete as any).isRecurrentProjection) {
-        // It's a future projection, so create a 'cancelled' record for that specific month
-        cancelPlannedTransaction(incomeToDelete, 'income');
-    } else {
-        // It's a base transaction (either single or the source of a recurrent series)
-        const docRef = doc(db, `users/${user.uid}/incomes`, incomeToDelete.id);
-        await deleteDoc(docRef);
-    }
-  };
+    // Get the original base transaction ID
+    const baseId = (incomeToDelete as any).isRecurrentProjection
+        ? incomeToDelete.plannedId
+        : incomeToDelete.id;
+    if (!baseId) return;
 
+    const baseDocRef = doc(db, `users/${user.uid}/incomes`, baseId);
+    const baseDocSnap = await getDoc(baseDocRef);
+    const isBaseRecurrent = baseDocSnap.exists() && baseDocSnap.data().recurrent;
+
+    // If it's not a recurrent transaction, just delete it
+    if (!isBaseRecurrent && !(incomeToDelete as any).isRecurrentProjection) {
+      await deleteDoc(doc(db, `users/${user.uid}/incomes`, incomeToDelete.id));
+      return;
+    }
+
+    // It is a recurrent transaction. End the recurrence.
+    const deletionDate = new Date(incomeToDelete.date);
+    const monthBeforeDeletion = subMonths(deletionDate, 1);
+    const endRecurrenceDate = format(lastDayOfMonth(monthBeforeDeletion), 'yyyy-MM-dd');
+
+    await updateDoc(baseDocRef, {
+      recurrenceEndDate: endRecurrenceDate
+    });
+  };
   
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
     const collectionRef = getCollectionRef('familyMembers');

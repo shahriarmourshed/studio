@@ -44,6 +44,7 @@ export type Expense = {
   category: ExpenseCategory;
   date: string;
   recurrent: boolean;
+  recurrenceEndDate?: string;
   notes?: string;
   status: 'planned' | 'completed' | 'cancelled';
   plannedAmount?: number;
@@ -61,6 +62,7 @@ export type Income = {
   category: IncomeCategory;
   date: string;
   recurrent: boolean;
+  recurrenceEndDate?: string;
   notes?: string;
   status: 'planned' | 'completed' | 'cancelled';
   plannedAmount?: number;
