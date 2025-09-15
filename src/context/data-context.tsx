@@ -252,12 +252,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // If it's a projection, get the original ID. Otherwise, it's the base ID.
+    // Find the original base transaction ID.
     const baseId = expenseToDelete.plannedId || expenseToDelete.id;
     
-    // Check if baseId is a valid document ID (not a projection ID)
-    if (!baseId.includes('-rec-')) {
-        const docRef = doc(db, `users/${user.uid}/expenses`, baseId);
+    // The baseId for a projection will have `-rec-` in it, so we can't just check for that.
+    // The real source of truth is if it has a `plannedId`. If not, it's a base doc.
+    const docToDeleteId = expenseToDelete.plannedId ? expenseToDelete.plannedId : expenseToDelete.id;
+
+    if (docToDeleteId) {
+        const docRef = doc(db, `users/${user.uid}/expenses`, docToDeleteId);
         await deleteDoc(docRef);
     }
   };
@@ -329,12 +332,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
 
-    // If it's a projection, get the original ID. Otherwise, it's the base ID.
-    const baseId = incomeToDelete.plannedId || incomeToDelete.id;
+    // Find the original base transaction ID.
+    const docToDeleteId = incomeToDelete.plannedId ? incomeToDelete.plannedId : incomeToDelete.id;
 
-    // Check if baseId is a valid document ID (not a projection ID)
-    if (!baseId.includes('-rec-')) {
-        const docRef = doc(db, `users/${user.uid}/incomes`, baseId);
+    if (docToDeleteId) {
+        const docRef = doc(db, `users/${user.uid}/incomes`, docToDeleteId);
         await deleteDoc(docRef);
     }
   };
