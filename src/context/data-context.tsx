@@ -251,15 +251,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
-  
-    if ((expenseToDelete as any).isRecurrentProjection) {
-      await cancelPlannedTransaction(expenseToDelete, 'expense');
-    } else {
-      // This is a base transaction (recurrent or not). Deleting it will remove it from firestore,
-      // and the onSnapshot listener will update the state, which will cause projections to be recalculated.
-      const docRef = doc(db, `users/${user.uid}/expenses`, expenseId);
-      await deleteDoc(docRef);
-    }
+
+    // This is a base transaction (recurrent or not). Deleting it will remove it from firestore,
+    // and the onSnapshot listener will update the state, which will cause projections to be recalculated.
+    const docRef = doc(db, `users/${user.uid}/expenses`, expenseId);
+    await deleteDoc(docRef);
   };
   
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
@@ -328,14 +324,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
-  
-    if ((incomeToDelete as any).isRecurrentProjection) {
-      await cancelPlannedTransaction(incomeToDelete, 'income');
-    } else {
-      // This is a base transaction (recurrent or not).
-      const docRef = doc(db, `users/${user.uid}/incomes`, incomeId);
-      await deleteDoc(docRef);
-    }
+    
+    // This is a base transaction (recurrent or not).
+    const docRef = doc(db, `users/${user.uid}/incomes`, incomeId);
+    await deleteDoc(docRef);
   };
   
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
@@ -459,3 +451,5 @@ export function useData() {
   }
   return context;
 }
+
+    
