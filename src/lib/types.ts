@@ -21,6 +21,7 @@ export type Product = {
   purchaseDate: string;
   consumptionRate?: number;
   consumptionPeriod?: 'daily' | 'weekly' | 'half-monthly' | 'monthly';
+  lowStockThreshold?: number;
   lastUpdated: string; // ISO string to track when stock was last updated
   createdAt?: any;
 };

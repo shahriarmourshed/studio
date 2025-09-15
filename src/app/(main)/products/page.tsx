@@ -64,6 +64,7 @@ export default function ProductsPage() {
   const [newProductPurchaseDate, setNewProductPurchaseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newProductConsumptionRate, setNewProductConsumptionRate] = useState('');
   const [newProductConsumptionPeriod, setNewProductConsumptionPeriod] = useState<Product['consumptionPeriod']>('daily');
+  const [newProductLowStockThreshold, setNewProductLowStockThreshold] = useState('');
   
   // Edit form state
   const [editProductName, setEditProductName] = useState('');
@@ -74,6 +75,7 @@ export default function ProductsPage() {
   const [editProductPurchaseDate, setEditProductPurchaseDate] = useState('');
   const [editProductConsumptionRate, setEditProductConsumptionRate] = useState('');
   const [editProductConsumptionPeriod, setEditProductConsumptionPeriod] = useState<Product['consumptionPeriod']>('daily');
+  const [editProductLowStockThreshold, setEditProductLowStockThreshold] = useState('');
 
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -88,6 +90,7 @@ export default function ProductsPage() {
         purchaseDate: newProductPurchaseDate,
         consumptionRate: newProductConsumptionRate ? parseFloat(newProductConsumptionRate) : undefined,
         consumptionPeriod: newProductConsumptionRate ? newProductConsumptionPeriod : undefined,
+        lowStockThreshold: newProductLowStockThreshold ? parseFloat(newProductLowStockThreshold) : undefined,
       });
       resetAddForm();
     }
@@ -102,6 +105,7 @@ export default function ProductsPage() {
       setNewProductPurchaseDate(format(new Date(), 'yyyy-MM-dd'));
       setNewProductConsumptionRate('');
       setNewProductConsumptionPeriod('daily');
+      setNewProductLowStockThreshold('');
       setIsAddDialogOpen(false);
   }
 
@@ -115,6 +119,7 @@ export default function ProductsPage() {
     setEditProductPurchaseDate(product.purchaseDate);
     setEditProductConsumptionRate(product.consumptionRate?.toString() ?? '');
     setEditProductConsumptionPeriod(product.consumptionPeriod ?? 'daily');
+    setEditProductLowStockThreshold(product.lowStockThreshold?.toString() ?? '');
     setIsEditDialogOpen(true);
   };
   
@@ -131,6 +136,7 @@ export default function ProductsPage() {
             purchaseDate: editProductPurchaseDate,
             consumptionRate: editProductConsumptionRate ? parseFloat(editProductConsumptionRate) : undefined,
             consumptionPeriod: editProductConsumptionRate ? editProductConsumptionPeriod : undefined,
+            lowStockThreshold: editProductLowStockThreshold ? parseFloat(editProductLowStockThreshold) : undefined,
         };
         updateProduct(updatedProduct);
         setIsEditDialogOpen(false);
@@ -259,6 +265,14 @@ export default function ProductsPage() {
                             <Input id="consumptionRate" type="number" placeholder="Amount" className="pr-12" value={newProductConsumptionRate} onChange={e => setNewProductConsumptionRate(e.target.value)} />
                             <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{newProductUnit}</span>
                         </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="lowStockThreshold" className="text-right">Low Stock Alert</Label>
+                    <div className="col-span-3 relative">
+                         <Input id="lowStockThreshold" type="number" placeholder="e.g., 5" className="pr-12" value={newProductLowStockThreshold} onChange={e => setNewProductLowStockThreshold(e.target.value)} />
+                         <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{newProductUnit}</span>
                     </div>
                 </div>
                 
@@ -409,6 +423,13 @@ export default function ProductsPage() {
                     </div>
                 </div>
               </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-lowStockThreshold" className="text-right">Low Stock Alert</Label>
+                    <div className="col-span-3 relative">
+                         <Input id="edit-lowStockThreshold" type="number" placeholder="e.g., 5" className="pr-12" value={editProductLowStockThreshold} onChange={e => setEditProductLowStockThreshold(e.target.value)} />
+                         <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{editProductUnit}</span>
+                    </div>
+                </div>
               <Button type="submit" className="w-full">Save Changes</Button>
             </div>
             </form>

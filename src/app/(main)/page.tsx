@@ -10,7 +10,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Utensils, ChevronRight } from 'lucide-react';
+import { PlusCircle, Utensils, ChevronRight, AlertCircle } from 'lucide-react';
 import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
@@ -29,9 +29,10 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { ExpenseCategory, Income, Expense } from '@/lib/types';
+import type { ExpenseCategory, Income, Expense, Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
@@ -119,8 +120,14 @@ export default function DashboardPage() {
         ...incomes.filter(upcoming).map(t => ({...t, type: 'income' as const}))
     ];
 
-    return combined.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return combined.sort((a, b) => new Date(a.date).getTime() - new Date(a.date).getTime());
   }, [expenses, incomes, reminderDays]);
+
+  const lowStockProducts = useMemo(() => {
+    return products.filter(p => 
+        p.lowStockThreshold !== undefined && p.currentStock <= p.lowStockThreshold
+    );
+  }, [products]);
 
 
   if (loading) {
@@ -131,6 +138,7 @@ export default function DashboardPage() {
                   <Skeleton className="lg:col-span-2 h-96" />
                   <Skeleton className="lg:col-span-1 h-96" />
                   <Skeleton className="lg:col-span-1 h-96" />
+                  {lowStockProducts.length > 0 && <Skeleton className="lg:col-span-4 h-48" />}
               </div>
           </div>
       )
@@ -269,6 +277,37 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        {lowStockProducts.length > 0 && (
+            <Card className="lg:col-span-4">
+                <CardHeader>
+                    <CardTitle className="flex items-center text-amber-500">
+                        <AlertCircle className="mr-2 h-5 w-5" />
+                        Low Stock Alerts
+                    </CardTitle>
+                    <CardDescription>These products are running low and need to be restocked.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {lowStockProducts.map(product => (
+                        <Link href="/products" key={product.id}>
+                            <Card className="hover:shadow-lg transition-shadow h-full">
+                                <CardHeader className="p-3">
+                                    <CardTitle className="text-base">{product.name}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-3 pt-0">
+                                    <p className="text-xl font-bold">{product.currentStock.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">{product.unit}</span></p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Alert at: {product.lowStockThreshold} {product.unit}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    ))}
+                    </div>
+                </CardContent>
+            </Card>
+        )}
       </div>
     </div>
   );
