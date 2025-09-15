@@ -6,8 +6,31 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc, writeBatch, getDocs, getDoc } from "firebase/firestore";
-import { differenceInDays, differenceInWeeks, differenceInMonths, isFuture, getMonth, getYear, set, addMonths, format, lastDayOfMonth, subMonths } from 'date-fns';
+import { onSnapshot, collection, query, orderBy } from "firebase/firestore";
+import {
+  calculateAutoReducedStock,
+  generateRecurrentTransactions,
+  getSettings,
+  updateSettings,
+  addExpenseOp,
+  updateExpenseOp,
+  deleteExpenseOp,
+  addIncomeOp,
+  updateIncomeOp,
+  deleteIncomeOp,
+  addProductOp,
+  updateProductOp,
+  deleteProductOp,
+  clearProductsOp,
+  addFamilyMemberOp,
+  updateFamilyMemberOp,
+  deleteFamilyMemberOp,
+  clearFamilyMembersOp,
+  completePlannedTransactionOp,
+  cancelPlannedTransactionOp,
+  clearAllUserDataOp,
+} from '@/lib/data-operations';
+
 
 interface DataContextType {
   expenses: Expense[];
@@ -18,14 +41,14 @@ interface DataContextType {
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
   setReminderDays: (days: number) => void;
-  addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status?: Expense['status']) => Promise<void>;
+  addExpense: (expense: Omit<Expense, 'id'>, status?: Expense['status']) => Promise<void>;
   updateExpense: (expense: Expense) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
   addProduct: (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   clearProducts: () => Promise<void>;
-  addIncome: (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status?: Income['status']) => Promise<void>;
+  addIncome: (income: Omit<Income, 'id'>, status?: Income['status']) => Promise<void>;
   updateIncome: (income: Income) => Promise<void>;
   deleteIncome: (incomeId: string) => Promise<void>;
   addFamilyMember: (member: Omit<FamilyMember, 'id' | 'createdAt'>) => Promise<void>;
@@ -40,59 +63,6 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-const generateRecurrentTransactions = <T extends Income | Expense>(
-  transactions: T[],
-  endDate: Date
-): T[] => {
-  const futureTransactions: T[] = [];
-  const allIds = new Set(transactions.map(t => t.id));
-
-  // Filter for original planned transactions that are marked as recurrent.
-  const recurrentPlanned = transactions.filter(
-    t => t.recurrent && t.status === 'planned' && !t.plannedId
-  );
-  
-  recurrentPlanned.forEach(t => {
-      let nextDate = addMonths(new Date(t.date), 1);
-      const recurrenceEndDate = t.recurrenceEndDate ? new Date(t.recurrenceEndDate) : null;
-      
-      while (nextDate <= endDate) {
-          // Stop if we've passed the recurrence end date
-          if (recurrenceEndDate && nextDate > recurrenceEndDate) {
-              break;
-          }
-        
-          const year = getYear(nextDate);
-          const month = getMonth(nextDate);
-
-          // Check if a transaction (completed, cancelled, or edited planned) for this recurring item already exists for the month
-          const transactionForMonthExists = transactions.some(existingTx => 
-              existingTx.plannedId === t.id && 
-              getYear(new Date(existingTx.date)) === year &&
-              getMonth(new Date(existingTx.date)) === month
-          );
-
-          if (!transactionForMonthExists) {
-              const newId = `${t.id}-rec-${format(nextDate, 'yyyy-MM')}`;
-              if (!allIds.has(newId)) {
-                  futureTransactions.push({
-                      ...t,
-                      id: newId,
-                      date: format(nextDate, 'yyyy-MM-dd'),
-                      plannedId: t.id,
-                      isRecurrentProjection: true,
-                  } as T & { isRecurrentProjection: boolean });
-                  allIds.add(newId);
-              }
-          }
-          nextDate = addMonths(nextDate, 1);
-      }
-  });
-
-  return futureTransactions;
-};
-
-
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -104,49 +74,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [savingGoal, setSavingGoalState] = useState<number>(0);
   const [reminderDays, setReminderDaysState] = useState<number>(3);
   
-  const getCollectionRef = useCallback((collectionName: string) => {
-    if (!user) return null;
-    return collection(db, `users/${user.uid}/${collectionName}`);
-  }, [user]);
-
-  const calculateAutoReducedStock = (product: Product): Product => {
-    if (!product.consumptionRate || !product.consumptionPeriod || !product.lastUpdated) {
-        return product;
-    }
-
-    const now = new Date();
-    const lastUpdatedDate = new Date(product.lastUpdated);
-    let periodsPassed = 0;
-
-    switch (product.consumptionPeriod) {
-        case 'daily':
-            periodsPassed = differenceInDays(now, lastUpdatedDate);
-            break;
-        case 'weekly':
-            periodsPassed = differenceInWeeks(now, lastUpdatedDate);
-            break;
-        case 'half-monthly':
-            // Approximate as 2 weeks
-            periodsPassed = Math.floor(differenceInDays(now, lastUpdatedDate) / 14);
-            break;
-        case 'monthly':
-            periodsPassed = differenceInMonths(now, lastUpdatedDate);
-            break;
-    }
-
-    if (periodsPassed > 0) {
-        const consumedAmount = periodsPassed * product.consumptionRate;
-        const newStock = Math.max(0, product.currentStock - consumedAmount);
-        return { ...product, currentStock: newStock };
-    }
-
-    return product;
-  };
-
+  const userId = user?.uid || null;
 
   // Fetch initial data and set up listeners
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       setLoading(false);
       // Reset states when user logs out
       setExpenses([]);
@@ -162,13 +94,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const unsubscribes: (() => void)[] = [];
 
     const setupSubscription = (collectionName: string, setter: React.Dispatch<React.SetStateAction<any[]>>, processData?: (data: any[]) => any[]) => {
-        const collectionRef = getCollectionRef(collectionName);
-        if (!collectionRef) return;
+        const collectionRef = collection(db, `users/${userId}/${collectionName}`);
         const q = query(collectionRef, orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Generate recurrent transactions for the next 5 years
              if (collectionName === 'incomes' || collectionName === 'expenses') {
                 const futureDate = new Date();
                 futureDate.setFullYear(futureDate.getFullYear() + 5);
@@ -180,319 +110,154 @@ export function DataProvider({ children }: { children: ReactNode }) {
               data = processData(data);
             }
             setter(data);
+            setLoading(false);
         }, (error) => {
             console.error(`Error fetching ${collectionRef.path}:`, error);
+            setLoading(false);
         });
         unsubscribes.push(unsubscribe);
     };
 
-    // Set up listeners for all collections
     setupSubscription('expenses', setExpenses);
     setupSubscription('incomes', setIncomes);
     setupSubscription('products', setProducts, (data) => data.map(calculateAutoReducedStock));
     setupSubscription('familyMembers', setFamilyMembers);
     
-    // Listener for settings changes
-    const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
-    const unsubscribeSettings = onSnapshot(settingsDocRef, (doc) => {
-        if (doc.exists()) {
-            const settings = doc.data();
-            setSavingGoalState(settings.savingGoal ?? 0);
-            setReminderDaysState(settings.reminderDays ?? 3);
-        } else {
-            // If settings don't exist, create them
-            setDoc(settingsDocRef, { savingGoal: 0, reminderDays: 3 });
-        }
+    getSettings(userId).then(settings => {
+      setSavingGoalState(settings.savingGoal);
+      setReminderDaysState(settings.reminderDays);
     });
-    unsubscribes.push(unsubscribeSettings);
-
-    const clearDemoData = async () => {
-        const expensesRef = getCollectionRef('expenses');
-        if (expensesRef) {
-            const q = query(expensesRef);
-            const snapshot = await getDocs(q);
-            const batch = writeBatch(db);
-            snapshot.docs.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-        }
-    };
-
-    // Check if we should clear demo data
-    const shouldClearKey = `cleared_demo_${user.uid}`;
-    if (!localStorage.getItem(shouldClearKey)) {
-        clearDemoData().then(() => {
-            localStorage.setItem(shouldClearKey, 'true');
-            setLoading(false);
-        });
-    } else {
-        setLoading(false);
-    }
-
 
     return () => {
       unsubscribes.forEach(unsub => unsub());
     };
-  }, [user, getCollectionRef]);
+  }, [userId]);
 
   const setSavingGoal = async (goal: number) => {
-    const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
-    if (settingsDocRef) {
-        setSavingGoalState(goal); // Optimistic update
-        await updateDoc(settingsDocRef, { savingGoal: goal });
-    }
+    if (!userId) return;
+    setSavingGoalState(goal); // Optimistic update
+    await updateSettings(userId, { savingGoal: goal });
   }
 
   const setReminderDays = async (days: number) => {
-      const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
-      if (settingsDocRef) {
-          setReminderDaysState(days); // Optimistic update
-          await updateDoc(settingsDocRef, { reminderDays: days });
-      }
+    if (!userId) return;
+    setReminderDaysState(days); // Optimistic update
+    await updateSettings(userId, { reminderDays: days });
   }
   
-  const addExpense = async (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt' | 'recurrenceEndDate'>, status: Expense['status'] = 'planned') => {
-    const collectionRef = getCollectionRef('expenses');
-    if (!collectionRef) return;
-    const docRef = doc(collectionRef);
-    const newExpense = { ...expense, id: docRef.id, status, createdAt: Timestamp.now() };
-    await setDoc(docRef, newExpense);
+  const addExpense = async (expense: Omit<Expense, 'id'>, status: Expense['status'] = 'planned') => {
+    if (!userId) return;
+    const newExpense = { ...expense, status };
+    await addExpenseOp(userId, newExpense);
   };
   
   const updateExpense = async (updatedExpense: Expense) => {
-      if (!user) return;
+      if (!userId) return;
 
       if ((updatedExpense as any).isRecurrentProjection) {
-        // If user is editing a future projection, create a new, one-time planned transaction
-        const { id, isRecurrentProjection, ...data } = updatedExpense as any;
+        const { id, isRecurrentProjection, createdAt, ...data } = updatedExpense as any;
         addExpense({ ...data, recurrent: false, edited: true }, 'planned');
         return;
       }
-
-      // If user is editing the original recurrent transaction
-      const { id, createdAt, ...dataToUpdate } = updatedExpense as any;
-      const docRef = doc(db, `users/${user.uid}/expenses`, id);
-      await updateDoc(docRef, {...dataToUpdate, edited: true});
+      
+      await updateExpenseOp(userId, updatedExpense);
   };
   
   const deleteExpense = async (expenseId: string) => {
-    if (!user) return;
+    if (!userId) return;
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // If it's a non-recurrent or a completed/cancelled item, just delete it
-    if (!expenseToDelete.recurrent || expenseToDelete.status !== 'planned') {
-        const docRef = doc(db, `users/${user.uid}/expenses`, expenseToDelete.id);
-        await deleteDoc(docRef);
+    if (!expenseToDelete.recurrent) {
+        await deleteProductOp(userId, expenseToDelete.id);
         return;
     }
-
-    // It's a recurring planned transaction
-    const baseId = (expenseToDelete as any).isRecurrentProjection
-        ? expenseToDelete.plannedId!
-        : expenseToDelete.id;
-
-    const baseDocRef = doc(db, `users/${user.uid}/expenses`, baseId);
-    
-    // End the recurrence from the selected month onwards
-    const deletionDate = new Date(expenseToDelete.date);
-    const monthBeforeDeletion = subMonths(deletionDate, 1);
-    const endRecurrenceDate = format(lastDayOfMonth(monthBeforeDeletion), 'yyyy-MM-dd');
-
-    await updateDoc(baseDocRef, {
-      recurrenceEndDate: endRecurrenceDate
-    });
+    await deleteExpenseOp(userId, expenseToDelete);
   };
 
-  
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
-      const collectionRef = getCollectionRef('products');
-      if (!collectionRef) return;
-      const docRef = doc(collectionRef);
-      const newProduct = { 
-        ...product,
-        id: docRef.id, 
-        lastUpdated: new Date().toISOString(),
-        createdAt: Timestamp.now()
-      };
-      await setDoc(docRef, newProduct);
+      if (!userId) return;
+      await addProductOp(userId, product);
   };
 
   const updateProduct = async (updatedProduct: Product) => {
-      if (!user) return;
-      const { id, ...dataToUpdate } = updatedProduct;
-      const docRef = doc(db, `users/${user.uid}/products`, id);
-      await updateDoc(docRef, {...dataToUpdate, lastUpdated: new Date().toISOString()});
+      if (!userId) return;
+      await updateProductOp(userId, updatedProduct);
   };
 
   const deleteProduct = async (productId: string) => {
-    if (!user) return;
-    const docRef = doc(db, `users/${user.uid}/products`, productId);
-    await deleteDoc(docRef);
+    if (!userId) return;
+    await deleteProductOp(userId, productId);
   };
   
   const clearProducts = async () => {
-    const collectionRef = getCollectionRef('products');
-    if (!collectionRef) return;
-
-    const snapshot = await getDocs(collectionRef);
-    const batch = writeBatch(db);
-    snapshot.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-    });
-    await batch.commit();
+    if (!userId) return;
+    await clearProductsOp(userId);
   };
 
-  const addIncome = async (income: Omit<Income, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt' | 'recurrenceEndDate'>, status: Income['status'] = 'planned') => {
-      const collectionRef = getCollectionRef('incomes');
-      if (!collectionRef) return;
-      const docRef = doc(collectionRef);
-      const newIncome = { ...income, id: docRef.id, status, createdAt: Timestamp.now() };
-      await setDoc(docRef, newIncome);
+  const addIncome = async (income: Omit<Income, 'id'>, status: Income['status'] = 'planned') => {
+      if (!userId) return;
+      await addIncomeOp(userId, {...income, status});
   };
 
   const updateIncome = async (updatedIncome: Income) => {
-    if (!user) return;
+    if (!userId) return;
     
     if ((updatedIncome as any).isRecurrentProjection) {
-        // If user is editing a future projection, create a new, one-time planned transaction
-        const { id, isRecurrentProjection, ...data } = updatedIncome as any;
+        const { id, isRecurrentProjection, createdAt, ...data } = updatedIncome as any;
         addIncome({ ...data, recurrent: false, edited: true }, 'planned');
         return;
     }
 
-    // If user is editing the original recurrent transaction
-    const { id, createdAt, ...dataToUpdate } = updatedIncome as any;
-    const docRef = doc(db, `users/${user.uid}/incomes`, id);
-    await updateDoc(docRef, {...dataToUpdate, edited: true});
+    await updateIncomeOp(userId, updatedIncome);
   };
 
   const deleteIncome = async (incomeId: string) => {
-    if (!user) return;
+    if (!userId) return;
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
 
-    // If it's a non-recurrent or a completed/cancelled item, just delete it
-    if (!incomeToDelete.recurrent || incomeToDelete.status !== 'planned') {
-        const docRef = doc(db, `users/${user.uid}/incomes`, incomeToDelete.id);
-        await deleteDoc(docRef);
+    if (!incomeToDelete.recurrent) {
+        await deleteProductOp(userId, incomeToDelete.id);
         return;
     }
     
-    // It's a recurring planned transaction
-    const baseId = (incomeToDelete as any).isRecurrentProjection
-        ? incomeToDelete.plannedId!
-        : incomeToDelete.id;
-
-    const baseDocRef = doc(db, `users/${user.uid}/incomes`, baseId);
-    
-    // End the recurrence from the selected month onwards
-    const deletionDate = new Date(incomeToDelete.date);
-    const monthBeforeDeletion = subMonths(deletionDate, 1);
-    const endRecurrenceDate = format(lastDayOfMonth(monthBeforeDeletion), 'yyyy-MM-dd');
-
-    await updateDoc(baseDocRef, {
-      recurrenceEndDate: endRecurrenceDate
-    });
+    await deleteIncomeOp(userId, incomeToDelete);
   };
   
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
-    const collectionRef = getCollectionRef('familyMembers');
-    if (!collectionRef) return;
-    const newDocRef = doc(collectionRef); // Generate a new doc ref with a unique ID
-    const newMember = { ...member, id: newDocRef.id, createdAt: Timestamp.now() };
-    await setDoc(newDocRef, newMember); // Use the new ref to set the document
+    if (!userId) return;
+    await addFamilyMemberOp(userId, member);
   };
 
   const updateFamilyMember = async (member: FamilyMember) => {
-    if (!user) return;
-    const { id, ...dataToUpdate } = member;
-    const docRef = doc(db, `users/${user.uid}/familyMembers`, id);
-await updateDoc(docRef, dataToUpdate);
+    if (!userId) return;
+    await updateFamilyMemberOp(userId, member);
   };
 
   const deleteFamilyMember = async (memberId: string) => {
-    if (!user) return;
-    const docRef = doc(db, `users/${user.uid}/familyMembers`, memberId);
-    await deleteDoc(docRef);
+    if (!userId) return;
+    await deleteFamilyMemberOp(userId, memberId);
   };
 
   const clearFamilyMembers = async () => {
-    const collectionRef = getCollectionRef('familyMembers');
-    if (!collectionRef) return;
-
-    const snapshot = await getDocs(collectionRef);
-    const batch = writeBatch(db);
-    snapshot.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-    });
-    await batch.commit();
+    if (!userId) return;
+    await clearFamilyMembersOp(userId);
   };
 
   const clearAllUserData = async () => {
-    if (!user) return;
-
-    const collectionsToDelete = ['expenses', 'incomes', 'products', 'familyMembers'];
-    const batch = writeBatch(db);
-
-    for (const collectionName of collectionsToDelete) {
-        const collectionRef = getCollectionRef(collectionName);
-        if (collectionRef) {
-            const snapshot = await getDocs(collectionRef);
-            snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
-            });
-        }
-    }
-    // Also clear settings
-    const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
-    batch.delete(settingsDocRef);
-    
-    await batch.commit();
+    if (!userId) return;
+    await clearAllUserDataOp(userId);
   };
 
   const completePlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => {
-    const collectionRef = type === 'income' ? getCollectionRef('incomes') : getCollectionRef('expenses');
-    if (!collectionRef) return;
-    
-    // If it's a projection, the ID to link is in plannedId. If it's an original, it's in id.
-    const originalPlannedId = (transaction as any).isRecurrentProjection ? transaction.plannedId : transaction.id;
-
-    const { id, ...originalData } = transaction;
-    // Remove createdAt from originalData if it exists to avoid Firestore errors
-    const { createdAt, isRecurrentProjection, ...restData } = originalData as any;
-
-    const newActualTransaction = {
-      ...restData,
-      status: 'completed' as const,
-      plannedId: originalPlannedId, 
-      plannedAmount: originalData.amount,
-      amount: actualAmount ?? originalData.amount,
-      date: new Date().toISOString().split('T')[0], // For recurrent, use the projected date
-      createdAt: Timestamp.now(),
-    };
-
-    await addDoc(collectionRef, newActualTransaction);
+    if (!userId) return;
+    await completePlannedTransactionOp(userId, transaction, type, actualAmount);
   };
   
   const cancelPlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense') => {
-    const collectionRef = type === 'income' ? getCollectionRef('incomes') : getCollectionRef('expenses');
-    if (!collectionRef) return;
-    
-    const originalPlannedId = (transaction as any).isRecurrentProjection ? transaction.plannedId : transaction.id;
-
-    const { id, ...originalData } = transaction;
-    const { createdAt, isRecurrentProjection, ...restData } = originalData as any;
-
-
-    const newCancelledTransaction = {
-        ...restData,
-        status: 'cancelled' as const,
-        plannedId: originalPlannedId,
-        plannedAmount: originalData.amount,
-        date: new Date().toISOString().split('T')[0],
-        createdAt: Timestamp.now(),
-    };
-    await addDoc(collectionRef, newCancelledTransaction);
+    if (!userId) return;
+    await cancelPlannedTransactionOp(userId, transaction, type);
   }
 
 
