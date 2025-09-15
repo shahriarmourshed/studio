@@ -240,11 +240,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (!user) return;
 
       if ((updatedExpense as any).isRecurrentProjection) {
+        // If user is editing a future projection, create a new, one-time planned transaction
         const { id, isRecurrentProjection, ...data } = updatedExpense as any;
-        addExpense({ ...data, recurrent: false }, 'planned'); // Create a new non-recurrent one
+        addExpense({ ...data }, 'planned');
         return;
       }
 
+      // If user is editing the original recurrent transaction
       const { id, ...dataToUpdate } = updatedExpense;
       const docRef = doc(db, `users/${user.uid}/expenses`, id);
       await updateDoc(docRef, {...dataToUpdate, edited: true});
@@ -313,11 +315,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     
     if ((updatedIncome as any).isRecurrentProjection) {
+        // If user is editing a future projection, create a new, one-time planned transaction
         const { id, isRecurrentProjection, ...data } = updatedIncome as any;
-        addIncome({ ...data, recurrent: false }, 'planned'); // Create a new non-recurrent one
+        addIncome({ ...data }, 'planned');
         return;
     }
 
+    // If user is editing the original recurrent transaction
     const { id, ...dataToUpdate } = updatedIncome;
     const docRef = doc(db, `users/${user.uid}/incomes`, id);
     await updateDoc(docRef, {...dataToUpdate, edited: true});
@@ -457,4 +461,3 @@ export function useData() {
   }
   return context;
 }
-
