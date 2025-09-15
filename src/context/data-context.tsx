@@ -252,10 +252,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // This is a base transaction (recurrent or not). Deleting it will remove it from firestore,
-    // and the onSnapshot listener will update the state, which will cause projections to be recalculated.
-    const docRef = doc(db, `users/${user.uid}/expenses`, expenseId);
-    await deleteDoc(docRef);
+    // If it's a projection, get the original ID. Otherwise, it's the base ID.
+    const baseId = expenseToDelete.plannedId || expenseToDelete.id;
+    
+    // Check if baseId is a valid document ID (not a projection ID)
+    if (!baseId.includes('-rec-')) {
+        const docRef = doc(db, `users/${user.uid}/expenses`, baseId);
+        await deleteDoc(docRef);
+    }
   };
   
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
@@ -324,10 +328,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
-    
-    // This is a base transaction (recurrent or not).
-    const docRef = doc(db, `users/${user.uid}/incomes`, incomeId);
-    await deleteDoc(docRef);
+
+    // If it's a projection, get the original ID. Otherwise, it's the base ID.
+    const baseId = incomeToDelete.plannedId || incomeToDelete.id;
+
+    // Check if baseId is a valid document ID (not a projection ID)
+    if (!baseId.includes('-rec-')) {
+        const docRef = doc(db, `users/${user.uid}/incomes`, baseId);
+        await deleteDoc(docRef);
+    }
   };
   
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
