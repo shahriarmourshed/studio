@@ -29,8 +29,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { ExpenseCategory } from '@/lib/types';
+import type { ExpenseCategory, Income, Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
@@ -104,16 +105,22 @@ export default function DashboardPage() {
     };
   }, [expenses, incomes, selectedYear]);
 
-  const upcomingRecurrentBills = useMemo(() => {
+  const upcomingTransactions = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); 
-    return expenses
-      .filter(e => {
-        const expenseDate = new Date(e.date);
-        return e.status === 'planned' && isFuture(expenseDate) && differenceInDays(expenseDate, today) <= reminderDays;
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [expenses, reminderDays]);
+    
+    const upcoming = (t: Income | Expense) => {
+        const transactionDate = new Date(t.date);
+        return t.status === 'planned' && isFuture(transactionDate) && differenceInDays(transactionDate, today) <= reminderDays;
+    }
+
+    const combined = [
+        ...expenses.filter(upcoming).map(t => ({...t, type: 'expense' as const})),
+        ...incomes.filter(upcoming).map(t => ({...t, type: 'income' as const}))
+    ];
+
+    return combined.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [expenses, incomes, reminderDays]);
 
 
   if (loading) {
@@ -231,24 +238,29 @@ export default function DashboardPage() {
         
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Upcoming Bills</CardTitle>
+            <CardTitle>Upcoming Transactions</CardTitle>
             <CardDescription>Due within {reminderDays} day(s).</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {upcomingRecurrentBills.length > 0 ? upcomingRecurrentBills.slice(0, 3).map((bill) => (
-                <li key={bill.id} className="flex justify-between items-center">
+              {upcomingTransactions.length > 0 ? upcomingTransactions.slice(0, 3).map((item) => (
+                <li key={item.id} className="flex justify-between items-center">
                   <div>
-                    <p className="font-medium">{bill.description}</p>
-                    <p className="text-sm text-muted-foreground">Due: {new Date(bill.date).toLocaleDateString()}</p>
+                    <p className="font-medium">{item.description}</p>
+                    <p className="text-sm text-muted-foreground">Due: {new Date(item.date).toLocaleDateString()}</p>
                   </div>
-                  <p className="font-semibold text-lg">{getSymbol()}{bill.amount.toLocaleString()}</p>
+                  <p className={cn(
+                      "font-semibold text-lg",
+                      item.type === 'income' ? 'text-green-500' : 'text-red-500'
+                  )}>
+                    {item.type === 'income' ? '+' : '-'}{getSymbol()}{item.amount.toLocaleString()}
+                  </p>
                 </li>
               )) : (
-                <p className="text-sm text-muted-foreground text-center">No upcoming bills found.</p>
+                <p className="text-sm text-muted-foreground text-center">No upcoming transactions found.</p>
               )}
             </ul>
-             {upcomingRecurrentBills.length > 3 && (
+             {upcomingTransactions.length > 3 && (
                 <div className="mt-4 text-center">
                     <Button variant="link" asChild>
                         <Link href="/budget">View all</Link>
