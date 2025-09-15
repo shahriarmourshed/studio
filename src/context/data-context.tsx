@@ -247,7 +247,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
 
       // If user is editing the original recurrent transaction
-      const { id, ...dataToUpdate } = updatedExpense;
+      const { id, createdAt, ...dataToUpdate } = updatedExpense as any;
       const docRef = doc(db, `users/${user.uid}/expenses`, id);
       await updateDoc(docRef, {...dataToUpdate, edited: true});
   };
@@ -322,7 +322,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     // If user is editing the original recurrent transaction
-    const { id, ...dataToUpdate } = updatedIncome;
+    const { id, createdAt, ...dataToUpdate } = updatedIncome as any;
     const docRef = doc(db, `users/${user.uid}/incomes`, id);
     await updateDoc(docRef, {...dataToUpdate, edited: true});
   };
