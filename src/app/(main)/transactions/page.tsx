@@ -141,17 +141,32 @@ export default function TransactionsPage() {
   }, [selectedDate, incomes, expenses]);
   
   const plannedTransactionsForMonth = useMemo(() => {
-    const actionedPlanIds = new Set(
-        [...incomes, ...expenses]
-            .filter(t => t.plannedId)
-            .map(t => t.plannedId)
-    );
+    const month = getMonth(selectedDate);
+    const year = getYear(selectedDate);
 
-    return [
+    // Get all completed/cancelled transactions that have a plannedId
+    const actionedTransactions = [...incomes, ...expenses].filter(t => t.plannedId && (t.status === 'completed' || t.status === 'cancelled'));
+
+    // Get all planned transactions for the selected month
+    const plannedForMonth = [
       ...filteredIncomes.map(i => ({...i, type: 'income' as const})),
       ...filteredExpenses.map(e => ({...e, type: 'expense' as const}))
-    ].filter(t => t.status === 'planned' && !actionedPlanIds.has(t.id));
-  }, [filteredIncomes, filteredExpenses, incomes, expenses]);
+    ].filter(t => t.status === 'planned');
+
+    // Filter out planned transactions that have already been actioned *for this month*
+    return plannedForMonth.filter(plannedTx => {
+      const originalPlannedId = (plannedTx as any).isRecurrentProjection ? plannedTx.plannedId : plannedTx.id;
+      
+      const hasBeenActionedThisMonth = actionedTransactions.some(actionedTx => {
+         const actionedDate = new Date(actionedTx.date);
+        return actionedTx.plannedId === originalPlannedId &&
+               getMonth(actionedDate) === month &&
+               getYear(actionedDate) === year;
+      });
+
+      return !hasBeenActionedThisMonth;
+    });
+  }, [selectedDate, filteredIncomes, filteredExpenses, incomes, expenses]);
 
   const allTransactionsForMonth: Transaction[] = useMemo(() => {
     return [
