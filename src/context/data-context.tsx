@@ -252,17 +252,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // Find the original base transaction ID.
-    const baseId = expenseToDelete.plannedId || expenseToDelete.id;
-    
-    // The baseId for a projection will have `-rec-` in it, so we can't just check for that.
-    // The real source of truth is if it has a `plannedId`. If not, it's a base doc.
-    const docToDeleteId = expenseToDelete.plannedId ? expenseToDelete.plannedId : expenseToDelete.id;
-
-    if (docToDeleteId) {
-        const docRef = doc(db, `users/${user.uid}/expenses`, docToDeleteId);
-        await deleteDoc(docRef);
-    }
+    // Find the original base transaction ID. If the item has a plannedId, that's the base.
+    // If not, it's the base item itself.
+    const docIdToDelete = expenseToDelete.plannedId || expenseToDelete.id;
+    const docRef = doc(db, `users/${user.uid}/expenses`, docIdToDelete);
+    await deleteDoc(docRef);
   };
   
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
@@ -331,14 +325,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
-
-    // Find the original base transaction ID.
-    const docToDeleteId = incomeToDelete.plannedId ? incomeToDelete.plannedId : incomeToDelete.id;
-
-    if (docToDeleteId) {
-        const docRef = doc(db, `users/${user.uid}/incomes`, docToDeleteId);
-        await deleteDoc(docRef);
-    }
+    
+    // Find the original base transaction ID. If the item has a plannedId, that's the base.
+    // If not, it's the base item itself.
+    const docIdToDelete = incomeToDelete.plannedId || incomeToDelete.id;
+    const docRef = doc(db, `users/${user.uid}/incomes`, docIdToDelete);
+    await deleteDoc(docRef);
   };
   
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
@@ -462,5 +454,3 @@ export function useData() {
   }
   return context;
 }
-
-    
