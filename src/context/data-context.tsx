@@ -45,46 +45,46 @@ const generateRecurrentTransactions = <T extends Income | Expense>(
 ): T[] => {
   const futureTransactions: T[] = [];
   const existingIds = new Set(transactions.map(t => t.id));
+  const baseTransactionIds = new Set(transactions.map(t => t.id));
 
-  const allCompletedAndCancelledOriginalIds = new Set(
-    transactions
-      .filter(t => (t.status === 'completed' || t.status === 'cancelled') && t.plannedId)
-      .map(t => t.plannedId)
-  );
-
+  // Filter for original planned transactions that are marked as recurrent.
   const recurrentPlanned = transactions.filter(
-    t => t.status === 'planned' && t.recurrent && !t.plannedId
+    t => t.recurrent && t.status === 'planned' && !t.plannedId
   );
-
+  
   recurrentPlanned.forEach(t => {
-    let nextDate = addMonths(new Date(t.date), 1);
-    
-    while (nextDate <= endDate) {
-      const year = getYear(nextDate);
-      const month = getMonth(nextDate);
-
-      // Check if a transaction for this original recurrent item already exists for this month/year (completed, cancelled, or planned)
-      const transactionForMonthExists = transactions.some(existingTx => 
-        existingTx.plannedId === t.id && 
-        getYear(new Date(existingTx.date)) === year &&
-        getMonth(new Date(existingTx.date)) === month
-      );
-
-      if (!transactionForMonthExists) {
-          const newId = `${t.id}-rec-${format(nextDate, 'yyyy-MM')}`;
-          if (!existingIds.has(newId)) {
-            futureTransactions.push({
-              ...t,
-              id: newId,
-              date: format(nextDate, 'yyyy-MM-dd'),
-              plannedId: t.id, // Link it to the original
-              isRecurrentProjection: true, // Flag to identify it as a projection
-            } as T & { isRecurrentProjection: boolean });
-            existingIds.add(newId);
-          }
+      // Ensure the base transaction still exists in the main list before projecting
+      if (!baseTransactionIds.has(t.id)) {
+        return;
       }
-      nextDate = addMonths(nextDate, 1);
-    }
+      
+      let nextDate = addMonths(new Date(t.date), 1);
+      
+      while (nextDate <= endDate) {
+          const year = getYear(nextDate);
+          const month = getMonth(nextDate);
+
+          const transactionForMonthExists = transactions.some(existingTx => 
+              existingTx.plannedId === t.id && 
+              getYear(new Date(existingTx.date)) === year &&
+              getMonth(new Date(existingTx.date)) === month
+          );
+
+          if (!transactionForMonthExists) {
+              const newId = `${t.id}-rec-${format(nextDate, 'yyyy-MM')}`;
+              if (!existingIds.has(newId)) {
+                  futureTransactions.push({
+                      ...t,
+                      id: newId,
+                      date: format(nextDate, 'yyyy-MM-dd'),
+                      plannedId: t.id,
+                      isRecurrentProjection: true,
+                  } as T & { isRecurrentProjection: boolean });
+                  existingIds.add(newId);
+              }
+          }
+          nextDate = addMonths(nextDate, 1);
+      }
   });
 
   return futureTransactions;
