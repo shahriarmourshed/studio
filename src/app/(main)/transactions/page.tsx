@@ -604,13 +604,12 @@ export default function TransactionsPage() {
                         <TableHead>Date</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {allTransactionsForMonth.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={6} className="text-center">No transactions for this month.</TableCell>
+                            <TableCell colSpan={5} className="text-center">No transactions for this month.</TableCell>
                         </TableRow>
                     ) : allTransactionsForMonth.map((t) => (
                         <TableRow key={t.id}>
@@ -621,30 +620,6 @@ export default function TransactionsPage() {
                             <TableCell className={cn("text-right", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
                                 {t.type === 'expense' ? '-' : '+'}
                                 {getSymbol()}{t.amount.toLocaleString()}
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <div className="flex gap-2 justify-end">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon">
-                                                <Trash2 className="h-4 w-4 text-destructive"/>
-                                                <span className="sr-only">Delete</span>
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete this transaction.
-                                            </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDeleteClick(t)}>Delete</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
                             </TableCell>
                         </TableRow>
                     ))}
@@ -756,4 +731,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
