@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -249,15 +248,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   
   const deleteExpense = async (expenseId: string) => {
     if (!user) return;
-    // Find the transaction in the local state to determine if it's a projection or an original.
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
-
-    // If it's a projection (it has a plannedId), the ID we need to delete is plannedId.
-    // If it's an original (it does not have a plannedId), the ID to delete is its own id.
+    
+    // If the item is a projection, its `plannedId` points to the original.
+    // If it's the original, it has no `plannedId`, so we use its own `id`.
     const originalId = expenseToDelete.plannedId || expenseToDelete.id;
-  
-    // Delete the original base transaction to stop all future projections.
+
     const docRef = doc(db, `users/${user.uid}/expenses`, originalId);
     await deleteDoc(docRef);
   };
@@ -326,15 +323,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const deleteIncome = async (incomeId: string) => {
     if (!user) return;
-    // Find the transaction in the local state to determine if it's a projection or an original.
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
 
-    // If it's a projection (it has a plannedId), the ID we need to delete is plannedId.
-    // If it's an original (it does not have a plannedId), the ID to delete is its own id.
+    // If the item is a projection, its `plannedId` points to the original.
+    // If it's the original, it has no `plannedId`, so we use its own `id`.
     const originalId = incomeToDelete.plannedId || incomeToDelete.id;
-  
-    // Delete the original base transaction to stop all future projections.
+
     const docRef = doc(db, `users/${user.uid}/incomes`, originalId);
     await deleteDoc(docRef);
   };
@@ -351,7 +346,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const { id, ...dataToUpdate } = member;
     const docRef = doc(db, `users/${user.uid}/familyMembers`, id);
-    await updateDoc(docRef, dataToUpdate);
+await updateDoc(docRef, dataToUpdate);
   };
 
   const deleteFamilyMember = async (memberId: string) => {
@@ -460,3 +455,5 @@ export function useData() {
   }
   return context;
 }
+
+    
