@@ -252,10 +252,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // Find the original base transaction ID. If the item has a plannedId, that's the base.
-    // If not, it's the base item itself.
-    const docIdToDelete = expenseToDelete.plannedId || expenseToDelete.id;
-    const docRef = doc(db, `users/${user.uid}/expenses`, docIdToDelete);
+    // Find the original base transaction ID. 
+    // If the item has a plannedId, it's a projection, so that's the base ID.
+    // If not, it's the base item itself, so its own ID is the base ID.
+    const baseId = expenseToDelete.plannedId || expenseToDelete.id;
+
+    const docRef = doc(db, `users/${user.uid}/expenses`, baseId);
     await deleteDoc(docRef);
   };
   
@@ -326,10 +328,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
     
-    // Find the original base transaction ID. If the item has a plannedId, that's the base.
-    // If not, it's the base item itself.
-    const docIdToDelete = incomeToDelete.plannedId || incomeToDelete.id;
-    const docRef = doc(db, `users/${user.uid}/incomes`, docIdToDelete);
+    // Find the original base transaction ID. 
+    // If the item has a plannedId, it's a projection, so that's the base ID.
+    // If not, it's the base item itself, so its own ID is the base ID.
+    const baseId = incomeToDelete.plannedId || incomeToDelete.id;
+    
+    const docRef = doc(db, `users/${user.uid}/incomes`, baseId);
     await deleteDoc(docRef);
   };
   
