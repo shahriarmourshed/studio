@@ -6,7 +6,6 @@ import {
   LayoutGrid,
   ShoppingBasket,
   Wallet,
-  Sparkles,
   User,
   ListChecks,
   Users,
@@ -19,7 +18,6 @@ const navItems = [
   { href: '/budget', label: 'Budget', icon: Wallet },
   { href: '/transactions', label: 'Transactions', icon: ListChecks },
   { href: '/family', label: 'Family', icon: Users },
-  { href: '/ai', label: 'AI', icon: Sparkles },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 

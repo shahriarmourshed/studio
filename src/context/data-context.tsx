@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc, writeBatch, getDocs } from "firebase/firestore";
+import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc, writeBatch, getDocs, getDoc } from "firebase/firestore";
 
 interface DataContextType {
   expenses: Expense[];
@@ -16,8 +16,6 @@ interface DataContextType {
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
   setReminderDays: (days: number) => void;
-  geminiApiKey: string | null;
-  setGeminiApiKey: (key: string) => void;
   addExpense: (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status?: Expense['status']) => Promise<void>;
   updateExpense: (expense: Expense) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
@@ -49,7 +47,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [savingGoal, setSavingGoalState] = useState<number>(0);
   const [reminderDays, setReminderDaysState] = useState<number>(3);
-  const [geminiApiKey, setGeminiApiKeyState] = useState<string | null>(null);
   
   const getCollectionRef = useCallback((collectionName: string) => {
     if (!user) return null;
@@ -67,7 +64,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setFamilyMembers([]);
       setSavingGoalState(0);
       setReminderDaysState(3);
-      setGeminiApiKeyState(null);
       return;
     }
     
@@ -100,10 +96,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
             const settings = doc.data();
             setSavingGoalState(settings.savingGoal ?? 0);
             setReminderDaysState(settings.reminderDays ?? 3);
-            setGeminiApiKeyState(settings.geminiApiKey ?? null);
         } else {
             // If settings don't exist, create them
-            setDoc(settingsDocRef, { savingGoal: 0, reminderDays: 3, geminiApiKey: null });
+            setDoc(settingsDocRef, { savingGoal: 0, reminderDays: 3 });
         }
     });
     unsubscribes.push(unsubscribeSettings);
@@ -132,14 +127,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
   }
   
-  const setGeminiApiKey = async (key: string) => {
-    const settingsDocRef = user ? doc(db, 'users', user.uid, 'settings', 'main') : null;
-    if (settingsDocRef) {
-        setGeminiApiKeyState(key); // Optimistic update
-        await updateDoc(settingsDocRef, { geminiApiKey: key });
-    }
-  };
-
   const addExpense = async (expense: Omit<Expense, 'id' | 'status' | 'plannedAmount' | 'plannedId' | 'edited' | 'createdAt'>, status: Expense['status'] = 'planned') => {
     const collectionRef = getCollectionRef('expenses');
     if (!collectionRef) return;
@@ -303,8 +290,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setSavingGoal, 
     reminderDays, 
     setReminderDays, 
-    geminiApiKey,
-    setGeminiApiKey,
     addExpense, 
     updateExpense, 
     deleteExpense, 

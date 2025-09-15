@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PageHeader from '@/components/common/page-header';
 import {
   Card,
@@ -17,23 +17,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, LogOut, Save } from 'lucide-react';
+import { ChevronRight, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
-  const { reminderDays, setReminderDays, geminiApiKey, setGeminiApiKey } = useData();
+  const { reminderDays, setReminderDays } = useData();
   const { logout, user } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
-
-  const [apiKey, setApiKey] = useState(geminiApiKey || '');
-
-  useEffect(() => {
-    setApiKey(geminiApiKey || '');
-  }, [geminiApiKey]);
 
   const handleLogout = async () => {
     try {
@@ -44,14 +35,6 @@ export default function ProfilePage() {
     }
   };
   
-  const handleSaveApiKey = () => {
-    setGeminiApiKey(apiKey);
-    toast({
-        title: "API Key Saved",
-        description: "Your Gemini API Key has been updated.",
-    });
-  };
-
   return (
     <div className="container mx-auto">
       <PageHeader title="Settings" subtitle="Manage your application settings." />
@@ -94,37 +77,6 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
         
-         <Card>
-          <CardHeader>
-            <CardTitle>AI Settings</CardTitle>
-            <CardDescription>Manage your Google AI API Key for generative features.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-             <div className="space-y-2">
-                <Label htmlFor="api-key">Your Gemini API Key</Label>
-                <div className='flex gap-2'>
-                    <Input
-                        id="api-key"
-                        type="password"
-                        placeholder="Enter your Google AI API Key"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                    />
-                    <Button onClick={handleSaveApiKey}>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save
-                    </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                    Your API key is stored securely and only used for AI features in this app. Get one from{" "}
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">
-                        Google AI Studio
-                    </a>.
-                </p>
-             </div>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Reports</CardTitle>

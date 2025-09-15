@@ -10,7 +10,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Lightbulb, Utensils, ChevronRight } from 'lucide-react';
+import { PlusCircle, Utensils, ChevronRight } from 'lucide-react';
 import ExpenseChart from '@/components/budget/expense-chart';
 import PageHeader from '@/components/common/page-header';
 import { useCurrency } from '@/context/currency-context';
@@ -223,14 +223,6 @@ export default function DashboardPage() {
                 <div className="flex-1">
                     <p className="font-semibold">Update Products</p>
                     <p className="text-sm text-muted-foreground">Manage your inventory.</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground"/>
-             </Link>
-             <Link href="/ai" className="flex items-center p-3 rounded-lg hover:bg-muted transition-colors">
-                <Lightbulb className="w-5 h-5 mr-3 text-primary"/>
-                <div className="flex-1">
-                    <p className="font-semibold">Get AI Suggestions</p>
-                    <p className="text-sm text-muted-foreground">Optimize your planning.</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground"/>
              </Link>
