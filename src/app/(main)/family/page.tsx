@@ -53,7 +53,8 @@ export default function FamilyPage() {
   // Add form state
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberBirthday, setNewMemberBirthday] = useState('');
-  const [newMemberHeight, setNewMemberHeight] = useState('');
+  const [newMemberHeightFeet, setNewMemberHeightFeet] = useState('');
+  const [newMemberHeightInches, setNewMemberHeightInches] = useState('');
   const [newMemberWeight, setNewMemberWeight] = useState('');
   const [newMemberHealth, setNewMemberHealth] = useState('');
   const [newMemberDiet, setNewMemberDiet] = useState('');
@@ -62,7 +63,8 @@ export default function FamilyPage() {
   // Edit form state
   const [editMemberName, setEditMemberName] = useState('');
   const [editMemberBirthday, setEditMemberBirthday] = useState('');
-  const [editMemberHeight, setEditMemberHeight] = useState('');
+  const [editMemberHeightFeet, setEditMemberHeightFeet] = useState('');
+  const [editMemberHeightInches, setEditMemberHeightInches] = useState('');
   const [editMemberWeight, setEditMemberWeight] = useState('');
   const [editMemberHealth, setEditMemberHealth] = useState('');
   const [editMemberDiet, setEditMemberDiet] = useState('');
@@ -70,17 +72,19 @@ export default function FamilyPage() {
   
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMemberName && newMemberBirthday && newMemberHeight && newMemberWeight) {
+    if (newMemberName && newMemberBirthday && newMemberHeightFeet && newMemberWeight) {
       let finalAvatarUrl = newMemberAvatar;
       if (!finalAvatarUrl) {
         const randomIndex = Math.floor(Math.random() * avatars.avatars.length);
         finalAvatarUrl = avatars.avatars[randomIndex].url;
       }
       
+      const heightInInches = (parseInt(newMemberHeightFeet) * 12) + parseInt(newMemberHeightInches || '0');
+
       await addFamilyMember({
         name: newMemberName,
         birthday: newMemberBirthday,
-        height: parseInt(newMemberHeight),
+        height: heightInInches,
         weight: parseInt(newMemberWeight),
         healthConditions: newMemberHealth,
         dietaryRestrictions: newMemberDiet,
@@ -93,7 +97,8 @@ export default function FamilyPage() {
   const resetAddForm = () => {
     setNewMemberName('');
     setNewMemberBirthday('');
-    setNewMemberHeight('');
+    setNewMemberHeightFeet('');
+    setNewMemberHeightInches('');
     setNewMemberWeight('');
     setNewMemberHealth('');
     setNewMemberDiet('');
@@ -105,7 +110,8 @@ export default function FamilyPage() {
     setSelectedMember(member);
     setEditMemberName(member.name);
     setEditMemberBirthday(member.birthday);
-    setEditMemberHeight(String(member.height));
+    setEditMemberHeightFeet(String(Math.floor(member.height / 12)));
+    setEditMemberHeightInches(String(member.height % 12));
     setEditMemberWeight(String(member.weight));
     setEditMemberHealth(member.healthConditions);
     setEditMemberDiet(member.dietaryRestrictions);
@@ -116,11 +122,12 @@ export default function FamilyPage() {
   const handleUpdateMember = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedMember && editMemberBirthday) {
+      const heightInInches = (parseInt(editMemberHeightFeet) * 12) + parseInt(editMemberHeightInches || '0');
       updateFamilyMember({
         ...selectedMember,
         name: editMemberName,
         birthday: editMemberBirthday,
-        height: parseInt(editMemberHeight),
+        height: heightInInches,
         weight: parseInt(editMemberWeight),
         healthConditions: editMemberHealth,
         dietaryRestrictions: editMemberDiet,
@@ -144,8 +151,19 @@ export default function FamilyPage() {
   }
 
   const calculateAge = (birthday: string) => {
-    return differenceInYears(new Date(), parseISO(birthday));
+    try {
+        if (!birthday) return 'N/A';
+        return differenceInYears(new Date(), parseISO(birthday));
+    } catch (error) {
+        return 'N/A'
+    }
   };
+
+  const formatHeight = (totalInches: number) => {
+      const feet = Math.floor(totalInches / 12);
+      const inches = totalInches % 12;
+      return `${feet}' ${inches}"`;
+  }
 
   return (
     <div className="container mx-auto">
@@ -204,11 +222,15 @@ export default function FamilyPage() {
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right">Vitals</Label>
+                            <Label htmlFor="height-feet" className="text-right">Height</Label>
                             <div className="col-span-3 grid grid-cols-2 gap-2">
-                                <Input id="height" type="number" placeholder="Height (cm)" value={newMemberHeight} onChange={e => setNewMemberHeight(e.target.value)} required />
-                                <Input id="weight" type="number" placeholder="Weight (kg)" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
+                                <Input id="height-feet" type="number" placeholder="Feet" value={newMemberHeightFeet} onChange={e => setNewMemberHeightFeet(e.target.value)} required />
+                                <Input id="height-inches" type="number" placeholder="Inches" value={newMemberHeightInches} onChange={e => setNewMemberHeightInches(e.target.value)} />
                             </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="weight" className="text-right">Weight (kg)</Label>
+                            <Input id="weight" type="number" placeholder="e.g., 70" className="col-span-3" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
                         </div>
                         <div className="grid grid-cols-4 items-start gap-4">
                           <Label className="text-right pt-2">Avatar</Label>
@@ -261,7 +283,7 @@ export default function FamilyPage() {
                 />
                 <div className="flex-1">
                   <CardTitle>{member.name}</CardTitle>
-                  <CardDescription>Age: {calculateAge(member.birthday)} &bull; {member.height}cm &bull; {member.weight}kg</CardDescription>
+                  <CardDescription>Age: {calculateAge(member.birthday)} &bull; {formatHeight(member.height)} &bull; {member.weight}kg</CardDescription>
                 </div>
                 <div className="flex gap-1">
                      <Button variant="ghost" size="icon" onClick={() => handleEditClick(member)}>
@@ -330,11 +352,15 @@ export default function FamilyPage() {
                     />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Vitals</Label>
+                    <Label htmlFor="edit-height-feet" className="text-right">Height</Label>
                     <div className="col-span-3 grid grid-cols-2 gap-2">
-                        <Input id="edit-height" type="number" placeholder="Height (cm)" value={editMemberHeight} onChange={e => setEditMemberHeight(e.target.value)} required />
-                        <Input id="edit-weight" type="number" placeholder="Weight (kg)" value={editMemberWeight} onChange={e => setEditMemberWeight(e.target.value)} required />
+                        <Input id="edit-height-feet" type="number" placeholder="Feet" value={editMemberHeightFeet} onChange={e => setEditMemberHeightFeet(e.target.value)} required />
+                        <Input id="edit-height-inches" type="number" placeholder="Inches" value={editMemberHeightInches} onChange={e => setEditMemberHeightInches(e.target.value)} />
                     </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-weight" className="text-right">Weight (kg)</Label>
+                     <Input id="edit-weight" type="number" placeholder="e.g., 70" className="col-span-3" value={editMemberWeight} onChange={e => setEditMemberWeight(e.target.value)} required />
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label className="text-right pt-2">Avatar</Label>
