@@ -6,7 +6,7 @@ import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, Timestamp, setDoc, writeBatch, getDocs, getDoc } from "firebase/firestore";
-import { differenceInDays, differenceInWeeks, differenceInMonths } from 'date-fns';
+import { differenceInDays, differenceInWeeks, differenceInMonths, isFuture, getMonth, getYear, set, addMonths, format } from 'date-fns';
 
 interface DataContextType {
   expenses: Expense[];
@@ -37,6 +37,58 @@ interface DataContextType {
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
+
+const generateRecurrentTransactions = <T extends Income | Expense>(
+  transactions: T[],
+  endDate: Date
+): T[] => {
+  const futureTransactions: T[] = [];
+  const existingIds = new Set(transactions.map(t => t.id));
+
+  const allCompletedAndCancelledOriginalIds = new Set(
+    transactions
+      .filter(t => (t.status === 'completed' || t.status === 'cancelled') && t.plannedId)
+      .map(t => t.plannedId)
+  );
+
+  const recurrentPlanned = transactions.filter(
+    t => t.status === 'planned' && t.recurrent && !t.plannedId
+  );
+
+  recurrentPlanned.forEach(t => {
+    let nextDate = addMonths(new Date(t.date), 1);
+    
+    while (nextDate <= endDate) {
+      const year = getYear(nextDate);
+      const month = getMonth(nextDate);
+
+      // Check if a transaction for this original recurrent item already exists for this month/year (completed, cancelled, or planned)
+      const transactionForMonthExists = transactions.some(existingTx => 
+        existingTx.plannedId === t.id && 
+        getYear(new Date(existingTx.date)) === year &&
+        getMonth(new Date(existingTx.date)) === month
+      );
+
+      if (!transactionForMonthExists) {
+          const newId = `${t.id}-rec-${format(nextDate, 'yyyy-MM')}`;
+          if (!existingIds.has(newId)) {
+            futureTransactions.push({
+              ...t,
+              id: newId,
+              date: format(nextDate, 'yyyy-MM-dd'),
+              plannedId: t.id, // Link it to the original
+              isRecurrentProjection: true, // Flag to identify it as a projection
+            } as T & { isRecurrentProjection: boolean });
+            existingIds.add(newId);
+          }
+      }
+      nextDate = addMonths(nextDate, 1);
+    }
+  });
+
+  return futureTransactions;
+};
+
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -112,6 +164,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const q = query(collectionRef, orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             let data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Generate recurrent transactions for the next 5 years
+             if (collectionName === 'incomes' || collectionName === 'expenses') {
+                const futureDate = new Date();
+                futureDate.setFullYear(futureDate.getFullYear() + 5);
+                const recurrent = generateRecurrentTransactions(data, futureDate);
+                data = [...data, ...recurrent];
+            }
+
             if (processData) {
               data = processData(data);
             }
@@ -176,6 +237,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   
   const updateExpense = async (updatedExpense: Expense) => {
       if (!user) return;
+
+      if ((updatedExpense as any).isRecurrentProjection) {
+        const { id, isRecurrentProjection, ...data } = updatedExpense as any;
+        addExpense({ ...data, recurrent: false }, 'planned'); // Create a new non-recurrent one
+        return;
+      }
+
       const { id, ...dataToUpdate } = updatedExpense;
       const docRef = doc(db, `users/${user.uid}/expenses`, id);
       await updateDoc(docRef, {...dataToUpdate, edited: true});
@@ -183,6 +251,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   
   const deleteExpense = async (expenseId: string) => {
       if (!user) return;
+      if (expenseId.includes('-rec-')) {
+        // This is a projected transaction, we can't delete it directly.
+        // A more complex logic would be needed to "cancel" a single occurrence.
+        // For now, we prevent deletion of projected items.
+        console.log("Cannot delete a projected recurrent transaction. Please edit the original.");
+        return;
+      }
       const docRef = doc(db, `users/${user.uid}/expenses`, expenseId);
       await deleteDoc(docRef);
   };
@@ -235,6 +310,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const updateIncome = async (updatedIncome: Income) => {
     if (!user) return;
+    
+    if ((updatedIncome as any).isRecurrentProjection) {
+        const { id, isRecurrentProjection, ...data } = updatedIncome as any;
+        addIncome({ ...data, recurrent: false }, 'planned'); // Create a new non-recurrent one
+        return;
+    }
+
     const { id, ...dataToUpdate } = updatedIncome;
     const docRef = doc(db, `users/${user.uid}/incomes`, id);
     await updateDoc(docRef, {...dataToUpdate, edited: true});
@@ -242,6 +324,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const deleteIncome = async (incomeId: string) => {
     if (!user) return;
+    if (incomeId.includes('-rec-')) {
+        console.log("Cannot delete a projected recurrent transaction. Please edit the original.");
+        return;
+    }
     const docRef = doc(db, `users/${user.uid}/incomes`, incomeId);
     await deleteDoc(docRef);
   };
@@ -283,17 +369,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const collectionRef = type === 'income' ? getCollectionRef('incomes') : getCollectionRef('expenses');
     if (!collectionRef) return;
     
+    // If it's a projection, the ID to link is in plannedId. If it's an original, it's in id.
+    const originalPlannedId = (transaction as any).isRecurrentProjection ? transaction.plannedId : transaction.id;
+
     const { id, ...originalData } = transaction;
     // Remove createdAt from originalData if it exists to avoid Firestore errors
-    const { createdAt, ...restData } = originalData as any;
+    const { createdAt, isRecurrentProjection, ...restData } = originalData as any;
 
     const newActualTransaction = {
       ...restData,
       status: 'completed' as const,
-      plannedId: id, 
+      plannedId: originalPlannedId, 
       plannedAmount: originalData.amount,
       amount: actualAmount ?? originalData.amount,
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split('T')[0], // For recurrent, use the projected date
       createdAt: Timestamp.now(),
     };
 
@@ -303,15 +392,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const cancelPlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense') => {
     const collectionRef = type === 'income' ? getCollectionRef('incomes') : getCollectionRef('expenses');
     if (!collectionRef) return;
+    
+    const originalPlannedId = (transaction as any).isRecurrentProjection ? transaction.plannedId : transaction.id;
 
     const { id, ...originalData } = transaction;
-    const { createdAt, ...restData } = originalData as any;
+    const { createdAt, isRecurrentProjection, ...restData } = originalData as any;
 
 
     const newCancelledTransaction = {
         ...restData,
         status: 'cancelled' as const,
-        plannedId: id,
+        plannedId: originalPlannedId,
         plannedAmount: originalData.amount,
         date: new Date().toISOString().split('T')[0],
         createdAt: Timestamp.now(),
