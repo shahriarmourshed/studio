@@ -252,10 +252,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // If it's a projection, get the original ID from `plannedId`. Otherwise, it's the base item.
+    // If the item is a projection, find its original ID. Otherwise, use its own ID.
     const originalId = expenseToDelete.plannedId || expenseToDelete.id;
   
-    // Always delete the original base transaction to stop all future projections.
+    // Delete the original base transaction to stop all future projections.
     const docRef = doc(db, `users/${user.uid}/expenses`, originalId);
     await deleteDoc(docRef);
   };
@@ -327,10 +327,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
   
-    // If it's a projection, get the original ID from `plannedId`. Otherwise, it's the base item.
+    // If the item is a projection, find its original ID. Otherwise, use its own ID.
     const originalId = incomeToDelete.plannedId || incomeToDelete.id;
   
-    // Always delete the original base transaction to stop all future projections.
+    // Delete the original base transaction to stop all future projections.
     const docRef = doc(db, `users/${user.uid}/incomes`, originalId);
     await deleteDoc(docRef);
   };
