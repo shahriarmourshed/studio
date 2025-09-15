@@ -237,7 +237,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if ((updatedExpense as any).isRecurrentProjection) {
         // If user is editing a future projection, create a new, one-time planned transaction
         const { id, isRecurrentProjection, ...data } = updatedExpense as any;
-        addExpense({ ...data }, 'planned');
+        addExpense({ ...data, recurrent: false }, 'planned');
         return;
       }
 
@@ -252,11 +252,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // If the item to delete has a plannedId, it's a projection. Find the base item.
-    // Otherwise, it's the base item itself.
+    // Find the original base transaction ID.
     const baseId = expenseToDelete.plannedId || expenseToDelete.id;
 
-    const docRef = doc(db, `users/${user.uid}/expenses`, baseId);
+    // The ID could be a projection ID like `xxxx-rec-yyyy-mm`. Get the base part.
+    const originalId = baseId.split('-rec-')[0];
+
+    const docRef = doc(db, `users/${user.uid}/expenses`, originalId);
     await deleteDoc(docRef);
   };
   
@@ -312,7 +314,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if ((updatedIncome as any).isRecurrentProjection) {
         // If user is editing a future projection, create a new, one-time planned transaction
         const { id, isRecurrentProjection, ...data } = updatedIncome as any;
-        addIncome({ ...data }, 'planned');
+        addIncome({ ...data, recurrent: false }, 'planned');
         return;
     }
 
@@ -327,11 +329,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
   
-    // If the item to delete has a plannedId, it's a projection. Find the base item.
-    // Otherwise, it's the base item itself.
+    // Find the original base transaction ID.
     const baseId = incomeToDelete.plannedId || incomeToDelete.id;
+
+    // The ID could be a projection ID like `xxxx-rec-yyyy-mm`. Get the base part.
+    const originalId = baseId.split('-rec-')[0];
   
-    const docRef = doc(db, `users/${user.uid}/incomes`, baseId);
+    const docRef = doc(db, `users/${user.uid}/incomes`, originalId);
     await deleteDoc(docRef);
   };
   
