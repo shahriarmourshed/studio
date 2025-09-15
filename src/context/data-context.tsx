@@ -279,15 +279,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    // Get the original base transaction ID
+    // If it's a non-recurrent or a completed/cancelled item, just delete it
+    if (!expenseToDelete.recurrent || expenseToDelete.status !== 'planned') {
+        const docRef = doc(db, `users/${user.uid}/expenses`, expenseToDelete.id);
+        await deleteDoc(docRef);
+        return;
+    }
+
+    // It's a recurring planned transaction
     const baseId = (expenseToDelete as any).isRecurrentProjection
-        ? expenseToDelete.plannedId
+        ? expenseToDelete.plannedId!
         : expenseToDelete.id;
-    if (!baseId) return;
 
     const baseDocRef = doc(db, `users/${user.uid}/expenses`, baseId);
     
-    // It is a recurrent transaction. End the recurrence.
+    // End the recurrence from the selected month onwards
     const deletionDate = new Date(expenseToDelete.date);
     const monthBeforeDeletion = subMonths(deletionDate, 1);
     const endRecurrenceDate = format(lastDayOfMonth(monthBeforeDeletion), 'yyyy-MM-dd');
@@ -365,15 +371,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
 
-    // Get the original base transaction ID
+    // If it's a non-recurrent or a completed/cancelled item, just delete it
+    if (!incomeToDelete.recurrent || incomeToDelete.status !== 'planned') {
+        const docRef = doc(db, `users/${user.uid}/incomes`, incomeToDelete.id);
+        await deleteDoc(docRef);
+        return;
+    }
+    
+    // It's a recurring planned transaction
     const baseId = (incomeToDelete as any).isRecurrentProjection
-        ? incomeToDelete.plannedId
+        ? incomeToDelete.plannedId!
         : incomeToDelete.id;
-    if (!baseId) return;
 
     const baseDocRef = doc(db, `users/${user.uid}/incomes`, baseId);
     
-    // It is a recurrent transaction. End the recurrence.
+    // End the recurrence from the selected month onwards
     const deletionDate = new Date(incomeToDelete.date);
     const monthBeforeDeletion = subMonths(deletionDate, 1);
     const endRecurrenceDate = format(lastDayOfMonth(monthBeforeDeletion), 'yyyy-MM-dd');

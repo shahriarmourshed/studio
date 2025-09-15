@@ -30,12 +30,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Edit, Trash2, ShieldAlert, CalendarIcon } from "lucide-react";
+import { PlusCircle, Edit, Trash2, ShieldAlert } from "lucide-react";
 import Image from 'next/image';
 import { useData } from '@/context/data-context';
 import type { FamilyMember } from '@/lib/types';
@@ -43,7 +42,6 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import avatars from '@/lib/placeholder-avatars.json';
 import { format, differenceInYears, parseISO } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
 
 export default function FamilyPage() {
   const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember, clearFamilyMembers } = useData();
@@ -54,7 +52,7 @@ export default function FamilyPage() {
 
   // Add form state
   const [newMemberName, setNewMemberName] = useState('');
-  const [newMemberBirthday, setNewMemberBirthday] = useState<Date | undefined>();
+  const [newMemberBirthday, setNewMemberBirthday] = useState('');
   const [newMemberHeight, setNewMemberHeight] = useState('');
   const [newMemberWeight, setNewMemberWeight] = useState('');
   const [newMemberHealth, setNewMemberHealth] = useState('');
@@ -63,7 +61,7 @@ export default function FamilyPage() {
 
   // Edit form state
   const [editMemberName, setEditMemberName] = useState('');
-  const [editMemberBirthday, setEditMemberBirthday] = useState<Date | undefined>();
+  const [editMemberBirthday, setEditMemberBirthday] = useState('');
   const [editMemberHeight, setEditMemberHeight] = useState('');
   const [editMemberWeight, setEditMemberWeight] = useState('');
   const [editMemberHealth, setEditMemberHealth] = useState('');
@@ -81,7 +79,7 @@ export default function FamilyPage() {
       
       await addFamilyMember({
         name: newMemberName,
-        birthday: newMemberBirthday.toISOString(),
+        birthday: newMemberBirthday,
         height: parseInt(newMemberHeight),
         weight: parseInt(newMemberWeight),
         healthConditions: newMemberHealth,
@@ -94,7 +92,7 @@ export default function FamilyPage() {
 
   const resetAddForm = () => {
     setNewMemberName('');
-    setNewMemberBirthday(undefined);
+    setNewMemberBirthday('');
     setNewMemberHeight('');
     setNewMemberWeight('');
     setNewMemberHealth('');
@@ -106,7 +104,7 @@ export default function FamilyPage() {
   const handleEditClick = (member: FamilyMember) => {
     setSelectedMember(member);
     setEditMemberName(member.name);
-    setEditMemberBirthday(parseISO(member.birthday));
+    setEditMemberBirthday(member.birthday);
     setEditMemberHeight(String(member.height));
     setEditMemberWeight(String(member.weight));
     setEditMemberHealth(member.healthConditions);
@@ -121,7 +119,7 @@ export default function FamilyPage() {
       updateFamilyMember({
         ...selectedMember,
         name: editMemberName,
-        birthday: editMemberBirthday.toISOString(),
+        birthday: editMemberBirthday,
         height: parseInt(editMemberHeight),
         weight: parseInt(editMemberWeight),
         healthConditions: editMemberHealth,
@@ -196,31 +194,14 @@ export default function FamilyPage() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="birthday" className="text-right">Birthday</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                    "w-[280px] justify-start text-left font-normal",
-                                    !newMemberBirthday && "text-muted-foreground"
-                                    )}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {newMemberBirthday ? format(newMemberBirthday, "PPP") : <span>Pick a date</span>}
-                                </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    selected={newMemberBirthday}
-                                    onSelect={setNewMemberBirthday}
-                                    captionLayout="dropdown-buttons"
-                                    fromYear={1920}
-                                    toYear={new Date().getFullYear()}
-                                    initialFocus
-                                />
-                                </PopoverContent>
-                            </Popover>
+                            <Input
+                                id="birthday"
+                                type="date"
+                                className="col-span-3"
+                                value={newMemberBirthday}
+                                onChange={e => setNewMemberBirthday(e.target.value)}
+                                required
+                            />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label className="text-right">Vitals</Label>
@@ -339,31 +320,14 @@ export default function FamilyPage() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="edit-birthday" className="text-right">Birthday</Label>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                        <Button
-                            variant={"outline"}
-                            className={cn(
-                            "w-[280px] justify-start text-left font-normal",
-                            !editMemberBirthday && "text-muted-foreground"
-                            )}
-                        >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {editMemberBirthday ? format(editMemberBirthday, "PPP") : <span>Pick a date</span>}
-                        </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                        <Calendar
-                            mode="single"
-                            selected={editMemberBirthday}
-                            onSelect={setEditMemberBirthday}
-                            captionLayout="dropdown-buttons"
-                            fromYear={1920}
-                            toYear={new Date().getFullYear()}
-                            initialFocus
-                        />
-                        </PopoverContent>
-                    </Popover>
+                     <Input
+                        id="edit-birthday"
+                        type="date"
+                        className="col-span-3"
+                        value={editMemberBirthday}
+                        onChange={e => setEditMemberBirthday(e.target.value)}
+                        required
+                    />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">Vitals</Label>
