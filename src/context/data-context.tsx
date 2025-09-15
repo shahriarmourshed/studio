@@ -198,7 +198,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
     unsubscribes.push(unsubscribeSettings);
 
-    setLoading(false);
+    const clearDemoData = async () => {
+        const expensesRef = getCollectionRef('expenses');
+        if (expensesRef) {
+            const q = query(expensesRef);
+            const snapshot = await getDocs(q);
+            const batch = writeBatch(db);
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+        }
+    };
+
+    // Check if we should clear demo data
+    const shouldClearKey = `cleared_demo_${user.uid}`;
+    if (!localStorage.getItem(shouldClearKey)) {
+        clearDemoData().then(() => {
+            localStorage.setItem(shouldClearKey, 'true');
+            setLoading(false);
+        });
+    } else {
+        setLoading(false);
+    }
 
 
     return () => {
@@ -236,7 +256,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if ((updatedExpense as any).isRecurrentProjection) {
         // If user is editing a future projection, create a new, one-time planned transaction
         const { id, isRecurrentProjection, ...data } = updatedExpense as any;
-        addExpense({ ...data, recurrent: false }, 'planned');
+        addExpense({ ...data, recurrent: false, edited: true }, 'planned');
         return;
       }
 
@@ -246,18 +266,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
       await updateDoc(docRef, {...dataToUpdate, edited: true});
   };
   
-  const deleteExpense = async (expenseId: string) => {
+ const deleteExpense = async (expenseId: string) => {
     if (!user) return;
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
-    
-    // If the item is a projection, its `plannedId` points to the original.
-    // If it's the original, it has no `plannedId`, so we use its own `id`.
-    const originalId = expenseToDelete.plannedId || expenseToDelete.id;
 
+    const originalId = expenseToDelete.plannedId || expenseToDelete.id;
     const docRef = doc(db, `users/${user.uid}/expenses`, originalId);
-    await deleteDoc(docRef);
-  };
+    
+    try {
+        await deleteDoc(docRef);
+    } catch (error) {
+        console.error("Error deleting expense:", error);
+    }
+};
+
   
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
       const collectionRef = getCollectionRef('products');
@@ -311,7 +334,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if ((updatedIncome as any).isRecurrentProjection) {
         // If user is editing a future projection, create a new, one-time planned transaction
         const { id, isRecurrentProjection, ...data } = updatedIncome as any;
-        addIncome({ ...data, recurrent: false }, 'planned');
+        addIncome({ ...data, recurrent: false, edited: true }, 'planned');
         return;
     }
 
@@ -321,18 +344,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await updateDoc(docRef, {...dataToUpdate, edited: true});
   };
 
-  const deleteIncome = async (incomeId: string) => {
+ const deleteIncome = async (incomeId: string) => {
     if (!user) return;
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
 
-    // If the item is a projection, its `plannedId` points to the original.
-    // If it's the original, it has no `plannedId`, so we use its own `id`.
     const originalId = incomeToDelete.plannedId || incomeToDelete.id;
-
     const docRef = doc(db, `users/${user.uid}/incomes`, originalId);
-    await deleteDoc(docRef);
-  };
+
+    try {
+        await deleteDoc(docRef);
+    } catch (error) {
+        console.error("Error deleting income:", error);
+    }
+};
+
   
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
     const collectionRef = getCollectionRef('familyMembers');
@@ -455,5 +481,3 @@ export function useData() {
   }
   return context;
 }
-
-    
