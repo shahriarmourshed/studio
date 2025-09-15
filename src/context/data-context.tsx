@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -266,20 +267,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
       await updateDoc(docRef, {...dataToUpdate, edited: true});
   };
   
- const deleteExpense = async (expenseId: string) => {
+  const deleteExpense = async (expenseId: string) => {
     if (!user) return;
     const expenseToDelete = expenses.find(e => e.id === expenseId);
     if (!expenseToDelete) return;
 
-    const originalId = expenseToDelete.plannedId || expenseToDelete.id;
-    const docRef = doc(db, `users/${user.uid}/expenses`, originalId);
-    
-    try {
+    if ((expenseToDelete as any).isRecurrentProjection) {
+        // It's a future projection, so create a 'cancelled' record for that specific month
+        cancelPlannedTransaction(expenseToDelete, 'expense');
+    } else {
+        // It's a base transaction (either single or the source of a recurrent series)
+        const docRef = doc(db, `users/${user.uid}/expenses`, expenseToDelete.id);
         await deleteDoc(docRef);
-    } catch (error) {
-        console.error("Error deleting expense:", error);
     }
-};
+  };
 
   
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
@@ -344,20 +345,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await updateDoc(docRef, {...dataToUpdate, edited: true});
   };
 
- const deleteIncome = async (incomeId: string) => {
+  const deleteIncome = async (incomeId: string) => {
     if (!user) return;
     const incomeToDelete = incomes.find(i => i.id === incomeId);
     if (!incomeToDelete) return;
 
-    const originalId = incomeToDelete.plannedId || incomeToDelete.id;
-    const docRef = doc(db, `users/${user.uid}/incomes`, originalId);
-
-    try {
+    if ((incomeToDelete as any).isRecurrentProjection) {
+        // It's a future projection, so create a 'cancelled' record for that specific month
+        cancelPlannedTransaction(incomeToDelete, 'income');
+    } else {
+        // It's a base transaction (either single or the source of a recurrent series)
+        const docRef = doc(db, `users/${user.uid}/incomes`, incomeToDelete.id);
         await deleteDoc(docRef);
-    } catch (error) {
-        console.error("Error deleting income:", error);
     }
-};
+  };
 
   
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
@@ -481,3 +482,5 @@ export function useData() {
   }
   return context;
 }
+
+    
