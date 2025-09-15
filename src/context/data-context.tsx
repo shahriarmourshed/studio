@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -250,16 +251,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
   
   const deleteExpense = async (expenseId: string) => {
-      if (!user) return;
-      if (expenseId.includes('-rec-')) {
-        // This is a projected transaction, we can't delete it directly.
-        // A more complex logic would be needed to "cancel" a single occurrence.
-        // For now, we prevent deletion of projected items.
-        console.log("Cannot delete a projected recurrent transaction. Please edit the original.");
-        return;
-      }
+    if (!user) return;
+    const expenseToDelete = expenses.find(e => e.id === expenseId);
+    if (!expenseToDelete) return;
+  
+    if ((expenseToDelete as any).isRecurrentProjection) {
+      await cancelPlannedTransaction(expenseToDelete, 'expense');
+    } else {
       const docRef = doc(db, `users/${user.uid}/expenses`, expenseId);
       await deleteDoc(docRef);
+    }
   };
   
   const addProduct = async (product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
@@ -324,12 +325,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const deleteIncome = async (incomeId: string) => {
     if (!user) return;
-    if (incomeId.includes('-rec-')) {
-        console.log("Cannot delete a projected recurrent transaction. Please edit the original.");
-        return;
+    const incomeToDelete = incomes.find(i => i.id === incomeId);
+    if (!incomeToDelete) return;
+  
+    if ((incomeToDelete as any).isRecurrentProjection) {
+      await cancelPlannedTransaction(incomeToDelete, 'income');
+    } else {
+      const docRef = doc(db, `users/${user.uid}/incomes`, incomeId);
+      await deleteDoc(docRef);
     }
-    const docRef = doc(db, `users/${user.uid}/incomes`, incomeId);
-    await deleteDoc(docRef);
   };
   
   const addFamilyMember = async (member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
@@ -453,3 +457,4 @@ export function useData() {
   }
   return context;
 }
+
