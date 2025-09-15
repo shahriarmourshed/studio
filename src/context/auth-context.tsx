@@ -9,8 +9,6 @@ import {
   signInWithEmailAndPassword, 
   signOut,
   User,
-  GoogleAuthProvider,
-  signInWithPopup,
 } from 'firebase/auth';
 
 interface AuthContextType {
@@ -18,7 +16,6 @@ interface AuthContextType {
   loading: boolean;
   signup: (email: string, password: string) => Promise<any>;
   login: (email: string, password: string) => Promise<any>;
-  loginWithGoogle: () => Promise<any>;
   logout: () => Promise<any>;
 }
 
@@ -45,11 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const loginWithGoogle = () => {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
-  }
-
   const logout = () => {
     return signOut(auth);
   };
@@ -59,7 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     signup,
     login,
-    loginWithGoogle,
     logout,
   };
 
