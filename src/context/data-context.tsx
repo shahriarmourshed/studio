@@ -44,8 +44,7 @@ const generateRecurrentTransactions = <T extends Income | Expense>(
   endDate: Date
 ): T[] => {
   const futureTransactions: T[] = [];
-  const existingIds = new Set(transactions.map(t => t.id));
-  const baseTransactionIds = new Set(transactions.map(t => t.id));
+  const allIds = new Set(transactions.map(t => t.id));
 
   // Filter for original planned transactions that are marked as recurrent.
   const recurrentPlanned = transactions.filter(
@@ -53,17 +52,13 @@ const generateRecurrentTransactions = <T extends Income | Expense>(
   );
   
   recurrentPlanned.forEach(t => {
-      // Ensure the base transaction still exists in the main list before projecting
-      if (!baseTransactionIds.has(t.id)) {
-        return;
-      }
-      
       let nextDate = addMonths(new Date(t.date), 1);
       
       while (nextDate <= endDate) {
           const year = getYear(nextDate);
           const month = getMonth(nextDate);
 
+          // Check if a transaction (completed, cancelled, or edited planned) for this recurring item already exists for the month
           const transactionForMonthExists = transactions.some(existingTx => 
               existingTx.plannedId === t.id && 
               getYear(new Date(existingTx.date)) === year &&
@@ -72,7 +67,7 @@ const generateRecurrentTransactions = <T extends Income | Expense>(
 
           if (!transactionForMonthExists) {
               const newId = `${t.id}-rec-${format(nextDate, 'yyyy-MM')}`;
-              if (!existingIds.has(newId)) {
+              if (!allIds.has(newId)) {
                   futureTransactions.push({
                       ...t,
                       id: newId,
@@ -80,7 +75,7 @@ const generateRecurrentTransactions = <T extends Income | Expense>(
                       plannedId: t.id,
                       isRecurrentProjection: true,
                   } as T & { isRecurrentProjection: boolean });
-                  existingIds.add(newId);
+                  allIds.add(newId);
               }
           }
           nextDate = addMonths(nextDate, 1);
@@ -260,6 +255,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if ((expenseToDelete as any).isRecurrentProjection) {
       await cancelPlannedTransaction(expenseToDelete, 'expense');
     } else {
+      // This is a base transaction (recurrent or not). Deleting it will remove it from firestore,
+      // and the onSnapshot listener will update the state, which will cause projections to be recalculated.
       const docRef = doc(db, `users/${user.uid}/expenses`, expenseId);
       await deleteDoc(docRef);
     }
@@ -335,6 +332,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if ((incomeToDelete as any).isRecurrentProjection) {
       await cancelPlannedTransaction(incomeToDelete, 'income');
     } else {
+      // This is a base transaction (recurrent or not).
       const docRef = doc(db, `users/${user.uid}/incomes`, incomeId);
       await deleteDoc(docRef);
     }
