@@ -34,6 +34,7 @@ interface DataContextType {
   clearFamilyMembers: () => Promise<void>;
   completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => Promise<void>;
   cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => Promise<void>;
+  clearAllUserData: () => Promise<void>;
   loading: boolean;
 }
 
@@ -285,15 +286,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!baseId) return;
 
     const baseDocRef = doc(db, `users/${user.uid}/expenses`, baseId);
-    const baseDocSnap = await getDoc(baseDocRef);
-    const isBaseRecurrent = baseDocSnap.exists() && baseDocSnap.data().recurrent;
-
-    // If it's not a recurrent transaction, just delete it
-    if (!isBaseRecurrent && !(expenseToDelete as any).isRecurrentProjection) {
-      await deleteDoc(doc(db, `users/${user.uid}/expenses`, expenseToDelete.id));
-      return;
-    }
-
+    
     // It is a recurrent transaction. End the recurrence.
     const deletionDate = new Date(expenseToDelete.date);
     const monthBeforeDeletion = subMonths(deletionDate, 1);
@@ -379,15 +372,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!baseId) return;
 
     const baseDocRef = doc(db, `users/${user.uid}/incomes`, baseId);
-    const baseDocSnap = await getDoc(baseDocRef);
-    const isBaseRecurrent = baseDocSnap.exists() && baseDocSnap.data().recurrent;
-
-    // If it's not a recurrent transaction, just delete it
-    if (!isBaseRecurrent && !(incomeToDelete as any).isRecurrentProjection) {
-      await deleteDoc(doc(db, `users/${user.uid}/incomes`, incomeToDelete.id));
-      return;
-    }
-
+    
     // It is a recurrent transaction. End the recurrence.
     const deletionDate = new Date(incomeToDelete.date);
     const monthBeforeDeletion = subMonths(deletionDate, 1);
@@ -428,6 +413,24 @@ await updateDoc(docRef, dataToUpdate);
     snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref);
     });
+    await batch.commit();
+  };
+
+  const clearAllUserData = async () => {
+    if (!user) return;
+
+    const collectionsToDelete = ['expenses', 'incomes', 'products', 'familyMembers'];
+    const batch = writeBatch(db);
+
+    for (const collectionName of collectionsToDelete) {
+        const collectionRef = getCollectionRef(collectionName);
+        if (collectionRef) {
+            const snapshot = await getDocs(collectionRef);
+            snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+        }
+    }
     await batch.commit();
   };
 
@@ -500,6 +503,7 @@ await updateDoc(docRef, dataToUpdate);
     updateFamilyMember,
     deleteFamilyMember,
     clearFamilyMembers,
+    clearAllUserData,
     completePlannedTransaction, 
     cancelPlannedTransaction,
     loading
@@ -519,5 +523,7 @@ export function useData() {
   }
   return context;
 }
+
+    
 
     
