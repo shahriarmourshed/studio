@@ -431,6 +431,10 @@ await updateDoc(docRef, dataToUpdate);
             });
         }
     }
+    // Also clear settings
+    const settingsDocRef = doc(db, 'users', user.uid, 'settings', 'main');
+    batch.delete(settingsDocRef);
+    
     await batch.commit();
   };
 
@@ -523,7 +527,3 @@ export function useData() {
   }
   return context;
 }
-
-    
-
-    

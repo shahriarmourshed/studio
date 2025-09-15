@@ -3,7 +3,7 @@ export type FamilyMember = {
   id: string;
   name: string;
   avatarUrl: string;
-  age: number;
+  birthday: string; // ISO string date
   height: number; // in cm
   weight: number; // in kg
   healthConditions: string;

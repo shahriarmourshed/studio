@@ -30,17 +30,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Edit, Trash2, ShieldAlert } from "lucide-react";
+import { PlusCircle, Edit, Trash2, ShieldAlert, CalendarIcon } from "lucide-react";
 import Image from 'next/image';
 import { useData } from '@/context/data-context';
 import type { FamilyMember } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import avatars from '@/lib/placeholder-avatars.json';
+import { format, differenceInYears, parseISO } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
 
 export default function FamilyPage() {
   const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember, clearFamilyMembers } = useData();
@@ -51,7 +54,7 @@ export default function FamilyPage() {
 
   // Add form state
   const [newMemberName, setNewMemberName] = useState('');
-  const [newMemberAge, setNewMemberAge] = useState('');
+  const [newMemberBirthday, setNewMemberBirthday] = useState<Date | undefined>();
   const [newMemberHeight, setNewMemberHeight] = useState('');
   const [newMemberWeight, setNewMemberWeight] = useState('');
   const [newMemberHealth, setNewMemberHealth] = useState('');
@@ -60,7 +63,7 @@ export default function FamilyPage() {
 
   // Edit form state
   const [editMemberName, setEditMemberName] = useState('');
-  const [editMemberAge, setEditMemberAge] = useState('');
+  const [editMemberBirthday, setEditMemberBirthday] = useState<Date | undefined>();
   const [editMemberHeight, setEditMemberHeight] = useState('');
   const [editMemberWeight, setEditMemberWeight] = useState('');
   const [editMemberHealth, setEditMemberHealth] = useState('');
@@ -69,17 +72,16 @@ export default function FamilyPage() {
   
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMemberName && newMemberAge && newMemberHeight && newMemberWeight) {
+    if (newMemberName && newMemberBirthday && newMemberHeight && newMemberWeight) {
       let finalAvatarUrl = newMemberAvatar;
       if (!finalAvatarUrl) {
-        // Pick a random avatar if none is selected
         const randomIndex = Math.floor(Math.random() * avatars.avatars.length);
         finalAvatarUrl = avatars.avatars[randomIndex].url;
       }
       
       await addFamilyMember({
         name: newMemberName,
-        age: parseInt(newMemberAge),
+        birthday: newMemberBirthday.toISOString(),
         height: parseInt(newMemberHeight),
         weight: parseInt(newMemberWeight),
         healthConditions: newMemberHealth,
@@ -92,7 +94,7 @@ export default function FamilyPage() {
 
   const resetAddForm = () => {
     setNewMemberName('');
-    setNewMemberAge('');
+    setNewMemberBirthday(undefined);
     setNewMemberHeight('');
     setNewMemberWeight('');
     setNewMemberHealth('');
@@ -104,7 +106,7 @@ export default function FamilyPage() {
   const handleEditClick = (member: FamilyMember) => {
     setSelectedMember(member);
     setEditMemberName(member.name);
-    setEditMemberAge(String(member.age));
+    setEditMemberBirthday(parseISO(member.birthday));
     setEditMemberHeight(String(member.height));
     setEditMemberWeight(String(member.weight));
     setEditMemberHealth(member.healthConditions);
@@ -115,11 +117,11 @@ export default function FamilyPage() {
 
   const handleUpdateMember = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedMember) {
+    if (selectedMember && editMemberBirthday) {
       updateFamilyMember({
         ...selectedMember,
         name: editMemberName,
-        age: parseInt(editMemberAge),
+        birthday: editMemberBirthday.toISOString(),
         height: parseInt(editMemberHeight),
         weight: parseInt(editMemberWeight),
         healthConditions: editMemberHealth,
@@ -142,6 +144,10 @@ export default function FamilyPage() {
         description: "All family members have been deleted.",
     })
   }
+
+  const calculateAge = (birthday: string) => {
+    return differenceInYears(new Date(), parseISO(birthday));
+  };
 
   return (
     <div className="container mx-auto">
@@ -189,9 +195,36 @@ export default function FamilyPage() {
                         <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="age" className="text-right">Age / Vitals</Label>
-                            <div className="col-span-3 grid grid-cols-3 gap-2">
-                                <Input id="age" type="number" placeholder="Age" value={newMemberAge} onChange={e => setNewMemberAge(e.target.value)} required />
+                            <Label htmlFor="birthday" className="text-right">Birthday</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                    "w-[280px] justify-start text-left font-normal",
+                                    !newMemberBirthday && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {newMemberBirthday ? format(newMemberBirthday, "PPP") : <span>Pick a date</span>}
+                                </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={newMemberBirthday}
+                                    onSelect={setNewMemberBirthday}
+                                    captionLayout="dropdown-buttons"
+                                    fromYear={1920}
+                                    toYear={new Date().getFullYear()}
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Vitals</Label>
+                            <div className="col-span-3 grid grid-cols-2 gap-2">
                                 <Input id="height" type="number" placeholder="Height (cm)" value={newMemberHeight} onChange={e => setNewMemberHeight(e.target.value)} required />
                                 <Input id="weight" type="number" placeholder="Weight (kg)" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
                             </div>
@@ -247,7 +280,7 @@ export default function FamilyPage() {
                 />
                 <div className="flex-1">
                   <CardTitle>{member.name}</CardTitle>
-                  <CardDescription>Age: {member.age} &bull; {member.height}cm &bull; {member.weight}kg</CardDescription>
+                  <CardDescription>Age: {calculateAge(member.birthday)} &bull; {member.height}cm &bull; {member.weight}kg</CardDescription>
                 </div>
                 <div className="flex gap-1">
                      <Button variant="ghost" size="icon" onClick={() => handleEditClick(member)}>
@@ -305,9 +338,36 @@ export default function FamilyPage() {
                   <Input id="edit-name" className="col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-age" className="text-right">Age / Vitals</Label>
-                    <div className="col-span-3 grid grid-cols-3 gap-2">
-                        <Input id="edit-age" type="number" placeholder="Age" value={editMemberAge} onChange={e => setEditMemberAge(e.target.value)} required />
+                    <Label htmlFor="edit-birthday" className="text-right">Birthday</Label>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                        <Button
+                            variant={"outline"}
+                            className={cn(
+                            "w-[280px] justify-start text-left font-normal",
+                            !editMemberBirthday && "text-muted-foreground"
+                            )}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {editMemberBirthday ? format(editMemberBirthday, "PPP") : <span>Pick a date</span>}
+                        </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            mode="single"
+                            selected={editMemberBirthday}
+                            onSelect={setEditMemberBirthday}
+                            captionLayout="dropdown-buttons"
+                            fromYear={1920}
+                            toYear={new Date().getFullYear()}
+                            initialFocus
+                        />
+                        </PopoverContent>
+                    </Popover>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Vitals</Label>
+                    <div className="col-span-3 grid grid-cols-2 gap-2">
                         <Input id="edit-height" type="number" placeholder="Height (cm)" value={editMemberHeight} onChange={e => setEditMemberHeight(e.target.value)} required />
                         <Input id="edit-weight" type="number" placeholder="Weight (kg)" value={editMemberWeight} onChange={e => setEditMemberWeight(e.target.value)} required />
                     </div>
