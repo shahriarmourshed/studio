@@ -22,6 +22,20 @@ const BASE_COLORS = [
     "hsl(240, 82%, 60%)",
 ];
 
+const CustomTooltip = ({ active, payload }: any) => {
+    const { getSymbol } = useCurrency();
+    if (active && payload && payload.length) {
+        const data = payload[0];
+        return (
+            <div className="p-2 bg-background border border-border rounded-lg shadow-lg text-foreground">
+                <p className="font-medium">{`${data.name}: ${getSymbol()}${data.value.toLocaleString()}`}</p>
+            </div>
+        );
+    }
+    return null;
+};
+
+
 export default function ExpenseChart({ expenses, categories }: { expenses: Expense[], categories: ExpenseCategory[] }) {
   const { getSymbol } = useCurrency();
 
@@ -48,13 +62,7 @@ export default function ExpenseChart({ expenses, categories }: { expenses: Expen
       <PieChart>
         <Tooltip
           cursor={{ fill: "hsl(var(--muted))" }}
-          contentStyle={{ 
-            backgroundColor: "hsl(var(--background))",
-            borderColor: "hsl(var(--border))",
-            borderRadius: "var(--radius)",
-            color: "hsl(var(--foreground))"
-          }}
-          formatter={(value: number, name: string) => [`${getSymbol()}${value.toLocaleString()}`, name]}
+          content={<CustomTooltip />}
         />
         <Pie
           data={chartData}
