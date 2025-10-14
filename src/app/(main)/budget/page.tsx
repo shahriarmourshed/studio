@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -508,7 +507,7 @@ export default function BudgetPage() {
             <CardDescription>How your money is planned to be spent.</CardDescription>
           </CardHeader>
           <CardContent className="h-64">
-            <ExpenseChart expenses={plannedExpenses} />
+            <ExpenseChart expenses={plannedExpenses} categories={expenseCategories} />
           </CardContent>
         </Card>
         

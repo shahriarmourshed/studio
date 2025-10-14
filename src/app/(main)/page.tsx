@@ -220,7 +220,7 @@ export default function DashboardPage() {
             </Select>
           </CardHeader>
           <CardContent className="h-80">
-             <ExpenseChart expenses={filteredYearlyExpenses} />
+             <ExpenseChart expenses={filteredYearlyExpenses} categories={expenseCategories} />
           </CardContent>
         </Card>
 

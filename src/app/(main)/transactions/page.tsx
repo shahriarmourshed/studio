@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -567,7 +566,7 @@ export default function TransactionsPage() {
             <CardDescription>How your money was actually spent.</CardDescription>
           </CardHeader>
           <CardContent className="h-96">
-            <ExpenseChart expenses={filteredExpenses.filter(e => e.status === 'completed')} />
+            <ExpenseChart expenses={filteredExpenses.filter(e => e.status === 'completed')} categories={expenseCategories} />
           </CardContent>
         </Card>
 

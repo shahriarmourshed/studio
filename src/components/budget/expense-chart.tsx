@@ -3,9 +3,10 @@
 
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recharts"
 import { useCurrency } from "@/context/currency-context"
-import type { Expense } from "@/lib/types"
+import type { Expense, ExpenseCategory } from "@/lib/types"
+import { useMemo } from "react";
 
-const COLORS = [
+const BASE_COLORS = [
     "hsl(var(--chart-1))", 
     "hsl(var(--chart-2))", 
     "hsl(var(--chart-3))", 
@@ -15,10 +16,22 @@ const COLORS = [
     "hsl(30, 82%, 60%)",
     "hsl(40, 82%, 60%)",
     "hsl(50, 82%, 60%)",
+    "hsl(180, 82%, 60%)",
+    "hsl(200, 82%, 60%)",
+    "hsl(220, 82%, 60%)",
+    "hsl(240, 82%, 60%)",
 ];
 
-export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
+export default function ExpenseChart({ expenses, categories }: { expenses: Expense[], categories: ExpenseCategory[] }) {
   const { getSymbol } = useCurrency();
+
+  const categoryColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    categories.forEach((category, index) => {
+        map.set(category.name, BASE_COLORS[index % BASE_COLORS.length]);
+    });
+    return map;
+  }, [categories]);
 
   const categoryTotals = expenses.reduce((acc, expense) => {
     if (!acc[expense.category]) {
@@ -54,7 +67,7 @@ export default function ExpenseChart({ expenses }: { expenses: Expense[] }) {
           paddingAngle={2}
         >
           {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            <Cell key={`cell-${index}`} fill={categoryColorMap.get(entry.name) || BASE_COLORS[index % BASE_COLORS.length]} />
           ))}
         </Pie>
         <Legend 
