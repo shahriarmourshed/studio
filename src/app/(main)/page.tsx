@@ -1,4 +1,5 @@
 
+
 'use client';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
@@ -29,14 +30,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { ExpenseCategory, Income, Expense, Product } from '@/lib/types';
+import type { Income, Expense, Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
-  const { products, expenses, incomes, reminderDays, addExpense, loading, familyMembers } = useData();
+  const { products, expenses, incomes, reminderDays, addExpense, loading, familyMembers, expenseCategories } = useData();
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
 
   // Dialog states
@@ -45,7 +46,7 @@ export default function DashboardPage() {
   // Add Expense form state
   const [newExpenseDesc, setNewExpenseDesc] = useState('');
   const [newExpenseAmount, setNewExpenseAmount] = useState('');
-  const [newExpenseCategory, setNewExpenseCategory] = useState<ExpenseCategory>('Other');
+  const [newExpenseCategory, setNewExpenseCategory] = useState('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   const handleAddExpense = (e: React.FormEvent) => {
@@ -261,11 +262,11 @@ export default function DashboardPage() {
                     <div className="grid grid-cols-4 items-start gap-4">
                         <Label className="text-right pt-2">Category</Label>
                         <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
-                            <RadioGroup value={newExpenseCategory} onValueChange={(v) => setNewExpenseCategory(v as ExpenseCategory)} className="p-4">
-                                {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
-                                    <div key={category} className="flex items-center space-x-2">
-                                        <RadioGroupItem value={category} id={`expense-${category}`} />
-                                        <Label htmlFor={`expense-${category}`}>{category}</Label>
+                            <RadioGroup value={newExpenseCategory} onValueChange={(v) => setNewExpenseCategory(v)} className="p-4">
+                                {expenseCategories.map(category => (
+                                    <div key={category.id} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={category.name} id={`expense-${category.id}`} />
+                                        <Label htmlFor={`expense-${category.id}`}>{category.name}</Label>
                                     </div>
                                 ))}
                             </RadioGroup>

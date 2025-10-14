@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import {
@@ -19,7 +20,7 @@ import {
   getDoc,
   where,
 } from 'firebase/firestore';
-import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
+import type { Expense, FamilyMember, Product, Income, ExpenseCategory } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import {
   differenceInDays,
@@ -318,7 +319,7 @@ export const cancelPlannedTransactionOp = async (userId: string, transaction: In
 
 // Clear All Data
 export const clearAllUserDataOp = async (userId: string) => {
-    const collectionsToDelete = ['expenses', 'incomes', 'products', 'familyMembers'];
+    const collectionsToDelete = ['expenses', 'incomes', 'products', 'familyMembers', 'expenseCategories'];
     const batch = writeBatch(db);
 
     for (const collectionName of collectionsToDelete) {
@@ -361,4 +362,23 @@ export const clearMonthDataOp = async (userId: string, year: number, month: numb
     }
 
     await batch.commit();
+};
+
+// Expense Category Operations
+export const addExpenseCategoryOp = async (userId: string, categoryName: string) => {
+  const collectionRef = getCollectionRef(userId, 'expenseCategories');
+  if (!collectionRef) return;
+  const docRef = doc(collectionRef);
+  const newCategory = {
+    id: docRef.id,
+    name: categoryName,
+    isDefault: false,
+    createdAt: Timestamp.now(),
+  };
+  await setDoc(docRef, newCategory);
+};
+
+export const deleteExpenseCategoryOp = async (userId: string, categoryId: string) => {
+  const docRef = doc(db, `users/${userId}/expenseCategories`, categoryId);
+  await deleteDoc(docRef);
 };

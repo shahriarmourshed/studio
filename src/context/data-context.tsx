@@ -1,12 +1,13 @@
 
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
+import type { Expense, FamilyMember, Product, Income, ExpenseCategory } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { onSnapshot, collection, query, orderBy } from "firebase/firestore";
+import { onSnapshot, collection, query, orderBy, writeBatch, getDocs, doc } from "firebase/firestore";
 import {
   calculateAutoReducedStock,
   generateRecurrentTransactions,
@@ -30,14 +31,28 @@ import {
   cancelPlannedTransactionOp,
   clearAllUserDataOp,
   clearMonthDataOp,
+  addExpenseCategoryOp,
+  deleteExpenseCategoryOp,
 } from '@/lib/data-operations';
 
+const DEFAULT_EXPENSE_CATEGORIES: Omit<ExpenseCategory, 'id' | 'createdAt'>[] = [
+    { name: 'Groceries', isDefault: true },
+    { name: 'Bills', isDefault: true },
+    { name: 'Housing', isDefault: true },
+    { name: 'Transport', isDefault: true },
+    { name: 'Health', isDefault: true },
+    { name: 'Education', isDefault: true },
+    { name: 'Entertainment', isDefault: true },
+    { name: 'Personal Care', isDefault: true },
+    { name: 'Other', isDefault: true },
+];
 
 interface DataContextType {
   expenses: Expense[];
   products: Product[];
   incomes: Income[];
   familyMembers: FamilyMember[];
+  expenseCategories: ExpenseCategory[];
   savingGoal: number;
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
@@ -56,6 +71,8 @@ interface DataContextType {
   updateFamilyMember: (member: FamilyMember) => Promise<void>;
   deleteFamilyMember: (memberId: string) => Promise<void>;
   clearFamilyMembers: () => Promise<void>;
+  addExpenseCategory: (categoryName: string) => Promise<void>;
+  deleteExpenseCategory: (categoryId: string) => Promise<void>;
   completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => Promise<void>;
   cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => Promise<void>;
   clearAllUserData: () => Promise<void>;
@@ -73,6 +90,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
   const [savingGoal, setSavingGoalState] = useState<number>(0);
   const [reminderDays, setReminderDaysState] = useState<number>(3);
   
@@ -87,6 +105,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIncomes([]);
       setProducts([]);
       setFamilyMembers([]);
+      setExpenseCategories([]);
       setSavingGoalState(0);
       setReminderDaysState(3);
       return;
@@ -107,11 +126,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 const recurrent = generateRecurrentTransactions(data, futureDate);
                 data = [...data, ...recurrent];
             }
+            
+            if (collectionName === 'expenseCategories') {
+                const customCategories = data;
+                const defaultCategories = DEFAULT_EXPENSE_CATEGORIES.map((cat, index) => ({ ...cat, id: `default-${index}` }));
+                const combined = [...defaultCategories, ...customCategories].sort((a, b) => a.name.localeCompare(b.name));
+                const unique = combined.filter((v, i, a) => a.findIndex(t => t.name === v.name) === i);
+                data = unique;
 
-            if (processData) {
-              data = processData(data);
+                // If no custom categories, ensure defaults are there
+                if (snapshot.empty) {
+                    const batch = writeBatch(db);
+                    defaultCategories.forEach(cat => {
+                        const docRef = doc(collectionRef);
+                        batch.set(docRef, { ...cat, id: docRef.id, createdAt: new Date() });
+                    });
+                    // This write won't be reflected immediately, so we manually set state
+                    setter(defaultCategories);
+                } else {
+                    setter(data);
+                }
+            } else {
+               if (processData) {
+                  data = processData(data);
+                }
+                setter(data);
             }
-            setter(data);
+
             setLoading(false);
         }, (error) => {
             console.error(`Error fetching ${collectionRef.path}:`, error);
@@ -124,6 +165,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setupSubscription('incomes', setIncomes);
     setupSubscription('products', setProducts, (data) => data.map(calculateAutoReducedStock));
     setupSubscription('familyMembers', setFamilyMembers);
+    setupSubscription('expenseCategories', setExpenseCategories);
     
     getSettings(userId).then(settings => {
       setSavingGoalState(settings.savingGoal);
@@ -247,6 +289,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await clearFamilyMembersOp(userId);
   };
 
+  const addExpenseCategory = async (categoryName: string) => {
+    if (!userId) return;
+    await addExpenseCategoryOp(userId, categoryName);
+  };
+
+  const deleteExpenseCategory = async (categoryId: string) => {
+    if (!userId) return;
+    await deleteExpenseCategoryOp(userId, categoryId);
+  };
+
   const clearAllUserData = async () => {
     if (!userId) return;
     await clearAllUserDataOp(userId);
@@ -273,6 +325,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     products, 
     incomes, 
     familyMembers,
+    expenseCategories,
     savingGoal, 
     setSavingGoal, 
     reminderDays, 
@@ -291,6 +344,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updateFamilyMember,
     deleteFamilyMember,
     clearFamilyMembers,
+    addExpenseCategory,
+    deleteExpenseCategory,
     clearAllUserData,
     clearMonthData,
     completePlannedTransaction, 

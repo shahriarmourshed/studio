@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -44,7 +45,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
-import type { Expense, Income, IncomeCategory, ExpenseCategory } from '@/lib/types';
+import type { Expense, Income, IncomeCategory } from '@/lib/types';
 import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, addYears, subYears } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +75,7 @@ export default function TransactionsPage() {
     savingGoal,
     setSavingGoal,
     clearMonthData,
+    expenseCategories,
   } = useData();
   const { toast } = useToast();
 
@@ -91,7 +93,7 @@ export default function TransactionsPage() {
   // Add Expense form state
   const [newExpenseDesc, setNewExpenseDesc] = useState('');
   const [newExpenseAmount, setNewExpenseAmount] = useState('');
-  const [newExpenseCategory, setNewExpenseCategory] = useState<ExpenseCategory>('Other');
+  const [newExpenseCategory, setNewExpenseCategory] = useState('Other');
   const [newExpenseDate, setNewExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newExpenseRecurrent, setNewExpenseRecurrent] = useState(false);
   const [newExpenseNotes, setNewExpenseNotes] = useState('');
@@ -107,7 +109,7 @@ export default function TransactionsPage() {
   // Edit Expense form state
   const [editExpenseDesc, setEditExpenseDesc] = useState('');
   const [editExpenseAmount, setEditExpenseAmount] = useState('');
-  const [editExpenseCategory, setEditExpenseCategory] = useState<ExpenseCategory>('Other');
+  const [editExpenseCategory, setEditExpenseCategory] = useState('Other');
   const [editExpenseDate, setEditExpenseDate] = useState('');
   const [editExpenseRecurrent, setEditExpenseRecurrent] = useState(false);
   const [editExpenseNotes, setEditExpenseNotes] = useState('');
@@ -429,11 +431,11 @@ export default function TransactionsPage() {
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label className="text-right pt-2">Category</Label>
                     <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
-                        <RadioGroup value={newExpenseCategory} onValueChange={(v) => setNewExpenseCategory(v as ExpenseCategory)} className="p-4">
-                            {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
-                                <div key={category} className="flex items-center space-x-2">
-                                    <RadioGroupItem value={category} id={`expense-${category}`} />
-                                    <Label htmlFor={`expense-${category}`}>{category}</Label>
+                        <RadioGroup value={newExpenseCategory} onValueChange={(v) => setNewExpenseCategory(v)} className="p-4">
+                            {expenseCategories.map(category => (
+                                <div key={category.id} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category.name} id={`expense-${category.id}`} />
+                                    <Label htmlFor={`expense-${category.id}`}>{category.name}</Label>
                                 </div>
                             ))}
                         </RadioGroup>
@@ -724,11 +726,11 @@ export default function TransactionsPage() {
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label className="text-right pt-2">Category</Label>
                     <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
-                        <RadioGroup value={editExpenseCategory} onValueChange={(v) => setEditExpenseCategory(v as ExpenseCategory)} className="p-4">
-                            {(['Groceries', 'Bills', 'Housing', 'Transport', 'Health', 'Education', 'Entertainment', 'Personal Care', 'Other'] as ExpenseCategory[]).map(category => (
-                                <div key={category} className="flex items-center space-x-2">
-                                    <RadioGroupItem value={category} id={`edit-expense-${category}`} />
-                                    <Label htmlFor={`edit-expense-${category}`}>{category}</Label>
+                        <RadioGroup value={editExpenseCategory} onValueChange={(v) => setEditExpenseCategory(v)} className="p-4">
+                            {expenseCategories.map(category => (
+                                <div key={category.id} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category.name} id={`edit-expense-${category.id}`} />
+                                    <Label htmlFor={`edit-expense-${category.id}`}>{category.name}</Label>
                                 </div>
                             ))}
                         </RadioGroup>

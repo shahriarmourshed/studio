@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState } from 'react';
@@ -17,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { LogOut, ShieldAlert } from 'lucide-react';
+import { LogOut, ShieldAlert, Trash2, PlusCircle } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import {
@@ -32,12 +33,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function ProfilePage() {
-  const { reminderDays, setReminderDays, clearAllUserData } = useData();
+  const { reminderDays, setReminderDays, clearAllUserData, expenseCategories, addExpenseCategory, deleteExpenseCategory } = useData();
   const { logout, user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const handleLogout = async () => {
     try {
@@ -63,12 +67,32 @@ export default function ProfilePage() {
       })
     }
   }
+
+  const handleAddCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newCategoryName.trim()) {
+      addExpenseCategory(newCategoryName.trim());
+      setNewCategoryName('');
+      toast({
+        title: "Category Added",
+        description: `${newCategoryName.trim()} has been added to your expense categories.`
+      })
+    }
+  }
+
+  const handleDeleteCategory = (categoryId: string, categoryName: string) => {
+    deleteExpenseCategory(categoryId);
+    toast({
+      title: "Category Deleted",
+      description: `${categoryName} has been deleted.`
+    })
+  }
   
   return (
     <div className="container mx-auto">
       <PageHeader title="Settings" subtitle="Manage your application settings." />
 
-      <div className="px-4 sm:px-0 space-y-4">
+      <div className="px-4 sm:px-0 grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Preferences</CardTitle>
@@ -105,8 +129,60 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>Manage Expense Categories</CardTitle>
+                <CardDescription>Add or remove custom expense categories.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleAddCategory} className="flex items-center gap-2 mb-4">
+                    <Input 
+                        placeholder="New category name..."
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                    />
+                    <Button type="submit" size="icon">
+                        <PlusCircle className="h-4 w-4" />
+                        <span className="sr-only">Add Category</span>
+                    </Button>
+                </form>
+                <ScrollArea className="h-40 rounded-md border">
+                    <div className="p-2">
+                    {expenseCategories.map(category => (
+                        <div key={category.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
+                            <span className="text-sm font-medium">{category.name}</span>
+                            {!category.isDefault ? (
+                               <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                                            <Trash2 className="h-4 w-4 text-destructive"/>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will permanently delete the "{category.name}" category.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteCategory(category.id, category.name)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            ) : (
+                                <span className="text-xs text-muted-foreground pr-2">Default</span>
+                            )}
+                        </div>
+                    ))}
+                    </div>
+                </ScrollArea>
+            </CardContent>
+        </Card>
 
-         <Card>
+         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Account</CardTitle>
              <CardDescription>Manage your account settings.</CardDescription>

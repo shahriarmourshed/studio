@@ -28,22 +28,18 @@ export type Product = {
   createdAt?: any;
 };
 
-export type ExpenseCategory = 
-  | 'Groceries' 
-  | 'Bills' 
-  | 'Housing' 
-  | 'Transport' 
-  | 'Health'
-  | 'Education'
-  | 'Entertainment' 
-  | 'Personal Care'
-  | 'Other';
+export type ExpenseCategory = {
+  id: string;
+  name: string;
+  isDefault?: boolean;
+  createdAt?: any;
+};
 
 export type Expense = {
   id: string;
   description: string;
   amount: number;
-  category: ExpenseCategory;
+  category: string;
   date: string;
   recurrent: boolean;
   recurrenceEndDate?: string;
@@ -77,7 +73,7 @@ export type Budget = {
   total: number;
   spent: number;
   categories: {
-    name: ExpenseCategory;
+    name: string;
     amount: number;
   }[];
 };
