@@ -97,12 +97,12 @@ export default function DashboardPage() {
     const yearlyIncomes = incomes.filter(i => getYear(new Date(i.date)) === selectedYear && i.status === 'completed');
 
     const totalIncome = yearlyIncomes.reduce((sum, i) => sum + i.amount, 0);
-    const totalExpenses = yearlyExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalExpensesValue = yearlyExpenses.reduce((sum, e) => sum + e.amount, 0);
 
     return { 
       filteredYearlyExpenses: yearlyExpenses,
       totalYearlyIncome: totalIncome,
-      totalYearlyExpenses: totalExpenses,
+      totalYearlyExpenses: totalExpensesValue,
     };
   }, [expenses, incomes, selectedYear]);
 
