@@ -29,6 +29,7 @@ import {
   completePlannedTransactionOp,
   cancelPlannedTransactionOp,
   clearAllUserDataOp,
+  clearMonthDataOp,
 } from '@/lib/data-operations';
 
 
@@ -58,6 +59,7 @@ interface DataContextType {
   completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => Promise<void>;
   cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => Promise<void>;
   clearAllUserData: () => Promise<void>;
+  clearMonthData: (year: number, month: number) => Promise<void>;
   loading: boolean;
 }
 
@@ -169,7 +171,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!expenseToDelete) return;
 
     if (!expenseToDelete.recurrent) {
-        await deleteProductOp(userId, expenseToDelete.id);
+        await deleteDoc(doc(db, `users/${userId}/expenses`, expenseId));
         return;
     }
     await deleteExpenseOp(userId, expenseToDelete);
@@ -218,7 +220,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!incomeToDelete) return;
 
     if (!incomeToDelete.recurrent) {
-        await deleteProductOp(userId, incomeToDelete.id);
+        await deleteDoc(doc(db, `users/${userId}/incomes`, incomeId));
         return;
     }
     
@@ -248,6 +250,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const clearAllUserData = async () => {
     if (!userId) return;
     await clearAllUserDataOp(userId);
+  };
+  
+  const clearMonthData = async (year: number, month: number) => {
+    if (!userId) return;
+    await clearMonthDataOp(userId, year, month);
   };
 
   const completePlannedTransaction = async (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => {
@@ -285,6 +292,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     deleteFamilyMember,
     clearFamilyMembers,
     clearAllUserData,
+    clearMonthData,
     completePlannedTransaction, 
     cancelPlannedTransaction,
     loading

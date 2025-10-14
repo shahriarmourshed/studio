@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign, ChevronsLeft, ChevronsRight, Trash2 } from "lucide-react";
+import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign, ChevronsLeft, ChevronsRight, Trash2, ShieldAlert } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +54,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import ExpenseChart from '@/components/budget/expense-chart';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 type Transaction = (Expense | Income) & { type: 'income' | 'expense' };
 
@@ -72,7 +73,9 @@ export default function TransactionsPage() {
     cancelPlannedTransaction,
     savingGoal,
     setSavingGoal,
+    clearMonthData,
   } = useData();
+  const { toast } = useToast();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   
@@ -176,14 +179,6 @@ export default function TransactionsPage() {
      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [filteredIncomes, filteredExpenses]);
 
-
-  const handleDeleteClick = (transaction: Transaction) => {
-    if (transaction.type === 'income') {
-      deleteIncome(transaction.id);
-    } else {
-      deleteExpense(transaction.id);
-    }
-  }
   
   const handleEditClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -296,6 +291,16 @@ export default function TransactionsPage() {
     setIsEditingGoal(false);
   };
 
+  const handleClearMonth = async () => {
+    const year = getYear(selectedDate);
+    const month = getMonth(selectedDate);
+    await clearMonthData(year, month);
+    toast({
+        title: "Data Cleared",
+        description: `All transactions for ${format(selectedDate, 'MMMM yyyy')} have been deleted.`,
+    })
+  }
+
   const completedIncome = filteredIncomes.filter(i => i.status === 'completed').reduce((sum, i) => sum + i.amount, 0);
   const completedExpenses = filteredExpenses.filter(e => e.status === 'completed').reduce((sum, e) => sum + e.amount, 0);
   const actualSavings = completedIncome - completedExpenses;
@@ -319,6 +324,27 @@ export default function TransactionsPage() {
     <div className="container mx-auto">
       <PageHeader title="Transactions" subtitle="Log your actual income and expenses.">
          <div className="flex gap-2">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <ShieldAlert className="mr-2 h-4 w-4" />
+                  Clear Month's Data
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all income and expense records for{' '}
+                    <strong>{format(selectedDate, 'MMMM yyyy')}</strong>. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearMonth}>Delete Data</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)}>

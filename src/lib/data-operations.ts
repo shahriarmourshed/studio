@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -16,6 +17,7 @@ import {
   DocumentData,
   CollectionReference,
   getDoc,
+  where,
 } from 'firebase/firestore';
 import type { Expense, FamilyMember, Product, Income } from '@/lib/types';
 import { db } from '@/lib/firebase';
@@ -27,6 +29,8 @@ import {
   lastDayOfMonth,
   subMonths,
   addMonths,
+  startOfMonth,
+  endOfMonth,
 } from 'date-fns';
 
 // Helper to remove undefined values from an object
@@ -331,4 +335,30 @@ export const clearAllUserDataOp = async (userId: string) => {
     await batch.commit();
 };
 
-    
+export const clearMonthDataOp = async (userId: string, year: number, month: number) => {
+    const startDate = startOfMonth(new Date(year, month));
+    const endDate = endOfMonth(new Date(year, month));
+    const startDateString = format(startDate, 'yyyy-MM-dd');
+    const endDateString = format(endDate, 'yyyy-MM-dd');
+
+    const collectionsToClear = ['expenses', 'incomes'];
+    const batch = writeBatch(db);
+
+    for (const collectionName of collectionsToClear) {
+        const collectionRef = getCollectionRef(userId, collectionName);
+        if (!collectionRef) continue;
+
+        const q = query(
+            collectionRef,
+            where('date', '>=', startDateString),
+            where('date', '<=', endDateString)
+        );
+
+        const snapshot = await getDocs(q);
+        snapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+    }
+
+    await batch.commit();
+};
