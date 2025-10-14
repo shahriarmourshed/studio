@@ -51,7 +51,8 @@ export default function ExpenseChart({ expenses, categories }: { expenses: Expen
           contentStyle={{ 
             backgroundColor: "hsl(var(--background))",
             borderColor: "hsl(var(--border))",
-            borderRadius: "var(--radius)"
+            borderRadius: "var(--radius)",
+            color: "hsl(var(--foreground))"
           }}
           formatter={(value: number, name: string) => [`${getSymbol()}${value.toLocaleString()}`, name]}
         />
