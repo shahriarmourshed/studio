@@ -51,13 +51,18 @@ export type Expense = {
   createdAt?: any;
 };
 
-export type IncomeCategory = 'Salary' | 'Business' | 'Investment' | 'Gift' | 'Other';
+export type IncomeCategory = {
+  id: string;
+  name: string;
+  isDefault?: boolean;
+  createdAt?: any;
+};
 
 export type Income = {
   id:string;
   description: string;
   amount: number;
-  category: IncomeCategory;
+  category: string;
   date: string;
   recurrent: boolean;
   recurrenceEndDate?: string;

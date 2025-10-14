@@ -3,7 +3,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { Expense, FamilyMember, Product, Income, ExpenseCategory } from '@/lib/types';
+import type { Expense, FamilyMember, Product, Income, ExpenseCategory, IncomeCategory } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { onSnapshot, collection, query, orderBy, writeBatch, getDocs, doc, deleteDoc } from "firebase/firestore";
@@ -32,6 +32,8 @@ import {
   clearMonthDataOp,
   addExpenseCategoryOp,
   deleteExpenseCategoryOp,
+  addIncomeCategoryOp,
+  deleteIncomeCategoryOp,
 } from '@/lib/data-operations';
 
 const DEFAULT_EXPENSE_CATEGORIES: Omit<ExpenseCategory, 'id' | 'createdAt'>[] = [
@@ -46,12 +48,22 @@ const DEFAULT_EXPENSE_CATEGORIES: Omit<ExpenseCategory, 'id' | 'createdAt'>[] = 
     { name: 'Other', isDefault: true },
 ];
 
+const DEFAULT_INCOME_CATEGORIES: Omit<IncomeCategory, 'id' | 'createdAt'>[] = [
+    { name: 'Salary', isDefault: true },
+    { name: 'Business', isDefault: true },
+    { name: 'Investment', isDefault: true },
+    { name: 'Gift', isDefault: true },
+    { name: 'Other', isDefault: true },
+];
+
+
 interface DataContextType {
   expenses: Expense[];
   products: Product[];
   incomes: Income[];
   familyMembers: FamilyMember[];
   expenseCategories: ExpenseCategory[];
+  incomeCategories: IncomeCategory[];
   savingGoal: number;
   setSavingGoal: (goal: number) => void;
   reminderDays: number;
@@ -72,6 +84,8 @@ interface DataContextType {
   clearFamilyMembers: () => Promise<void>;
   addExpenseCategory: (categoryName: string) => Promise<void>;
   deleteExpenseCategory: (categoryId: string) => Promise<void>;
+  addIncomeCategory: (categoryName: string) => Promise<void>;
+  deleteIncomeCategory: (categoryId: string) => Promise<void>;
   completePlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense', actualAmount?: number) => Promise<void>;
   cancelPlannedTransaction: (transaction: Income | Expense, type: 'income' | 'expense') => Promise<void>;
   clearAllUserData: () => Promise<void>;
@@ -90,6 +104,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
+  const [incomeCategories, setIncomeCategories] = useState<IncomeCategory[]>([]);
   const [savingGoal, setSavingGoalState] = useState<number>(0);
   const [reminderDays, setReminderDaysState] = useState<number>(3);
   
@@ -105,6 +120,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setProducts([]);
       setFamilyMembers([]);
       setExpenseCategories([]);
+      setIncomeCategories([]);
       setSavingGoalState(0);
       setReminderDaysState(3);
       return;
@@ -133,7 +149,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 const unique = combined.filter((v, i, a) => a.findIndex(t => t.name === v.name) === i);
                 data = unique;
 
-                // If no custom categories, ensure defaults are there
+                if (snapshot.empty) {
+                    setter(defaultCategories);
+                } else {
+                    setter(data);
+                }
+            } else if (collectionName === 'incomeCategories') {
+                const customCategories = data;
+                const defaultCategories = DEFAULT_INCOME_CATEGORIES.map((cat, index) => ({ ...cat, id: `default-${index}` }));
+                const combined = [...defaultCategories, ...customCategories].sort((a, b) => a.name.localeCompare(b.name));
+                const unique = combined.filter((v, i, a) => a.findIndex(t => t.name === v.name) === i);
+                data = unique;
+
                 if (snapshot.empty) {
                     setter(defaultCategories);
                 } else {
@@ -159,6 +186,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setupSubscription('products', setProducts, (data) => data.map(calculateAutoReducedStock));
     setupSubscription('familyMembers', setFamilyMembers);
     setupSubscription('expenseCategories', setExpenseCategories);
+    setupSubscription('incomeCategories', setIncomeCategories);
     
     getSettings(userId).then(settings => {
       setSavingGoalState(settings.savingGoal);
@@ -292,6 +320,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await deleteExpenseCategoryOp(userId, categoryId);
   };
 
+  const addIncomeCategory = async (categoryName: string) => {
+    if (!userId) return;
+    await addIncomeCategoryOp(userId, categoryName);
+  };
+
+  const deleteIncomeCategory = async (categoryId: string) => {
+    if (!userId) return;
+    await deleteIncomeCategoryOp(userId, categoryId);
+  };
+
   const clearAllUserData = async () => {
     if (!userId) return;
     await clearAllUserDataOp(userId);
@@ -319,6 +357,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     incomes, 
     familyMembers,
     expenseCategories,
+    incomeCategories,
     savingGoal, 
     setSavingGoal, 
     reminderDays, 
@@ -339,6 +378,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     clearFamilyMembers,
     addExpenseCategory,
     deleteExpenseCategory,
+    addIncomeCategory,
+    deleteIncomeCategory,
     clearAllUserData,
     clearMonthData,
     completePlannedTransaction, 

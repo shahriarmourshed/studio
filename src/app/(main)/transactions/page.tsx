@@ -43,7 +43,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
-import type { Expense, Income, IncomeCategory } from '@/lib/types';
+import type { Expense, Income } from '@/lib/types';
 import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, addYears, subYears } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +74,7 @@ export default function TransactionsPage() {
     setSavingGoal,
     clearMonthData,
     expenseCategories,
+    incomeCategories,
   } = useData();
   const { toast } = useToast();
 
@@ -99,7 +100,7 @@ export default function TransactionsPage() {
   // Add Income form state
   const [newIncomeDesc, setNewIncomeDesc] = useState('');
   const [newIncomeAmount, setNewIncomeAmount] = useState('');
-  const [newIncomeCategory, setNewIncomeCategory] = useState<IncomeCategory>('Other');
+  const [newIncomeCategory, setNewIncomeCategory] = useState('Other');
   const [newIncomeDate, setNewIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newIncomeRecurrent, setNewIncomeRecurrent] = useState(false);
   const [newIncomeNotes, setNewIncomeNotes] = useState('');
@@ -115,7 +116,7 @@ export default function TransactionsPage() {
   // Edit Income form state
   const [editIncomeDesc, setEditIncomeDesc] = useState('');
   const [editIncomeAmount, setEditIncomeAmount] = useState('');
-  const [editIncomeCategory, setEditIncomeCategory] = useState<IncomeCategory>('Other');
+  const [editIncomeCategory, setEditIncomeCategory] = useState('Other');
   const [editIncomeDate, setEditIncomeDate] = useState('');
   const [editIncomeRecurrent, setEditIncomeRecurrent] = useState(false);
   const [editIncomeNotes, setEditIncomeNotes] = useState('');
@@ -372,11 +373,11 @@ export default function TransactionsPage() {
                     <div className="grid grid-cols-4 items-start gap-4">
                         <Label className="text-right pt-2">Category</Label>
                         <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
-                            <RadioGroup value={newIncomeCategory} onValueChange={(v) => setNewIncomeCategory(v as IncomeCategory)} className="p-4">
-                                {(['Salary', 'Business', 'Investment', 'Gift', 'Other'] as IncomeCategory[]).map(category => (
-                                    <div key={category} className="flex items-center space-x-2">
-                                        <RadioGroupItem value={category} id={`income-${category}`} />
-                                        <Label htmlFor={`income-${category}`}>{category}</Label>
+                            <RadioGroup value={newIncomeCategory} onValueChange={(v) => setNewIncomeCategory(v)} className="p-4">
+                                {incomeCategories.map(category => (
+                                    <div key={category.id} className="flex items-center space-x-2">
+                                        <RadioGroupItem value={category.name} id={`income-${category.id}`} />
+                                        <Label htmlFor={`income-${category.id}`}>{category.name}</Label>
                                     </div>
                                 ))}
                             </RadioGroup>
@@ -674,11 +675,11 @@ export default function TransactionsPage() {
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label className="text-right pt-2">Category</Label>
                     <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
-                        <RadioGroup value={editIncomeCategory} onValueChange={(v) => setEditIncomeCategory(v as IncomeCategory)} className="p-4">
-                            {(['Salary', 'Business', 'Investment', 'Gift', 'Other'] as IncomeCategory[]).map(category => (
-                                <div key={category} className="flex items-center space-x-2">
-                                    <RadioGroupItem value={category} id={`edit-income-${category}`} />
-                                    <Label htmlFor={`edit-income-${category}`}>{category}</Label>
+                        <RadioGroup value={editIncomeCategory} onValueChange={(v) => setEditIncomeCategory(v)} className="p-4">
+                            {incomeCategories.map(category => (
+                                <div key={category.id} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={category.name} id={`edit-income-${category.id}`} />
+                                    <Label htmlFor={`edit-income-${category.id}`}>{category.name}</Label>
                                 </div>
                             ))}
                         </RadioGroup>

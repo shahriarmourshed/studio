@@ -318,7 +318,7 @@ export const cancelPlannedTransactionOp = async (userId: string, transaction: In
 
 // Clear All Data
 export const clearAllUserDataOp = async (userId: string) => {
-    const collectionsToDelete = ['expenses', 'incomes', 'products', 'familyMembers', 'expenseCategories'];
+    const collectionsToDelete = ['expenses', 'incomes', 'products', 'familyMembers', 'expenseCategories', 'incomeCategories'];
     const batch = writeBatch(db);
 
     for (const collectionName of collectionsToDelete) {
@@ -379,5 +379,24 @@ export const addExpenseCategoryOp = async (userId: string, categoryName: string)
 
 export const deleteExpenseCategoryOp = async (userId: string, categoryId: string) => {
   const docRef = doc(db, `users/${userId}/expenseCategories`, categoryId);
+  await deleteDoc(docRef);
+};
+
+// Income Category Operations
+export const addIncomeCategoryOp = async (userId: string, categoryName: string) => {
+  const collectionRef = getCollectionRef(userId, 'incomeCategories');
+  if (!collectionRef) return;
+  const docRef = doc(collectionRef);
+  const newCategory = {
+    id: docRef.id,
+    name: categoryName,
+    isDefault: false,
+    createdAt: Timestamp.now(),
+  };
+  await setDoc(docRef, newCategory);
+};
+
+export const deleteIncomeCategoryOp = async (userId: string, categoryId: string) => {
+  const docRef = doc(db, `users/${userId}/incomeCategories`, categoryId);
   await deleteDoc(docRef);
 };

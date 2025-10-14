@@ -36,11 +36,22 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function ProfilePage() {
-  const { reminderDays, setReminderDays, clearAllUserData, expenseCategories, addExpenseCategory, deleteExpenseCategory } = useData();
+  const { 
+    reminderDays, 
+    setReminderDays, 
+    clearAllUserData, 
+    expenseCategories, 
+    addExpenseCategory, 
+    deleteExpenseCategory,
+    incomeCategories,
+    addIncomeCategory,
+    deleteIncomeCategory
+  } = useData();
   const { logout, user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newExpenseCategoryName, setNewExpenseCategoryName] = useState('');
+  const [newIncomeCategoryName, setNewIncomeCategoryName] = useState('');
 
   const handleLogout = async () => {
     try {
@@ -67,20 +78,40 @@ export default function ProfilePage() {
     }
   }
 
-  const handleAddCategory = (e: React.FormEvent) => {
+  const handleAddExpenseCategory = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newCategoryName.trim()) {
-      addExpenseCategory(newCategoryName.trim());
-      setNewCategoryName('');
+    if (newExpenseCategoryName.trim()) {
+      addExpenseCategory(newExpenseCategoryName.trim());
+      setNewExpenseCategoryName('');
       toast({
         title: "Category Added",
-        description: `${newCategoryName.trim()} has been added to your expense categories.`
+        description: `${newExpenseCategoryName.trim()} has been added to your expense categories.`
       })
     }
   }
 
-  const handleDeleteCategory = (categoryId: string, categoryName: string) => {
+  const handleDeleteExpenseCategory = (categoryId: string, categoryName: string) => {
     deleteExpenseCategory(categoryId);
+    toast({
+      title: "Category Deleted",
+      description: `${categoryName} has been deleted.`
+    })
+  }
+
+  const handleAddIncomeCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newIncomeCategoryName.trim()) {
+      addIncomeCategory(newIncomeCategoryName.trim());
+      setNewIncomeCategoryName('');
+      toast({
+        title: "Category Added",
+        description: `${newIncomeCategoryName.trim()} has been added to your income categories.`
+      })
+    }
+  }
+
+  const handleDeleteIncomeCategory = (categoryId: string, categoryName: string) => {
+    deleteIncomeCategory(categoryId);
     toast({
       title: "Category Deleted",
       description: `${categoryName} has been deleted.`
@@ -135,11 +166,11 @@ export default function ProfilePage() {
                 <CardDescription>Add or remove custom expense categories.</CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleAddCategory} className="flex items-center gap-2 mb-4">
+                <form onSubmit={handleAddExpenseCategory} className="flex items-center gap-2 mb-4">
                     <Input 
-                        placeholder="New category name..."
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="New expense category..."
+                        value={newExpenseCategoryName}
+                        onChange={(e) => setNewExpenseCategoryName(e.target.value)}
                     />
                     <Button type="submit" size="icon">
                         <PlusCircle className="h-4 w-4" />
@@ -167,7 +198,59 @@ export default function ProfilePage() {
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDeleteCategory(category.id, category.name)}>Delete</AlertDialogAction>
+                                            <AlertDialogAction onClick={() => handleDeleteExpenseCategory(category.id, category.name)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            ) : (
+                                <span className="text-xs text-muted-foreground pr-2">Default</span>
+                            )}
+                        </div>
+                    ))}
+                    </div>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>Manage Income Categories</CardTitle>
+                <CardDescription>Add or remove custom income categories.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleAddIncomeCategory} className="flex items-center gap-2 mb-4">
+                    <Input 
+                        placeholder="New income category..."
+                        value={newIncomeCategoryName}
+                        onChange={(e) => setNewIncomeCategoryName(e.target.value)}
+                    />
+                    <Button type="submit" size="icon">
+                        <PlusCircle className="h-4 w-4" />
+                        <span className="sr-only">Add Category</span>
+                    </Button>
+                </form>
+                <ScrollArea className="h-40 rounded-md border">
+                    <div className="p-2">
+                    {incomeCategories.map(category => (
+                        <div key={category.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
+                            <span className="text-sm font-medium">{category.name}</span>
+                            {!category.isDefault ? (
+                               <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                                            <Trash2 className="h-4 w-4 text-destructive"/>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will permanently delete the "{category.name}" category.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteIncomeCategory(category.id, category.name)}>Delete</AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
