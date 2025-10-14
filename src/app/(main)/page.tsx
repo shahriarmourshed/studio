@@ -120,7 +120,7 @@ export default function DashboardPage() {
         ...incomes.filter(upcoming).map(t => ({...t, type: 'income' as const}))
     ];
 
-    return combined.sort((a, b) => new Date(a.date).getTime() - new Date(a.date).getTime());
+    return combined.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [expenses, incomes, reminderDays]);
 
   const lowStockProducts = useMemo(() => {
