@@ -1,6 +1,5 @@
 
 
-
 'use client';
 
 import {
@@ -211,7 +210,7 @@ export const deleteIncomeOp = async (userId: string, incomeToDelete: Income) => 
 };
 
 // Product Operations
-export const addProductOp = async (userId: string, product: Omit<Product, 'id'>) => {
+export const addProductOp = async (userId: string, product: Omit<Product, 'id' | 'lastUpdated' | 'createdAt'>) => {
   const collectionRef = getCollectionRef(userId, 'products');
   if (!collectionRef) return;
   const docRef = doc(collectionRef);
@@ -247,7 +246,7 @@ export const clearProductsOp = async (userId: string) => {
 };
 
 // Family Member Operations
-export const addFamilyMemberOp = async (userId: string, member: Omit<FamilyMember, 'id'>) => {
+export const addFamilyMemberOp = async (userId: string, member: Omit<FamilyMember, 'id' | 'createdAt'>) => {
   const collectionRef = getCollectionRef(userId, 'familyMembers');
   if (!collectionRef) return;
   const docRef = doc(collectionRef);

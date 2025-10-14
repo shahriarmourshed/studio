@@ -1,13 +1,12 @@
 
 
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Expense, FamilyMember, Product, Income, ExpenseCategory } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
-import { onSnapshot, collection, query, orderBy, writeBatch, getDocs, doc } from "firebase/firestore";
+import { onSnapshot, collection, query, orderBy, writeBatch, getDocs, doc, deleteDoc } from "firebase/firestore";
 import {
   calculateAutoReducedStock,
   generateRecurrentTransactions,
@@ -136,12 +135,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
                 // If no custom categories, ensure defaults are there
                 if (snapshot.empty) {
-                    const batch = writeBatch(db);
-                    defaultCategories.forEach(cat => {
-                        const docRef = doc(collectionRef);
-                        batch.set(docRef, { ...cat, id: docRef.id, createdAt: new Date() });
-                    });
-                    // This write won't be reflected immediately, so we manually set state
                     setter(defaultCategories);
                 } else {
                     setter(data);
