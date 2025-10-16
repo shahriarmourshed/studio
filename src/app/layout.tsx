@@ -16,6 +16,7 @@ const ptSans = PT_Sans({
 export const metadata: Metadata = {
   title: "Family Manager",
   description: "A smart family management app for budgeting, grocery planning, and health tracking.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
