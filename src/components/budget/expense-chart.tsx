@@ -70,7 +70,7 @@ export default function ExpenseChart({ expenses, categories }: { expenses: Expen
           cy="50%"
           labelLine={false}
           label={false}
-          outerRadius="90%"
+          outerRadius="80%"
           fill="#8884d8"
           dataKey="value"
           paddingAngle={2}
@@ -83,10 +83,9 @@ export default function ExpenseChart({ expenses, categories }: { expenses: Expen
             iconSize={10} 
             verticalAlign="bottom"
             align="center"
+            wrapperStyle={{ fontSize: '10px' }}
         />
       </PieChart>
     </ResponsiveContainer>
   )
 }
-
-    

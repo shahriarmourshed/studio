@@ -510,7 +510,7 @@ export default function BudgetPage() {
             <CardTitle className="text-xl">Expense Breakdown</CardTitle>
             <CardDescription>How money is planned to be spent.</CardDescription>
           </CardHeader>
-          <CardContent className="h-96 px-0">
+          <CardContent className="h-80 px-0">
             <ExpenseChart expenses={plannedExpenses} categories={expenseCategories} />
           </CardContent>
         </Card>
