@@ -410,26 +410,26 @@ export default function BudgetPage() {
       <Card>
         <CardHeader className="flex flex-wrap items-center justify-center gap-4">
             <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <h3 className="text-base font-semibold text-center min-w-28">{format(selectedDate, 'MMMM')}</h3>
-                    <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
             </div>
             <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={() => setSelectedDate(subYears(selectedDate, 1))}>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(subYears(selectedDate, 1))}>
                     <ChevronsLeft className="h-4 w-4" />
                 </Button>
                 <Input 
                     type="number"
-                    className="w-24 text-center"
+                    className="w-24 text-center h-8"
                     value={getYear(selectedDate)}
                     onChange={handleYearChange}
                     aria-label="Year"
                 />
-                    <Button variant="outline" size="icon" onClick={() => setSelectedDate(addYears(selectedDate, 1))}>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(addYears(selectedDate, 1))}>
                     <ChevronsRight className="h-4 w-4" />
                 </Button>
             </div>
