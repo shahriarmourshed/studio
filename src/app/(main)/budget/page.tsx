@@ -538,14 +538,14 @@ export default function BudgetPage() {
                         </TableRow>
                     ) : plannedIncomes.map((income) => (
                         <TableRow key={income.id} className="text-[10px] sm:text-sm">
-                            <TableCell className="font-medium whitespace-normal">{income.description}</TableCell>
-                            <TableCell>{income.category}</TableCell>
-                            <TableCell>{format(parseISO(income.date), 'dd/MM/yy')}</TableCell>
-                            <TableCell className="hidden sm:table-cell">{income.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{income.notes}</TableCell>
-                            <TableCell><div className="flex justify-center">{getPlanStatus(income)}</div></TableCell>
-                            <TableCell className="text-right">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="font-medium whitespace-normal px-1">{income.description}</TableCell>
+                            <TableCell className="px-1">{income.category}</TableCell>
+                            <TableCell className="px-1">{format(parseISO(income.date), 'dd/MM/yy')}</TableCell>
+                            <TableCell className="hidden sm:table-cell px-1">{income.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-1">{income.notes}</TableCell>
+                            <TableCell className="px-1"><div className="flex justify-center">{getPlanStatus(income)}</div></TableCell>
+                            <TableCell className="text-right px-1">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
+                            <TableCell className="text-right px-1">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
                                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditIncomeClick(income)}>
                                         <Edit className="h-4 w-4"/>
@@ -606,14 +606,14 @@ export default function BudgetPage() {
                         </TableRow>
                     ) : plannedExpenses.map((expense) => (
                         <TableRow key={expense.id} className="text-[10px] sm:text-sm">
-                            <TableCell className="font-medium whitespace-normal">{expense.description}</TableCell>
-                            <TableCell>{expense.category}</TableCell>
-                            <TableCell>{format(parseISO(expense.date), 'dd/MM/yy')}</TableCell>
-                            <TableCell className="hidden sm:table-cell">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{expense.notes}</TableCell>
-                            <TableCell><div className="flex justify-center">{getPlanStatus(expense)}</div></TableCell>
-                            <TableCell className="text-right">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="font-medium whitespace-normal px-1">{expense.description}</TableCell>
+                            <TableCell className="px-1">{expense.category}</TableCell>
+                            <TableCell className="px-1">{format(parseISO(expense.date), 'dd/MM/yy')}</TableCell>
+                            <TableCell className="hidden sm:table-cell px-1">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-1">{expense.notes}</TableCell>
+                            <TableCell className="px-1"><div className="flex justify-center">{getPlanStatus(expense)}</div></TableCell>
+                            <TableCell className="text-right px-1">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
+                            <TableCell className="text-right px-1">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
                                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditExpenseClick(expense)}>
                                         <Edit className="h-4 w-4"/>
