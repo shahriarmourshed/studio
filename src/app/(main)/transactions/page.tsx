@@ -466,7 +466,7 @@ export default function TransactionsPage() {
         </div>
       </PageHeader>
       
-      <div className='px-0 sm:px-4'>
+      <div className="px-4 sm:px-0">
         <Card className='rounded-none sm:rounded-lg'>
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
@@ -577,7 +577,7 @@ export default function TransactionsPage() {
 
         <Card className="lg:col-span-4">
             <CardHeader><CardTitle>Manage Pre-planned Transactions</CardTitle></CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -626,7 +626,7 @@ export default function TransactionsPage() {
           <CardHeader>
             <CardTitle>All Transactions for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -647,7 +647,7 @@ export default function TransactionsPage() {
                             <TableCell className="font-medium px-2 sm:px-4 whitespace-normal">{t.description}</TableCell>
                             <TableCell className="px-2 sm:px-4">{t.category}</TableCell>
                             <TableCell className="px-2 sm:px-4">{format(parseISO(t.date), 'dd/MM/yy')}</TableCell>
-                            <TableCell className="px-2 sm:px-4"><Badge variant={getStatusVariant(t.status)} className="text-xs">{t.status}</Badge></TableCell>
+                            <TableCell className="px-2 sm:px-4"><Badge variant={getStatusVariant(t.status)} className="px-1.5 py-0 text-[10px] sm:text-xs">{t.status}</Badge></TableCell>
                             <TableCell className={cn("text-right px-2 sm:px-4", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
                                 {t.type === 'expense' ? '-' : '+'}
                                 {getSymbol()}{t.amount.toLocaleString()}
