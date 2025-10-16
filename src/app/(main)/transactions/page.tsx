@@ -348,7 +348,7 @@ export default function TransactionsPage() {
             </AlertDialog>
             <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)} className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">
                 <DollarSign className="mr-2 h-4 w-4" />
                 Add Real Income
                 </Button>
@@ -405,7 +405,7 @@ export default function TransactionsPage() {
 
             <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
             <DialogTrigger asChild>
-                <Button onClick={() => setIsExpenseDialogOpen(true)} className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Real Expense
                 </Button>
@@ -463,7 +463,7 @@ export default function TransactionsPage() {
       </PageHeader>
       
       <div className='px-4 sm:px-0'>
-        <Card className='sm:rounded-lg'>
+        <Card className='rounded-none sm:rounded-lg'>
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
@@ -493,7 +493,7 @@ export default function TransactionsPage() {
         </Card>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4 px-4 sm:px-0">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4 p-4 sm:p-0">
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Actual Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
@@ -566,14 +566,14 @@ export default function TransactionsPage() {
             <CardTitle>Actual Expense Breakdown</CardTitle>
             <CardDescription>How your money was actually spent.</CardDescription>
           </CardHeader>
-          <CardContent className="h-96">
+          <CardContent className="h-96 px-0">
             <ExpenseChart expenses={filteredExpenses.filter(e => e.status === 'completed')} categories={expenseCategories} />
           </CardContent>
         </Card>
 
         <Card className="lg:col-span-4">
             <CardHeader><CardTitle>Manage Pre-planned Transactions</CardTitle></CardHeader>
-            <CardContent className="overflow-x-auto">
+            <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -590,13 +590,13 @@ export default function TransactionsPage() {
                             </TableRow>
                         ) : plannedTransactionsForMonth.map(t => (
                             <TableRow key={t.id}>
-                                <TableCell className="font-medium p-2">
+                                <TableCell className="font-medium">
                                     <span className="truncate">{t.description}</span>
                                     <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="ml-2 text-xs capitalize">{t.type}</Badge>
                                 </TableCell>
-                                <TableCell className="p-2">{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
+                                <TableCell>{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
                                 <TableCell className={cn(
-                                    "text-right font-semibold p-2",
+                                    "text-right font-semibold",
                                      t.type === 'expense' ? 'text-red-500' : 'text-green-500'
                                     )}
                                 >
@@ -622,13 +622,13 @@ export default function TransactionsPage() {
           <CardHeader>
             <CardTitle>All Transactions for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent>
             <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Description</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Date</TableHead>
+                        <TableHead className="hidden sm:table-cell">Category</TableHead>
+                        <TableHead className="hidden sm:table-cell">Date</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
@@ -641,8 +641,8 @@ export default function TransactionsPage() {
                     ) : allTransactionsForMonth.map((t) => (
                         <TableRow key={t.id}>
                             <TableCell className="font-medium">{t.description}</TableCell>
-                            <TableCell>{t.category}</TableCell>
-                            <TableCell>{t.date}</TableCell>
+                            <TableCell className="hidden sm:table-cell">{t.category}</TableCell>
+                            <TableCell className="hidden sm:table-cell">{t.date}</TableCell>
                             <TableCell><Badge variant={getStatusVariant(t.status)}>{t.status}</Badge></TableCell>
                             <TableCell className={cn("text-right", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
                                 {t.type === 'expense' ? '-' : '+'}
@@ -758,5 +758,7 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+    
 
     
