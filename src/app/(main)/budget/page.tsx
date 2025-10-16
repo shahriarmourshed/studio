@@ -441,7 +441,7 @@ export default function BudgetPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4 px-4 sm:px-0">
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Planned Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">Planned Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
              <CardDescription>
               {getSymbol()}{totalPlannedExpenses.toLocaleString()} planned expenses out of {getSymbol()}{totalPlannedIncome.toLocaleString()} planned income
             </CardDescription>
@@ -451,15 +451,15 @@ export default function BudgetPage() {
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
                     <p className="text-sm text-muted-foreground">Planned Income</p>
-                    <p className="text-2xl font-bold text-green-500">{getSymbol()}{totalPlannedIncome.toLocaleString()}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-500">{getSymbol()}{totalPlannedIncome.toLocaleString()}</p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Planned Expenses</p>
-                    <p className="text-2xl font-bold text-red-500">{getSymbol()}{totalPlannedExpenses.toLocaleString()}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-red-500">{getSymbol()}{totalPlannedExpenses.toLocaleString()}</p>
                 </div>
                  <div>
                     <p className="text-sm text-muted-foreground">Planned Savings</p>
-                    <p className="text-2xl font-bold text-primary">{getSymbol()}{plannedSavings.toLocaleString()}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary">{getSymbol()}{plannedSavings.toLocaleString()}</p>
                 </div>
             </div>
           </CardContent>
@@ -761,5 +761,7 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
 
     
