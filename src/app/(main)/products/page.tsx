@@ -203,22 +203,22 @@ export default function ProductsPage() {
                 </DialogHeader>
                 <form onSubmit={handleAddProduct}>
                 <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">Name</Label>
-                    <Input id="name" placeholder="e.g., Basmati Rice" className="col-span-3" value={newProductName} onChange={e => setNewProductName(e.target.value)} required />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-left sm:text-right">Name</Label>
+                    <Input id="name" placeholder="e.g., Basmati Rice" className="col-span-1 sm:col-span-3" value={newProductName} onChange={e => setNewProductName(e.target.value)} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="quantity" className="text-right">Purchased</Label>
-                    <Input id="quantity" type="number" placeholder="e.g., 25" className="col-span-3" value={newProductQuantity} onChange={e => setNewProductQuantity(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="quantity" className="text-left sm:text-right">Purchased</Label>
+                    <Input id="quantity" type="number" placeholder="e.g., 25" className="col-span-1 sm:col-span-3" value={newProductQuantity} onChange={e => setNewProductQuantity(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="currentStock" className="text-right">Current Stock</Label>
-                    <Input id="currentStock" type="number" placeholder="e.g., 20" className="col-span-3" value={newProductCurrentStock} onChange={e => setNewProductCurrentStock(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="currentStock" className="text-left sm:text-right">Current Stock</Label>
+                    <Input id="currentStock" type="number" placeholder="e.g., 20" className="col-span-1 sm:col-span-3" value={newProductCurrentStock} onChange={e => setNewProductCurrentStock(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="unit" className="text-right">Unit</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="unit" className="text-left sm:text-right">Unit</Label>
                     <Select value={newProductUnit} onValueChange={(value: Product['unit']) => setNewProductUnit(value)}>
-                    <SelectTrigger className="col-span-3">
+                    <SelectTrigger className="col-span-1 sm:col-span-3">
                         <SelectValue placeholder="Select a unit" />
                     </SelectTrigger>
                     <SelectContent>
@@ -238,18 +238,18 @@ export default function ProductsPage() {
                     </SelectContent>
                     </Select>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="price" className="text-right">Price ({getSymbol()})</Label>
-                    <Input id="price" type="number" placeholder="e.g., 2500" className="col-span-3" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} required />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="price" className="text-left sm:text-right">Price ({getSymbol()})</Label>
+                    <Input id="price" type="number" placeholder="e.g., 2500" className="col-span-1 sm:col-span-3" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="purchaseDate" className="text-right">Purchase Date</Label>
-                    <Input id="purchaseDate" type="date" className="col-span-3" value={newProductPurchaseDate} onChange={e => setNewProductPurchaseDate(e.target.value)} required />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="purchaseDate" className="text-left sm:text-right">Purchase Date</Label>
+                    <Input id="purchaseDate" type="date" className="col-span-1 sm:col-span-3" value={newProductPurchaseDate} onChange={e => setNewProductPurchaseDate(e.target.value)} required />
                 </div>
 
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Consumption</Label>
-                    <div className="col-span-3 grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label className="text-left sm:text-right">Consumption</Label>
+                    <div className="col-span-1 sm:col-span-3 grid grid-cols-2 gap-2">
                         <Select value={newProductConsumptionPeriod} onValueChange={(v) => setNewProductConsumptionPeriod(v as Product['consumptionPeriod'])}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Period" />
@@ -268,9 +268,9 @@ export default function ProductsPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="lowStockThreshold" className="text-right">Low Stock Alert</Label>
-                    <div className="col-span-3 relative">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="lowStockThreshold" className="text-left sm:text-right">Low Stock Alert</Label>
+                    <div className="col-span-1 sm:col-span-3 relative">
                          <Input id="lowStockThreshold" type="number" placeholder="e.g., 5" className="pr-12" value={newProductLowStockThreshold} onChange={e => setNewProductLowStockThreshold(e.target.value)} />
                          <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{newProductUnit}</span>
                     </div>
@@ -286,15 +286,15 @@ export default function ProductsPage() {
       
       <div className="px-4 sm:px-0">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Product Name</TableHead>
                   <TableHead className="text-center">Current Stock</TableHead>
-                  <TableHead className="text-center">Last Purchase</TableHead>
-                  <TableHead className="text-center">Purchase Date</TableHead>
-                  <TableHead className="text-center">Consumption</TableHead>
+                  <TableHead className="text-center hidden sm:table-cell">Last Purchase</TableHead>
+                  <TableHead className="text-center hidden md:table-cell">Purchase Date</TableHead>
+                  <TableHead className="text-center hidden lg:table-cell">Consumption</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -306,11 +306,11 @@ export default function ProductsPage() {
                     <TableCell className="text-center">
                       {product.currentStock.toFixed(2)} <Badge variant="outline">{product.unit}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden sm:table-cell">
                       {product.quantity} <Badge variant="secondary">{product.unit}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">{product.purchaseDate}</TableCell>
-                     <TableCell className="text-center">{renderConsumptionInfo(product)}</TableCell>
+                    <TableCell className="text-center hidden md:table-cell">{product.purchaseDate}</TableCell>
+                     <TableCell className="text-center hidden lg:table-cell">{renderConsumptionInfo(product)}</TableCell>
                     <TableCell className="text-right">{getSymbol()}{convert(product.price).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
@@ -360,22 +360,22 @@ export default function ProductsPage() {
             </DialogHeader>
             <form onSubmit={handleUpdateProduct}>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-name" className="text-right">Name</Label>
-                <Input id="edit-name" className="col-span-3" value={editProductName} onChange={e => setEditProductName(e.target.value)} required />
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-name" className="text-left sm:text-right">Name</Label>
+                <Input id="edit-name" className="col-span-1 sm:col-span-3" value={editProductName} onChange={e => setEditProductName(e.target.value)} required />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-quantity" className="text-right">Last Purchase</Label>
-                <Input id="edit-quantity" type="number" className="col-span-3" value={editProductQuantity} onChange={e => setEditProductQuantity(e.target.value)} required/>
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-quantity" className="text-left sm:text-right">Last Purchase</Label>
+                <Input id="edit-quantity" type="number" className="col-span-1 sm:col-span-3" value={editProductQuantity} onChange={e => setEditProductQuantity(e.target.value)} required/>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-currentStock" className="text-right">Current Stock</Label>
-                <Input id="edit-currentStock" type="number" className="col-span-3" value={editProductCurrentStock} onChange={e => setEditProductCurrentStock(e.target.value)} required/>
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-currentStock" className="text-left sm:text-right">Current Stock</Label>
+                <Input id="edit-currentStock" type="number" className="col-span-1 sm:col-span-3" value={editProductCurrentStock} onChange={e => setEditProductCurrentStock(e.target.value)} required/>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-unit" className="text-right">Unit</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-unit" className="text-left sm:text-right">Unit</Label>
                 <Select value={editProductUnit} onValueChange={(value: Product['unit']) => setEditProductUnit(value)}>
-                  <SelectTrigger className="col-span-3">
+                  <SelectTrigger className="col-span-1 sm:col-span-3">
                     <SelectValue placeholder="Select a unit" />
                   </SelectTrigger>
                   <SelectContent>
@@ -395,17 +395,17 @@ export default function ProductsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-price" className="text-right">Price ({getSymbol()})</Label>
-                <Input id="edit-price" type="number" className="col-span-3" value={editProductPrice} onChange={e => setEditProductPrice(e.target.value)} required />
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-price" className="text-left sm:text-right">Price ({getSymbol()})</Label>
+                <Input id="edit-price" type="number" className="col-span-1 sm:col-span-3" value={editProductPrice} onChange={e => setEditProductPrice(e.target.value)} required />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-purchaseDate" className="text-right">Purchase Date</Label>
-                <Input id="edit-purchaseDate" type="date" className="col-span-3" value={editProductPurchaseDate} onChange={e => setEditProductPurchaseDate(e.target.value)} required />
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-purchaseDate" className="text-left sm:text-right">Purchase Date</Label>
+                <Input id="edit-purchaseDate" type="date" className="col-span-1 sm:col-span-3" value={editProductPurchaseDate} onChange={e => setEditProductPurchaseDate(e.target.value)} required />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Consumption</Label>
-                 <div className="col-span-3 grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label className="text-left sm:text-right">Consumption</Label>
+                 <div className="col-span-1 sm:col-span-3 grid grid-cols-2 gap-2">
                     <Select value={editProductConsumptionPeriod} onValueChange={(v) => setEditProductConsumptionPeriod(v as Product['consumptionPeriod'])}>
                         <SelectTrigger>
                             <SelectValue placeholder="Period" />
@@ -423,9 +423,9 @@ export default function ProductsPage() {
                     </div>
                 </div>
               </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-lowStockThreshold" className="text-right">Low Stock Alert</Label>
-                    <div className="col-span-3 relative">
+               <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-lowStockThreshold" className="text-left sm:text-right">Low Stock Alert</Label>
+                    <div className="col-span-1 sm:col-span-3 relative">
                          <Input id="edit-lowStockThreshold" type="number" placeholder="e.g., 5" className="pr-12" value={editProductLowStockThreshold} onChange={e => setEditProductLowStockThreshold(e.target.value)} />
                          <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{editProductUnit}</span>
                     </div>
@@ -439,3 +439,5 @@ export default function ProductsPage() {
     </div>
   );
 }
+
+    

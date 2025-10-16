@@ -219,35 +219,35 @@ export default function FamilyPage() {
                 </DialogHeader>
                 <form onSubmit={handleAddMember} className="flex-1 overflow-y-auto">
                     <div className="grid gap-4 py-4 px-1">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">Name</Label>
-                        <Input id="name" placeholder="e.g., John Doe" className="col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-left sm:text-right">Name</Label>
+                        <Input id="name" placeholder="e.g., John Doe" className="col-span-1 sm:col-span-3" value={newMemberName} onChange={e => setNewMemberName(e.target.value)} required />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="birthday" className="text-right">Birthday</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                            <Label htmlFor="birthday" className="text-left sm:text-right">Birthday</Label>
                             <Input
                                 id="birthday"
                                 type="date"
-                                className="col-span-3"
+                                className="col-span-1 sm:col-span-3"
                                 value={newMemberBirthday}
                                 onChange={e => setNewMemberBirthday(e.target.value)}
                                 required
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="height-feet" className="text-right">Height</Label>
-                            <div className="col-span-3 grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                            <Label htmlFor="height-feet" className="text-left sm:text-right">Height</Label>
+                            <div className="col-span-1 sm:col-span-3 grid grid-cols-2 gap-2">
                                 <Input id="height-feet" type="number" placeholder="Feet" value={newMemberHeightFeet} onChange={e => setNewMemberHeightFeet(e.target.value)} required />
                                 <Input id="height-inches" type="number" placeholder="Inches" value={newMemberHeightInches} onChange={e => setNewMemberHeightInches(e.target.value)} />
                             </div>
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="weight" className="text-right">Weight (kg)</Label>
-                            <Input id="weight" type="number" placeholder="e.g., 70" className="col-span-3" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                            <Label htmlFor="weight" className="text-left sm:text-right">Weight (kg)</Label>
+                            <Input id="weight" type="number" placeholder="e.g., 70" className="col-span-1 sm:col-span-3" value={newMemberWeight} onChange={e => setNewMemberWeight(e.target.value)} required />
                         </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                          <Label className="text-right pt-2">Avatar</Label>
-                          <div className="col-span-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                          <Label className="text-left sm:text-right pt-2">Avatar</Label>
+                          <div className="col-span-1 sm:col-span-3">
                               <div className="grid grid-cols-5 gap-2 mb-2">
                                   {avatars.avatars.map(avatar => (
                                       <button
@@ -264,22 +264,22 @@ export default function FamilyPage() {
                               <Input id="avatar-url" placeholder="https://..." className="mt-1" value={newMemberAvatar} onChange={e => setNewMemberAvatar(e.target.value)} />
                           </div>
                         </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                        <Label htmlFor="health" className="text-right pt-2">Health Conditions</Label>
-                        <Textarea id="health" placeholder="e.g., High blood pressure" className="col-span-3" value={newMemberHealth} onChange={e => setNewMemberHealth(e.target.value)} />
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                        <Label htmlFor="health" className="text-left sm:text-right pt-2">Health Conditions</Label>
+                        <Textarea id="health" placeholder="e.g., High blood pressure" className="col-span-1 sm:col-span-3" value={newMemberHealth} onChange={e => setNewMemberHealth(e.target.value)} />
                         </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                        <Label htmlFor="diet" className="text-right pt-2">Dietary Restrictions</Label>
-                        <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                        <Label htmlFor="diet" className="text-left sm:text-right pt-2">Dietary Restrictions</Label>
+                        <Textarea id="diet" placeholder="e.g., Vegetarian, nut allergy" className="col-span-1 sm:col-span-3" value={newMemberDiet} onChange={e => setNewMemberDiet(e.target.value)} />
                         </div>
                         <Separator className="my-2" />
-                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="event-name" className="text-right">Special Event Name</Label>
-                            <Input id="event-name" placeholder="e.g., Anniversary" className="col-span-3" value={newEventName} onChange={e => setNewEventName(e.target.value)} />
+                         <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                            <Label htmlFor="event-name" className="text-left sm:text-right">Special Event Name</Label>
+                            <Input id="event-name" placeholder="e.g., Anniversary" className="col-span-1 sm:col-span-3" value={newEventName} onChange={e => setNewEventName(e.target.value)} />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="event-date" className="text-right">Special Event Date</Label>
-                            <Input id="event-date" type="date" className="col-span-3" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} />
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                            <Label htmlFor="event-date" className="text-left sm:text-right">Special Event Date</Label>
+                            <Input id="event-date" type="date" className="col-span-1 sm:col-span-3" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} />
                         </div>
                     </div>
                   <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
@@ -364,35 +364,35 @@ export default function FamilyPage() {
             </DialogHeader>
             <form onSubmit={handleUpdateMember} className="flex-1 overflow-y-auto">
               <div className="grid gap-4 py-4 px-1">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="edit-name" className="text-right">Name</Label>
-                  <Input id="edit-name" className="col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-name" className="text-left sm:text-right">Name</Label>
+                  <Input id="edit-name" className="col-span-1 sm:col-span-3" value={editMemberName} onChange={e => setEditMemberName(e.target.value)} required />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-birthday" className="text-right">Birthday</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-birthday" className="text-left sm:text-right">Birthday</Label>
                      <Input
                         id="edit-birthday"
                         type="date"
-                        className="col-span-3"
+                        className="col-span-1 sm:col-span-3"
                         value={editMemberBirthday}
                         onChange={e => setEditMemberBirthday(e.target.value)}
                         required
                     />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-height-feet" className="text-right">Height</Label>
-                    <div className="col-span-3 grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-height-feet" className="text-left sm:text-right">Height</Label>
+                    <div className="col-span-1 sm:col-span-3 grid grid-cols-2 gap-2">
                         <Input id="edit-height-feet" type="number" placeholder="Feet" value={editMemberHeightFeet} onChange={e => setEditMemberHeightFeet(e.target.value)} required />
                         <Input id="edit-height-inches" type="number" placeholder="Inches" value={editMemberHeightInches} onChange={e => setEditMemberHeightInches(e.target.value)} />
                     </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-weight" className="text-right">Weight (kg)</Label>
-                     <Input id="edit-weight" type="number" placeholder="e.g., 70" className="col-span-3" value={editMemberWeight} onChange={e => setEditMemberWeight(e.target.value)} required />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-weight" className="text-left sm:text-right">Weight (kg)</Label>
+                     <Input id="edit-weight" type="number" placeholder="e.g., 70" className="col-span-1 sm:col-span-3" value={editMemberWeight} onChange={e => setEditMemberWeight(e.target.value)} required />
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                  <Label className="text-right pt-2">Avatar</Label>
-                  <div className="col-span-3">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                  <Label className="text-left sm:text-right pt-2">Avatar</Label>
+                  <div className="col-span-1 sm:col-span-3">
                       <div className="grid grid-cols-5 gap-2 mb-2">
                           {avatars.avatars.map(avatar => (
                               <button
@@ -409,22 +409,22 @@ export default function FamilyPage() {
                       <Input id="edit-avatar-url" placeholder="https://..." className="mt-1" value={editMemberAvatar} onChange={e => setEditMemberAvatar(e.target.value)} />
                   </div>
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="edit-health" className="text-right pt-2">Health Conditions</Label>
-                  <Textarea id="edit-health" className="col-span-3" value={editMemberHealth} onChange={e => setEditMemberHealth(e.target.value)} />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                  <Label htmlFor="edit-health" className="text-left sm:text-right pt-2">Health Conditions</Label>
+                  <Textarea id="edit-health" className="col-span-1 sm:col-span-3" value={editMemberHealth} onChange={e => setEditMemberHealth(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="edit-diet" className="text-right pt-2">Dietary Restrictions</Label>
-                  <Textarea id="edit-diet" className="col-span-3" value={editMemberDiet} onChange={e => setEditMemberDiet(e.target.value)} />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                  <Label htmlFor="edit-diet" className="text-left sm:text-right pt-2">Dietary Restrictions</Label>
+                  <Textarea id="edit-diet" className="col-span-1 sm:col-span-3" value={editMemberDiet} onChange={e => setEditMemberDiet(e.target.value)} />
                 </div>
                  <Separator className="my-2" />
-                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-event-name" className="text-right">Special Event Name</Label>
-                    <Input id="edit-event-name" placeholder="e.g., Anniversary" className="col-span-3" value={editEventName} onChange={e => setEditEventName(e.target.value)} />
+                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-event-name" className="text-left sm:text-right">Special Event Name</Label>
+                    <Input id="edit-event-name" placeholder="e.g., Anniversary" className="col-span-1 sm:col-span-3" value={editEventName} onChange={e => setEditEventName(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-event-date" className="text-right">Special Event Date</Label>
-                    <Input id="edit-event-date" type="date" className="col-span-3" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-event-date" className="text-left sm:text-right">Special Event Date</Label>
+                    <Input id="edit-event-date" type="date" className="col-span-1 sm:col-span-3" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} />
                 </div>
               </div>
               <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
@@ -438,3 +438,5 @@ export default function FamilyPage() {
     </div>
   );
 }
+
+    

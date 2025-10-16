@@ -193,7 +193,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-0 sm:px-4">
+    <div className="container mx-auto">
       <PageHeader title="Welcome to Family Manager!" subtitle="Your family's command center." />
       
       <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -250,17 +250,17 @@ export default function DashboardPage() {
                     </DialogHeader>
                     <form onSubmit={handleAddExpense}>
                     <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="description" className="text-right">Description</Label>
-                        <Input id="description" placeholder="e.g., Dinner Out" className="col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                        <Label htmlFor="description" className="text-left sm:text-right">Description</Label>
+                        <Input id="description" placeholder="e.g., Dinner Out" className="col-span-1 sm:col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="amount" className="text-right">Amount ({getSymbol()})</Label>
-                        <Input id="amount" type="number" placeholder="e.g., 1200" className="col-span-3" value={newExpenseAmount} onChange={e=>setNewExpenseAmount(e.target.value)} required/>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                        <Label htmlFor="amount" className="text-left sm:text-right">Amount ({getSymbol()})</Label>
+                        <Input id="amount" type="number" placeholder="e.g., 1200" className="col-span-1 sm:col-span-3" value={newExpenseAmount} onChange={e=>setNewExpenseAmount(e.target.value)} required/>
                     </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">Category</Label>
-                        <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                        <Label className="text-left sm:text-right pt-2">Category</Label>
+                        <ScrollArea className="h-32 w-full col-span-1 sm:col-span-3 rounded-md border">
                             <RadioGroup value={newExpenseCategory} onValueChange={(v) => setNewExpenseCategory(v)} className="p-4">
                                 {expenseCategories.map(category => (
                                     <div key={category.id} className="flex items-center space-x-2">
@@ -271,9 +271,9 @@ export default function DashboardPage() {
                             </RadioGroup>
                         </ScrollArea>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="date" className="text-right">Date</Label>
-                        <Input id="date" type="date" className="col-span-3" value={newExpenseDate} onChange={e=>setNewExpenseDate(e.target.value)} required/>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                        <Label htmlFor="date" className="text-left sm:text-right">Date</Label>
+                        <Input id="date" type="date" className="col-span-1 sm:col-span-3" value={newExpenseDate} onChange={e=>setNewExpenseDate(e.target.value)} required/>
                     </div>
                     <Button type="submit" className="w-full">Add Expense</Button>
                     </div>
@@ -398,3 +398,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

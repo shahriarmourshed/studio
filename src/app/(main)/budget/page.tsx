@@ -302,17 +302,17 @@ export default function BudgetPage() {
                 </DialogHeader>
                 <form onSubmit={handleAddIncome}>
                 <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="income-description" className="text-right">Description</Label>
-                    <Input id="income-description" placeholder="e.g., Monthly Salary" className="col-span-3" value={newIncomeDesc} onChange={e=>setNewIncomeDesc(e.target.value)} required/>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="income-description" className="text-left sm:text-right">Description</Label>
+                    <Input id="income-description" placeholder="e.g., Monthly Salary" className="col-span-1 sm:col-span-3" value={newIncomeDesc} onChange={e=>setNewIncomeDesc(e.target.value)} required/>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="income-amount" className="text-right">Budget Amount ({getSymbol()})</Label>
-                    <Input id="income-amount" type="number" placeholder="e.g., 50000" className="col-span-3" value={newIncomeAmount} onChange={e=>setNewIncomeAmount(e.target.value)} required/>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="income-amount" className="text-left sm:text-right">Budget Amount ({getSymbol()})</Label>
+                    <Input id="income-amount" type="number" placeholder="e.g., 50000" className="col-span-1 sm:col-span-3" value={newIncomeAmount} onChange={e=>setNewIncomeAmount(e.target.value)} required/>
                     </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">Category</Label>
-                        <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                        <Label className="text-left sm:text-right pt-2">Category</Label>
+                        <ScrollArea className="h-24 w-full col-span-1 sm:col-span-3 rounded-md border">
                             <RadioGroup value={newIncomeCategory} onValueChange={(v) => setNewIncomeCategory(v)} className="p-4">
                                 {incomeCategories.map(category => (
                                     <div key={category.id} className="flex items-center space-x-2">
@@ -323,19 +323,19 @@ export default function BudgetPage() {
                             </RadioGroup>
                         </ScrollArea>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="income-date" className="text-right">Date</Label>
-                    <Input id="income-date" type="date" className="col-span-3" value={newIncomeDate} onChange={e=>setNewIncomeDate(e.target.value)} required/>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="income-date" className="text-left sm:text-right">Date</Label>
+                    <Input id="income-date" type="date" className="col-span-1 sm:col-span-3" value={newIncomeDate} onChange={e=>setNewIncomeDate(e.target.value)} required/>
                     </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="income-recurrent" className="text-right">Recurrent</Label>
-                        <div className="col-span-3">
+                     <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                        <Label htmlFor="income-recurrent" className="text-left sm:text-right">Recurrent</Label>
+                        <div className="col-span-1 sm:col-span-3">
                             <Switch id="income-recurrent" checked={newIncomeRecurrent} onCheckedChange={setNewIncomeRecurrent} />
                         </div>
                     </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                        <Label htmlFor="income-notes" className="text-right pt-2">Short Note</Label>
-                        <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-3" value={newIncomeNotes} onChange={e => setNewIncomeNotes(e.target.value)} />
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                        <Label htmlFor="income-notes" className="text-left sm:text-right pt-2">Short Note</Label>
+                        <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={newIncomeNotes} onChange={e => setNewIncomeNotes(e.target.value)} />
                     </div>
                     <Button type="submit" className="w-full">Save Planned Income</Button>
                 </div>
@@ -359,17 +359,17 @@ export default function BudgetPage() {
                 </DialogHeader>
                 <form onSubmit={handleAddExpense}>
                 <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="description" className="text-right">Description</Label>
-                    <Input id="description" placeholder="e.g., Weekly Groceries" className="col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="description" className="text-left sm:text-right">Description</Label>
+                    <Input id="description" placeholder="e.g., Weekly Groceries" className="col-span-1 sm:col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="amount" className="text-right">Budget Amount ({getSymbol()})</Label>
-                    <Input id="amount" type="number" placeholder="e.g., 3500" className="col-span-3" value={newExpenseAmount} onChange={e=>setNewExpenseAmount(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="amount" className="text-left sm:text-right">Budget Amount ({getSymbol()})</Label>
+                    <Input id="amount" type="number" placeholder="e.g., 3500" className="col-span-1 sm:col-span-3" value={newExpenseAmount} onChange={e=>setNewExpenseAmount(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                    <Label className="text-right pt-2">Category</Label>
-                    <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                    <Label className="text-left sm:text-right pt-2">Category</Label>
+                    <ScrollArea className="h-32 w-full col-span-1 sm:col-span-3 rounded-md border">
                         <RadioGroup value={newExpenseCategory} onValueChange={(v) => setNewExpenseCategory(v)} className="p-4">
                             {expenseCategories.map(category => (
                                 <div key={category.id} className="flex items-center space-x-2">
@@ -380,19 +380,19 @@ export default function BudgetPage() {
                         </RadioGroup>
                     </ScrollArea>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="date" className="text-right">Date</Label>
-                    <Input id="date" type="date" className="col-span-3" value={newExpenseDate} onChange={e=>setNewExpenseDate(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="date" className="text-left sm:text-right">Date</Label>
+                    <Input id="date" type="date" className="col-span-1 sm:col-span-3" value={newExpenseDate} onChange={e=>setNewExpenseDate(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="recurrent" className="text-right">Recurrent</Label>
-                    <div className="col-span-3">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="recurrent" className="text-left sm:text-right">Recurrent</Label>
+                    <div className="col-span-1 sm:col-span-3">
                         <Switch id="recurrent" checked={newExpenseRecurrent} onCheckedChange={setNewExpenseRecurrent} />
                     </div>
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="expense-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                    <Label htmlFor="expense-notes" className="text-left sm:text-right pt-2">Short Note</Label>
+                    <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Save Planned Expense</Button>
                 </div>
@@ -516,15 +516,15 @@ export default function BudgetPage() {
           <CardHeader>
             <CardTitle>Planned Incomes</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Description</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Date</TableHead>
-                        <TableHead>Recurrent</TableHead>
-                        <TableHead>Note</TableHead>
+                        <TableHead className="hidden sm:table-cell">Recurrent</TableHead>
+                        <TableHead className="hidden md:table-cell">Note</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -540,8 +540,8 @@ export default function BudgetPage() {
                             <TableCell className="font-medium">{income.description}</TableCell>
                             <TableCell>{income.category}</TableCell>
                             <TableCell>{income.date}</TableCell>
-                            <TableCell>{income.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground">{income.notes}</TableCell>
+                            <TableCell className="hidden sm:table-cell">{income.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{income.notes}</TableCell>
                             <TableCell>{getPlanStatus(income)}</TableCell>
                             <TableCell className="text-right">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
@@ -584,15 +584,15 @@ export default function BudgetPage() {
           <CardHeader>
             <CardTitle>Planned Expenses</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
              <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Description</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Date</TableHead>
-                        <TableHead>Recurrent</TableHead>
-                        <TableHead>Note</TableHead>
+                        <TableHead className="hidden sm:table-cell">Recurrent</TableHead>
+                        <TableHead className="hidden md:table-cell">Note</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -608,8 +608,8 @@ export default function BudgetPage() {
                             <TableCell className="font-medium">{expense.description}</TableCell>
                             <TableCell>{expense.category}</TableCell>
                             <TableCell>{expense.date}</TableCell>
-                            <TableCell>{expense.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground">{expense.notes}</TableCell>
+                            <TableCell className="hidden sm:table-cell">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{expense.notes}</TableCell>
                             <TableCell>{getPlanStatus(expense)}</TableCell>
                             <TableCell className="text-right">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right">
@@ -657,17 +657,17 @@ export default function BudgetPage() {
             </DialogHeader>
             <form onSubmit={handleUpdateIncome}>
             <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-income-description" className="text-right">Description</Label>
-                <Input id="edit-income-description" className="col-span-3" value={editIncomeDesc} onChange={e=>setEditIncomeDesc(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-description" className="text-left sm:text-right">Description</Label>
+                <Input id="edit-income-description" className="col-span-1 sm:col-span-3" value={editIncomeDesc} onChange={e=>setEditIncomeDesc(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-income-amount" className="text-right">Budget Amount ({getSymbol()})</Label>
-                <Input id="edit-income-amount" type="number" className="col-span-3" value={editIncomeAmount} onChange={e=>setEditIncomeAmount(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-amount" className="text-left sm:text-right">Budget Amount ({getSymbol()})</Label>
+                <Input id="edit-income-amount" type="number" className="col-span-1 sm:col-span-3" value={editIncomeAmount} onChange={e=>setEditIncomeAmount(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                    <Label className="text-right pt-2">Category</Label>
-                    <ScrollArea className="h-24 w-full col-span-3 rounded-md border">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                    <Label className="text-left sm:text-right pt-2">Category</Label>
+                    <ScrollArea className="h-24 w-full col-span-1 sm:col-span-3 rounded-md border">
                         <RadioGroup value={editIncomeCategory} onValueChange={(v) => setEditIncomeCategory(v)} className="p-4">
                             {incomeCategories.map(category => (
                                 <div key={category.id} className="flex items-center space-x-2">
@@ -678,19 +678,19 @@ export default function BudgetPage() {
                         </RadioGroup>
                     </ScrollArea>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-income-date" className="text-right">Date</Label>
-                <Input id="edit-income-date" type="date" className="col-span-3" value={editIncomeDate} onChange={e=>setEditIncomeDate(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-income-date" className="text-left sm:text-right">Date</Label>
+                <Input id="edit-income-date" type="date" className="col-span-1 sm:col-span-3" value={editIncomeDate} onChange={e=>setEditIncomeDate(e.target.value)} required/>
                 </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-income-recurrent" className="text-right">Recurrent</Label>
-                    <div className="col-span-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-income-recurrent" className="text-left sm:text-right">Recurrent</Label>
+                    <div className="col-span-1 sm:col-span-3">
                         <Switch id="edit-income-recurrent" checked={editIncomeRecurrent} onCheckedChange={setEditIncomeRecurrent} />
                     </div>
                 </div>
-                 <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="edit-income-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="edit-income-notes" placeholder="Any details to remember..." className="col-span-3" value={editIncomeNotes} onChange={e => setEditIncomeNotes(e.target.value)} />
+                 <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                    <Label htmlFor="edit-income-notes" className="text-left sm:text-right pt-2">Short Note</Label>
+                    <Textarea id="edit-income-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={editIncomeNotes} onChange={e => setEditIncomeNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>
@@ -707,17 +707,17 @@ export default function BudgetPage() {
             </DialogHeader>
             <form onSubmit={handleUpdateExpense}>
             <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-exp-description" className="text-right">Description</Label>
-                    <Input id="edit-exp-description" className="col-span-3" value={editExpenseDesc} onChange={e=>setEditExpenseDesc(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-description" className="text-left sm:text-right">Description</Label>
+                    <Input id="edit-exp-description" className="col-span-1 sm:col-span-3" value={editExpenseDesc} onChange={e=>setEditExpenseDesc(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-exp-amount" className="text-right">Budget Amount ({getSymbol()})</Label>
-                    <Input id="edit-exp-amount" type="number" className="col-span-3" value={editExpenseAmount} onChange={e=>setEditExpenseAmount(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-amount" className="text-left sm:text-right">Budget Amount ({getSymbol()})</Label>
+                    <Input id="edit-exp-amount" type="number" className="col-span-1 sm:col-span-3" value={editExpenseAmount} onChange={e=>setEditExpenseAmount(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                    <Label className="text-right pt-2">Category</Label>
-                    <ScrollArea className="h-32 w-full col-span-3 rounded-md border">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                    <Label className="text-left sm:text-right pt-2">Category</Label>
+                    <ScrollArea className="h-32 w-full col-span-1 sm:col-span-3 rounded-md border">
                         <RadioGroup value={editExpenseCategory} onValueChange={(v) => setEditExpenseCategory(v)} className="p-4">
                             {expenseCategories.map(category => (
                                 <div key={category.id} className="flex items-center space-x-2">
@@ -728,19 +728,19 @@ export default function BudgetPage() {
                         </RadioGroup>
                     </ScrollArea>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-exp-date" className="text-right">Date</Label>
-                    <Input id="edit-exp-date" type="date" className="col-span-3" value={editExpenseDate} onChange={e=>setEditExpenseDate(e.target.value)} required/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-date" className="text-left sm:text-right">Date</Label>
+                    <Input id="edit-exp-date" type="date" className="col-span-1 sm:col-span-3" value={editExpenseDate} onChange={e=>setEditExpenseDate(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="edit-exp-recurrent" className="text-right">Recurrent</Label>
-                    <div className="col-span-3">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="edit-exp-recurrent" className="text-left sm:text-right">Recurrent</Label>
+                    <div className="col-span-1 sm:col-span-3">
                         <Switch id="edit-exp-recurrent" checked={editExpenseRecurrent} onCheckedChange={setEditExpenseRecurrent} />
                     </div>
                 </div>
-                 <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="edit-expense-notes" className="text-right pt-2">Short Note</Label>
-                    <Textarea id="edit-expense-notes" placeholder="Any details to remember..." className="col-span-3" value={editExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
+                 <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                    <Label htmlFor="edit-expense-notes" className="text-left sm:text-right pt-2">Short Note</Label>
+                    <Textarea id="edit-expense-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={editExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>
@@ -752,3 +752,5 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
