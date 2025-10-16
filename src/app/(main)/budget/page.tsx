@@ -408,12 +408,12 @@ export default function BudgetPage() {
       </PageHeader>
       
       <Card>
-        <CardHeader className="flex flex-wrap items-center justify-center gap-4">
+        <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h3 className="text-base font-semibold text-center min-w-24">{format(selectedDate, 'MMMM')}</h3>
+                <h3 className="text-lg font-semibold text-center min-w-24">{format(selectedDate, 'MMMM')}</h3>
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -521,14 +521,14 @@ export default function BudgetPage() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="hidden sm:table-cell">Recurrent</TableHead>
-                        <TableHead className="hidden md:table-cell">Note</TableHead>
-                        <TableHead className="text-center">Status</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="px-1 sm:px-2">Description</TableHead>
+                        <TableHead className="px-1 sm:px-2">Category</TableHead>
+                        <TableHead className="px-1 sm:px-2">Date</TableHead>
+                        <TableHead className="hidden sm:table-cell px-1 sm:px-2">Recurrent</TableHead>
+                        <TableHead className="hidden md:table-cell px-1 sm:px-2">Note</TableHead>
+                        <TableHead className="text-center px-1 sm:px-2">Status</TableHead>
+                        <TableHead className="text-right px-1 sm:px-2">Amount</TableHead>
+                        <TableHead className="text-right px-1 sm:px-2">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -538,14 +538,14 @@ export default function BudgetPage() {
                         </TableRow>
                     ) : plannedIncomes.map((income) => (
                         <TableRow key={income.id} className="text-xs sm:text-sm">
-                            <TableCell className="font-medium whitespace-normal px-1">{income.description}</TableCell>
-                            <TableCell className="px-1">{income.category}</TableCell>
-                            <TableCell className="px-1">{format(parseISO(income.date), 'dd/MM/yy')}</TableCell>
-                            <TableCell className="hidden sm:table-cell px-1">{income.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-1">{income.notes}</TableCell>
-                            <TableCell className="px-1"><div className="flex justify-center">{getPlanStatus(income)}</div></TableCell>
-                            <TableCell className="text-right px-1">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
-                            <TableCell className="text-right px-1">
+                            <TableCell className="font-medium whitespace-normal px-1 sm:px-2">{income.description}</TableCell>
+                            <TableCell className="px-1 sm:px-2">{income.category}</TableCell>
+                            <TableCell className="px-1 sm:px-2">{format(parseISO(income.date), 'dd/MM/yy')}</TableCell>
+                            <TableCell className="hidden sm:table-cell px-1 sm:px-2">{income.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-1 sm:px-2">{income.notes}</TableCell>
+                            <TableCell className="px-1 sm:px-2"><div className="flex justify-center">{getPlanStatus(income)}</div></TableCell>
+                            <TableCell className="text-right px-1 sm:px-2">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
+                            <TableCell className="text-right px-1 sm:px-2">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
                                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditIncomeClick(income)}>
                                         <Edit className="h-4 w-4"/>
@@ -589,14 +589,14 @@ export default function BudgetPage() {
              <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="hidden sm:table-cell">Recurrent</TableHead>
-                        <TableHead className="hidden md:table-cell">Note</TableHead>
-                        <TableHead className="text-center">Status</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="px-1 sm:px-2">Description</TableHead>
+                        <TableHead className="px-1 sm:px-2">Category</TableHead>
+                        <TableHead className="px-1 sm:px-2">Date</TableHead>
+                        <TableHead className="hidden sm:table-cell px-1 sm:px-2">Recurrent</TableHead>
+                        <TableHead className="hidden md:table-cell px-1 sm:px-2">Note</TableHead>
+                        <TableHead className="text-center px-1 sm:px-2">Status</TableHead>
+                        <TableHead className="text-right px-1 sm:px-2">Amount</TableHead>
+                        <TableHead className="text-right px-1 sm:px-2">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -606,14 +606,14 @@ export default function BudgetPage() {
                         </TableRow>
                     ) : plannedExpenses.map((expense) => (
                         <TableRow key={expense.id} className="text-xs sm:text-sm">
-                            <TableCell className="font-medium whitespace-normal px-1">{expense.description}</TableCell>
-                            <TableCell className="px-1">{expense.category}</TableCell>
-                            <TableCell className="px-1">{format(parseISO(expense.date), 'dd/MM/yy')}</TableCell>
-                            <TableCell className="hidden sm:table-cell px-1">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-1">{expense.notes}</TableCell>
-                            <TableCell className="px-1"><div className="flex justify-center">{getPlanStatus(expense)}</div></TableCell>
-                            <TableCell className="text-right px-1">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
-                            <TableCell className="text-right px-1">
+                            <TableCell className="font-medium whitespace-normal px-1 sm:px-2">{expense.description}</TableCell>
+                            <TableCell className="px-1 sm:px-2">{expense.category}</TableCell>
+                            <TableCell className="px-1 sm:px-2">{format(parseISO(expense.date), 'dd/MM/yy')}</TableCell>
+                            <TableCell className="hidden sm:table-cell px-1 sm:px-2">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-1 sm:px-2">{expense.notes}</TableCell>
+                            <TableCell className="px-1 sm:px-2"><div className="flex justify-center">{getPlanStatus(expense)}</div></TableCell>
+                            <TableCell className="text-right px-1 sm:px-2">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
+                            <TableCell className="text-right px-1 sm:px-2">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
                                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditExpenseClick(expense)}>
                                         <Edit className="h-4 w-4"/>
@@ -757,3 +757,5 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
