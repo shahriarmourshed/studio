@@ -462,7 +462,7 @@ export default function TransactionsPage() {
         </div>
       </PageHeader>
       
-      <div className="p-4 sm:p-0">
+      <div className="px-4 sm:px-0">
         <Card className="rounded-none sm:rounded-lg">
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
@@ -758,5 +758,7 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+    
 
     

@@ -288,7 +288,7 @@ export default function BudgetPage() {
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)} className="w-full">
+                <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)} className="w-full sm:w-auto">
                 <DollarSign className="mr-2 h-4 w-4" />
                 Add Planned Income
                 </Button>
@@ -345,7 +345,7 @@ export default function BudgetPage() {
 
             <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
             <DialogTrigger asChild>
-                <Button onClick={() => setIsExpenseDialogOpen(true)} className="w-full">
+                <Button onClick={() => setIsExpenseDialogOpen(true)} className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Planned Expense
                 </Button>
@@ -402,7 +402,7 @@ export default function BudgetPage() {
         </div>
       </PageHeader>
       
-      <div className="p-4 sm:p-0">
+      <div className="px-4 sm:px-0">
         <Card className="rounded-none sm:rounded-lg">
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
@@ -752,5 +752,7 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
 
     
