@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -194,15 +195,15 @@ export default function ProductsPage() {
                 Add Product
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
                 <DialogHeader>
                 <DialogTitle>Add a New Product</DialogTitle>
                 <DialogDescription>
                     Enter the details of the new product you need to track.
                 </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddProduct}>
-                <div className="grid gap-4 py-4">
+                <form onSubmit={handleAddProduct} className="flex-1 overflow-y-auto">
+                <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                     <Label htmlFor="name" className="text-left sm:text-right">Name</Label>
                     <Input id="name" placeholder="e.g., Basmati Rice" className="col-span-1 sm:col-span-3" value={newProductName} onChange={e => setNewProductName(e.target.value)} required />
@@ -276,8 +277,10 @@ export default function ProductsPage() {
                     </div>
                 </div>
                 
-                <Button type="submit" className="w-full">Save Product</Button>
                 </div>
+                 <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
+                    <Button type="submit" className="w-full">Save Product</Button>
+                  </DialogFooter>
                 </form>
             </DialogContent>
             </Dialog>
@@ -351,15 +354,15 @@ export default function ProductsPage() {
       
       {selectedProduct && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>Edit Product</DialogTitle>
               <DialogDescription>
                 Update the details of your product.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleUpdateProduct}>
-            <div className="grid gap-4 py-4">
+            <form onSubmit={handleUpdateProduct} className="flex-1 overflow-y-auto">
+            <div className="grid gap-4 py-4 px-1">
               <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-name" className="text-left sm:text-right">Name</Label>
                 <Input id="edit-name" className="col-span-1 sm:col-span-3" value={editProductName} onChange={e => setEditProductName(e.target.value)} required />
@@ -430,8 +433,10 @@ export default function ProductsPage() {
                          <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-muted-foreground">{editProductUnit}</span>
                     </div>
                 </div>
-              <Button type="submit" className="w-full">Save Changes</Button>
-            </div>
+              </div>
+              <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
+                <Button type="submit" className="w-full">Save Changes</Button>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -439,5 +444,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
-    
