@@ -587,10 +587,10 @@ export default function TransactionsPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="px-2 sm:px-4">Description</TableHead>
-                            <TableHead className="px-2 sm:px-4">Date</TableHead>
-                            <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
-                            <TableHead className="text-center px-2 sm:px-4">Actions</TableHead>
+                            <TableHead className="px-1 sm:px-2">Description</TableHead>
+                            <TableHead className="px-1 sm:px-2">Date</TableHead>
+                            <TableHead className="text-right px-1 sm:px-2">Amount</TableHead>
+                            <TableHead className="text-center px-1 sm:px-2">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -600,13 +600,13 @@ export default function TransactionsPage() {
                             </TableRow>
                         ) : plannedTransactionsForMonth.map(t => (
                             <TableRow key={t.id} className="text-xs sm:text-sm">
-                                <TableCell className="font-medium px-2 sm:px-4 whitespace-normal">
+                                <TableCell className="font-medium px-1 sm:px-2 whitespace-normal">
                                     {t.description}
                                     <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="ml-2 text-xs capitalize">{t.type}</Badge>
                                 </TableCell>
-                                <TableCell className="px-2 sm:px-4">{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
+                                <TableCell className="px-1 sm:px-2">{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
                                 <TableCell className={cn(
-                                    "text-right font-semibold px-2 sm:px-4",
+                                    "text-right font-semibold px-1 sm:px-2",
                                      t.type === 'expense' ? 'text-red-500' : 'text-green-500'
                                     )}
                                 >
@@ -614,8 +614,8 @@ export default function TransactionsPage() {
                                     {getSymbol()}
                                     {t.amount.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="text-center px-2 sm:px-4">
-                                    <div className="flex gap-0 sm:gap-0.5 justify-center">
+                                <TableCell className="text-center px-1 sm:px-2">
+                                    <div className="flex gap-0 sm:gap-0 justify-center">
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t)}><Edit className="w-4 h-4" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => completePlannedTransaction(t, t.type)}><Check className="w-4 h-4 text-green-500" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cancelPlannedTransaction(t, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
@@ -636,11 +636,11 @@ export default function TransactionsPage() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="px-2 sm:px-4">Description</TableHead>
-                        <TableHead className="px-2 sm:px-4">Category</TableHead>
-                        <TableHead className="px-2 sm:px-4">Date</TableHead>
-                        <TableHead className="px-2 sm:px-4 text-center">Status</TableHead>
-                        <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
+                        <TableHead className="px-1 sm:px-2">Description</TableHead>
+                        <TableHead className="px-1 sm:px-2">Category</TableHead>
+                        <TableHead className="px-1 sm:px-2">Date</TableHead>
+                        <TableHead className="px-1 sm:px-2 text-center">Status</TableHead>
+                        <TableHead className="text-right px-1 sm:px-2">Amount</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -649,14 +649,14 @@ export default function TransactionsPage() {
                             <TableCell colSpan={5} className="text-center">No transactions for this month.</TableCell>
                         </TableRow>
                     ) : allTransactionsForMonth.map((t) => (
-                        <TableRow key={t.id} className="text-[11px] sm:text-sm">
-                            <TableCell className="font-medium px-2 sm:px-4 whitespace-normal">{t.description}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{t.category}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{format(parseISO(t.date), 'dd/MM/yy')}</TableCell>
-                            <TableCell className="px-2 sm:px-4 text-center">
+                        <TableRow key={t.id} className="text-[10px] sm:text-sm">
+                            <TableCell className="font-medium px-1 sm:px-2 whitespace-normal">{t.description}</TableCell>
+                            <TableCell className="px-1 sm:px-2">{t.category}</TableCell>
+                            <TableCell className="px-1 sm:px-2">{format(parseISO(t.date), 'dd/MM/yy')}</TableCell>
+                            <TableCell className="px-1 sm:px-2 text-center">
                                 <div className="flex justify-center">{renderStatusIcon(t.status)}</div>
                             </TableCell>
-                            <TableCell className={cn("text-right px-2 sm:px-4", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
+                            <TableCell className={cn("text-right px-1 sm:px-2", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
                                 {t.type === 'expense' ? '-' : '+'}
                                 {getSymbol()}{t.amount.toLocaleString()}
                             </TableCell>
