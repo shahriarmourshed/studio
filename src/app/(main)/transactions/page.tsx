@@ -353,15 +353,15 @@ export default function TransactionsPage() {
                 Add Real Income
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
                 <DialogHeader>
                 <DialogTitle>Add Real Income</DialogTitle>
                 <DialogDescription>
                     Log a new completed income transaction.
                 </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddIncome}>
-                <div className="grid gap-4 py-4">
+                <form onSubmit={handleAddIncome} className="flex-1 overflow-y-auto">
+                <div className="grid gap-4 py-4 px-1">
                     <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                     <Label htmlFor="income-description" className="text-left sm:text-right">Description</Label>
                     <Input id="income-description" placeholder="e.g., Freelance Project" className="col-span-1 sm:col-span-3" value={newIncomeDesc} onChange={e=>setNewIncomeDesc(e.target.value)} required/>
@@ -397,6 +397,8 @@ export default function TransactionsPage() {
                         <Label htmlFor="income-notes" className="text-left sm:text-right pt-2">Short Note</Label>
                         <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={newIncomeNotes} onChange={e => setNewIncomeNotes(e.target.value)} />
                     </div>
+                </div>
+                <div className="sticky bottom-0 bg-background pt-4 border-t px-4">
                     <Button type="submit" className="w-full">Add Income</Button>
                 </div>
                 </form>
@@ -410,15 +412,15 @@ export default function TransactionsPage() {
                 Add Real Expense
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
                 <DialogHeader>
                 <DialogTitle>Add Real Expense</DialogTitle>
                 <DialogDescription>
                     Log a new completed expense transaction.
                 </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddExpense}>
-                <div className="grid gap-4 py-4">
+                <form onSubmit={handleAddExpense} className="flex-1 overflow-y-auto">
+                <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                     <Label htmlFor="description" className="text-left sm:text-right">Description</Label>
                     <Input id="description" placeholder="e.g., Dinner Out" className="col-span-1 sm:col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
@@ -454,7 +456,9 @@ export default function TransactionsPage() {
                     <Label htmlFor="expense-notes" className="text-left sm:text-right pt-2">Short Note</Label>
                     <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
                 </div>
-                <Button type="submit" className="w-full">Add Expense</Button>
+                </div>
+                <div className="sticky bottom-0 bg-background pt-4 border-t px-4">
+                    <Button type="submit" className="w-full">Add Expense</Button>
                 </div>
                 </form>
             </DialogContent>
@@ -573,30 +577,30 @@ export default function TransactionsPage() {
 
         <Card className="lg:col-span-4">
             <CardHeader><CardTitle>Manage Pre-planned Transactions</CardTitle></CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="px-2 sm:px-4">Description</TableHead>
-                            <TableHead className="px-2 sm:px-4">Date</TableHead>
-                            <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
-                            <TableHead className="text-center px-2 sm:px-4">Actions</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {plannedTransactionsForMonth.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center px-2 sm:px-4">No pending planned transactions for this month.</TableCell>
+                                <TableCell colSpan={4} className="text-center">No pending planned transactions for this month.</TableCell>
                             </TableRow>
                         ) : plannedTransactionsForMonth.map(t => (
-                            <TableRow key={t.id} className="text-xs sm:text-sm">
-                                <TableCell className="font-medium px-2 sm:px-4">
+                            <TableRow key={t.id}>
+                                <TableCell className="font-medium">
                                     <span className="truncate">{t.description}</span>
                                     <Badge variant={t.type === 'income' ? 'default': 'destructive'} className="ml-2 text-xs capitalize">{t.type}</Badge>
                                 </TableCell>
-                                <TableCell className="px-2 sm:px-4">{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
+                                <TableCell>{format(new Date(t.date), 'dd/MM/yy')}</TableCell>
                                 <TableCell className={cn(
-                                    "text-right font-semibold px-2 sm:px-4",
+                                    "text-right font-semibold",
                                      t.type === 'expense' ? 'text-red-500' : 'text-green-500'
                                     )}
                                 >
@@ -604,8 +608,8 @@ export default function TransactionsPage() {
                                     {getSymbol()}
                                     {t.amount.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="text-center px-1 sm:px-2">
-                                    <div className="flex gap-0 sm:gap-0.5 justify-center">
+                                <TableCell className="text-center">
+                                    <div className="flex gap-0.5 justify-center">
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEditClick(t)}><Edit className="w-4 h-4" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => completePlannedTransaction(t, t.type)}><Check className="w-4 h-4 text-green-500" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cancelPlannedTransaction(t, t.type)}><Ban className="w-4 h-4 text-red-500" /></Button>
@@ -622,29 +626,29 @@ export default function TransactionsPage() {
           <CardHeader>
             <CardTitle>All Transactions for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="px-2 sm:px-4">Description</TableHead>
-                        <TableHead className="px-2 sm:px-4">Category</TableHead>
-                        <TableHead className="px-2 sm:px-4">Date</TableHead>
-                        <TableHead className="px-2 sm:px-4">Status</TableHead>
-                        <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead className="hidden sm:table-cell">Category</TableHead>
+                        <TableHead className="hidden sm:table-cell">Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {allTransactionsForMonth.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={5} className="text-center px-2 sm:px-4">No transactions for this month.</TableCell>
+                            <TableCell colSpan={5} className="text-center">No transactions for this month.</TableCell>
                         </TableRow>
                     ) : allTransactionsForMonth.map((t) => (
-                        <TableRow key={t.id} className="text-xs sm:text-sm">
-                            <TableCell className="font-medium px-2 sm:px-4">{t.description}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{t.category}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{t.date}</TableCell>
-                            <TableCell className="px-2 sm:px-4"><Badge variant={getStatusVariant(t.status)}>{t.status}</Badge></TableCell>
-                            <TableCell className={cn("text-right px-2 sm:px-4", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
+                        <TableRow key={t.id}>
+                            <TableCell className="font-medium">{t.description}</TableCell>
+                            <TableCell className="hidden sm:table-cell">{t.category}</TableCell>
+                            <TableCell className="hidden sm:table-cell">{t.date}</TableCell>
+                            <TableCell><Badge variant={getStatusVariant(t.status)}>{t.status}</Badge></TableCell>
+                            <TableCell className={cn("text-right", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
                                 {t.type === 'expense' ? '-' : '+'}
                                 {getSymbol()}{t.amount.toLocaleString()}
                             </TableCell>
@@ -658,12 +662,12 @@ export default function TransactionsPage() {
 
        {selectedTransaction && selectedTransaction.type === 'income' && (
         <Dialog open={isEditIncomeDialogOpen} onOpenChange={setIsEditIncomeDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>Edit Planned Income</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleUpdateIncome}>
-            <div className="grid gap-4 py-4">
+            <form onSubmit={handleUpdateIncome} className="flex-1 overflow-y-auto">
+            <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-income-description" className="text-left sm:text-right">Description</Label>
                 <Input id="edit-income-description" className="col-span-1 sm:col-span-3" value={editIncomeDesc} onChange={e=>setEditIncomeDesc(e.target.value)} required/>
@@ -699,6 +703,8 @@ export default function TransactionsPage() {
                     <Label htmlFor="edit-income-notes" className="text-left sm:text-right pt-2">Short Note</Label>
                     <Textarea id="edit-income-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={editIncomeNotes} onChange={e => setEditIncomeNotes(e.target.value)} />
                 </div>
+            </div>
+            <div className="sticky bottom-0 bg-background pt-4 border-t px-4">
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>
             </form>
@@ -708,12 +714,12 @@ export default function TransactionsPage() {
 
       {selectedTransaction && selectedTransaction.type === 'expense' && (
         <Dialog open={isEditExpenseDialogOpen} onOpenChange={setIsEditExpenseDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>Edit Planned Expense</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleUpdateExpense}>
-            <div className="grid gap-4 py-4">
+            <form onSubmit={handleUpdateExpense} className="flex-1 overflow-y-auto">
+            <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                     <Label htmlFor="edit-exp-description" className="text-left sm:text-right">Description</Label>
                     <Input id="edit-exp-description" className="col-span-1 sm:col-span-3" value={editExpenseDesc} onChange={e=>setEditExpenseDesc(e.target.value)} required/>
@@ -748,6 +754,8 @@ export default function TransactionsPage() {
                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
                     <Label htmlFor="edit-expense-notes" className="text-left sm:text-right pt-2">Short Note</Label>                    <Textarea id="edit-expense-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={editExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
                 </div>
+            </div>
+            <div className="sticky bottom-0 bg-background pt-4 border-t px-4">
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>
             </form>
