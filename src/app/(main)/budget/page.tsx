@@ -547,15 +547,15 @@ export default function BudgetPage() {
                             <TableCell className="text-right px-1 sm:px-2">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right px-1 sm:px-2">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditIncomeClick(income)}>
-                                        <Edit className="h-4 w-4"/>
+                                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => handleEditIncomeClick(income)}>
+                                        <Edit className="h-3 w-3"/>
                                         <span className="sr-only">Edit</span>
                                     </Button>
 
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                                                <Trash2 className="h-4 w-4 text-destructive"/>
+                                            <Button variant="ghost" size="icon" className="h-5 w-5">
+                                                <Trash2 className="h-3 w-3 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
                                         </AlertDialogTrigger>
@@ -615,15 +615,15 @@ export default function BudgetPage() {
                             <TableCell className="text-right px-1 sm:px-2">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right px-1 sm:px-2">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditExpenseClick(expense)}>
-                                        <Edit className="h-4 w-4"/>
+                                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => handleEditExpenseClick(expense)}>
+                                        <Edit className="h-3 w-3"/>
                                         <span className="sr-only">Edit</span>
                                     </Button>
 
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                                                <Trash2 className="h-4 w-4 text-destructive"/>
+                                            <Button variant="ghost" size="icon" className="h-5 w-5">
+                                                <Trash2 className="h-3 w-3 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
                                         </AlertDialogTrigger>
