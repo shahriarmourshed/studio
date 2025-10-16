@@ -467,7 +467,7 @@ export default function BudgetPage() {
         
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-xl sm:text-2xl">
                     <span>Savings Goal</span>
                     <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)}>
                         <Edit className="h-4 w-4"/>
@@ -493,7 +493,7 @@ export default function BudgetPage() {
                     </form>
                 ) : (
                     <div className="text-center">
-                        <p className="text-3xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
                         {savingGoal > 0 && (
                             <p className="text-sm text-muted-foreground mt-1">
                                 {Math.max(0, (plannedSavings / savingGoal) * 100).toFixed(0)}% of your goal reached
@@ -509,7 +509,7 @@ export default function BudgetPage() {
 
          <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Planned Expense Breakdown</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">Planned Expense Breakdown</CardTitle>
             <CardDescription>How your money is planned to be spent.</CardDescription>
           </CardHeader>
           <CardContent className="h-64 px-0">
@@ -541,8 +541,8 @@ export default function BudgetPage() {
                             <TableCell colSpan={8} className="text-center py-4 text-sm text-muted-foreground">No income planned for this month.</TableCell>
                         </TableRow>
                     ) : plannedIncomes.map((income) => (
-                        <TableRow key={income.id} className="text-xs sm:text-sm">
-                            <TableCell className="font-medium px-1 sm:px-4">{income.description}</TableCell>
+                        <TableRow key={income.id} className="text-[10px] sm:text-sm">
+                            <TableCell className="font-medium px-1 sm:px-4 whitespace-normal">{income.description}</TableCell>
                             <TableCell className="px-1 sm:px-4">{income.category}</TableCell>
                             <TableCell className="px-1 sm:px-4">{format(parseISO(income.date), 'dd/MM/yy')}</TableCell>
                             <TableCell className="hidden sm:table-cell px-1 sm:px-4">{income.recurrent ? 'Yes' : 'No'}</TableCell>
@@ -609,8 +609,8 @@ export default function BudgetPage() {
                             <TableCell colSpan={8} className="text-center py-4 text-sm text-muted-foreground">No expenses planned for this month.</TableCell>
                         </TableRow>
                     ) : plannedExpenses.map((expense) => (
-                        <TableRow key={expense.id} className="text-xs sm:text-sm">
-                            <TableCell className="font-medium px-1 sm:px-4">{expense.description}</TableCell>
+                        <TableRow key={expense.id} className="text-[10px] sm:text-sm">
+                            <TableCell className="font-medium px-1 sm:px-4 whitespace-normal">{expense.description}</TableCell>
                             <TableCell className="px-1 sm:px-4">{expense.category}</TableCell>
                             <TableCell className="px-1 sm:px-4">{format(parseISO(expense.date), 'dd/MM/yy')}</TableCell>
                             <TableCell className="hidden sm:table-cell px-1 sm:px-4">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
@@ -761,5 +761,3 @@ export default function BudgetPage() {
     </div>
   );
 }
-
-    
