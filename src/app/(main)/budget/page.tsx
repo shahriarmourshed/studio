@@ -407,8 +407,8 @@ export default function BudgetPage() {
         </div>
       </PageHeader>
       
-      <div className="px-0 sm:px-4">
-        <Card className='rounded-none sm:rounded-lg'>
+      <div className="px-4 sm:px-0">
+        <Card>
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
@@ -439,15 +439,15 @@ export default function BudgetPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4 px-4 sm:px-0">
-        <Card className="lg:col-span-3">
+        <Card className="md:col-span-2 lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl">Planned Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">Planned Financial Overview</CardTitle>
              <CardDescription>
-              {getSymbol()}{totalPlannedExpenses.toLocaleString()} planned expenses out of {getSymbol()}{totalPlannedIncome.toLocaleString()} planned income
+              {format(selectedDate, 'MMMM yyyy')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Progress value={spentPercentage} className="w-full mb-2" />
+             <Progress value={spentPercentage} className="w-full mb-4" />
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
                     <p className="text-sm text-muted-foreground">Planned Income</p>
@@ -474,45 +474,43 @@ export default function BudgetPage() {
                         <span className="sr-only">Edit Goal</span>
                     </Button>
                 </CardTitle>
-                <CardDescription>Your savings target for {format(selectedDate, 'MMMM')}.</CardDescription>
+                <CardDescription>Target for {format(selectedDate, 'MMMM')}.</CardDescription>
             </CardHeader>
             <CardContent>
                 {isEditingGoal ? (
-                    <form onSubmit={handleGoalSubmit}>
-                        <div className="space-y-2">
-                            <Label htmlFor="saving-goal">New Goal ({getSymbol()})</Label>
-                            <Input 
-                                id="saving-goal"
-                                type="number" 
-                                value={newSavingGoal}
-                                onChange={(e) => setNewSavingGoal(e.target.value)}
-                                placeholder="e.g., 15000"
-                            />
-                            <Button type="submit" size="sm" className="w-full">Set Goal</Button>
-                        </div>
+                    <form onSubmit={handleGoalSubmit} className="space-y-2">
+                        <Label htmlFor="saving-goal">New Goal ({getSymbol()})</Label>
+                        <Input 
+                            id="saving-goal"
+                            type="number" 
+                            value={newSavingGoal}
+                            onChange={(e) => setNewSavingGoal(e.target.value)}
+                            placeholder="e.g., 15000"
+                        />
+                        <Button type="submit" size="sm" className="w-full">Set Goal</Button>
                     </form>
                 ) : (
                     <div className="text-center">
                         <p className="text-2xl sm:text-3xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
-                        {savingGoal > 0 && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                                {Math.max(0, (plannedSavings / savingGoal) * 100).toFixed(0)}% of your goal reached
-                            </p>
-                        )}
-                         <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                             Planned Savings: {getSymbol()}{plannedSavings.toLocaleString()}
                         </p>
+                        {savingGoal > 0 && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {Math.max(0, (plannedSavings / savingGoal) * 100).toFixed(0)}% of goal reached
+                            </p>
+                        )}
                     </div>
                 )}
             </CardContent>
         </Card>
 
-         <Card className="lg:col-span-2">
+         <Card className="md:col-span-2 lg:col-span-1">
           <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl">Planned Expense Breakdown</CardTitle>
-            <CardDescription>How your money is planned to be spent.</CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Expense Breakdown</CardTitle>
+            <CardDescription>How money is planned to be spent.</CardDescription>
           </CardHeader>
-          <CardContent className="h-64 px-0">
+          <CardContent className="h-64 sm:h-auto px-0">
             <ExpenseChart expenses={plannedExpenses} categories={expenseCategories} />
           </CardContent>
         </Card>
