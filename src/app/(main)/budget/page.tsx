@@ -402,8 +402,8 @@ export default function BudgetPage() {
         </div>
       </PageHeader>
       
-      <div>
-        <Card>
+      <div className='px-4 sm:px-0'>
+        <Card className='sm:rounded-lg'>
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
@@ -433,7 +433,7 @@ export default function BudgetPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4 px-4 sm:px-0">
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Planned Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>

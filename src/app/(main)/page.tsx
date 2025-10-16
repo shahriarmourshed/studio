@@ -179,7 +179,7 @@ export default function DashboardPage() {
 
   if (loading) {
       return (
-          <div className="container mx-auto px-0 sm:px-4">
+          <div className="container mx-auto">
               <PageHeader title="Welcome to Family Manager!" subtitle="Your family's command center." />
               <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <Skeleton className="lg:col-span-2 h-96" />
@@ -196,7 +196,7 @@ export default function DashboardPage() {
     <div className="container mx-auto">
       <PageHeader title="Welcome to Family Manager!" subtitle="Your family's command center." />
       
-      <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 px-4 sm:px-0 md:grid-cols-2 lg:grid-cols-4">
         <Card className="lg:col-span-2">
           <CardHeader className="flex-row items-center justify-between">
             <div>
@@ -399,4 +399,3 @@ export default function DashboardPage() {
   );
 }
 
-    
