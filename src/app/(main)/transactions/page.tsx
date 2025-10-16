@@ -583,7 +583,7 @@ export default function TransactionsPage() {
 
         <Card className="lg:col-span-4">
             <CardHeader><CardTitle>Manage Pre-planned Transactions</CardTitle></CardHeader>
-            <CardContent className="overflow-x-auto">
+            <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -649,7 +649,7 @@ export default function TransactionsPage() {
                             <TableCell colSpan={5} className="text-center">No transactions for this month.</TableCell>
                         </TableRow>
                     ) : allTransactionsForMonth.map((t) => (
-                        <TableRow key={t.id} className="text-xs sm:text-sm">
+                        <TableRow key={t.id} className="text-[11px] sm:text-sm">
                             <TableCell className="font-medium px-2 sm:px-4 whitespace-normal">{t.description}</TableCell>
                             <TableCell className="px-2 sm:px-4">{t.category}</TableCell>
                             <TableCell className="px-2 sm:px-4">{format(parseISO(t.date), 'dd/MM/yy')}</TableCell>
@@ -779,3 +779,6 @@ export default function TransactionsPage() {
 
     
 
+
+
+    
