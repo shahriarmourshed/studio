@@ -413,7 +413,7 @@ export default function BudgetPage() {
                 <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h3 className="text-md sm:text-lg font-semibold text-center min-w-36">{format(selectedDate, 'MMMM')}</h3>
+                <h3 className="text-base sm:text-md font-semibold text-center min-w-36">{format(selectedDate, 'MMMM')}</h3>
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -449,15 +449,15 @@ export default function BudgetPage() {
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
                     <p className="text-sm text-muted-foreground">Planned Income</p>
-                    <p className="text-lg sm:text-xl font-bold text-green-500">{getSymbol()}{totalPlannedIncome.toLocaleString()}</p>
+                    <p className="text-base sm:text-lg font-bold text-green-500">{getSymbol()}{totalPlannedIncome.toLocaleString()}</p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Planned Expenses</p>
-                    <p className="text-lg sm:text-xl font-bold text-red-500">{getSymbol()}{totalPlannedExpenses.toLocaleString()}</p>
+                    <p className="text-base sm:text-lg font-bold text-red-500">{getSymbol()}{totalPlannedExpenses.toLocaleString()}</p>
                 </div>
                  <div>
                     <p className="text-sm text-muted-foreground">Planned Savings</p>
-                    <p className="text-lg sm:text-xl font-bold text-primary">{getSymbol()}{plannedSavings.toLocaleString()}</p>
+                    <p className="text-base sm:text-lg font-bold text-primary">{getSymbol()}{plannedSavings.toLocaleString()}</p>
                 </div>
             </div>
           </CardContent>
@@ -489,7 +489,7 @@ export default function BudgetPage() {
                     </form>
                 ) : (
                     <div className="text-center">
-                        <p className="text-xl sm:text-2xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
+                        <p className="text-lg sm:text-xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
                         <p className="text-sm text-muted-foreground mt-1">
                             Planned Savings: {getSymbol()}{plannedSavings.toLocaleString()}
                         </p>
