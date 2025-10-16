@@ -408,12 +408,12 @@ export default function BudgetPage() {
       </PageHeader>
       
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <CardHeader className="flex flex-wrap items-center justify-center gap-4">
             <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h3 className="text-base sm:text-md font-semibold text-center min-w-36">{format(selectedDate, 'MMMM')}</h3>
+                <h3 className="text-base font-semibold text-center min-w-28">{format(selectedDate, 'MMMM')}</h3>
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -757,3 +757,5 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
