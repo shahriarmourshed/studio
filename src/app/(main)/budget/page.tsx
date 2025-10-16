@@ -408,12 +408,12 @@ export default function BudgetPage() {
       </PageHeader>
       
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <CardHeader className="flex flex-wrap items-center justify-center gap-4">
             <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h3 className="text-lg font-semibold text-center min-w-24">{format(selectedDate, 'MMMM')}</h3>
+                <h3 className="text-base font-semibold text-center min-w-28">{format(selectedDate, 'MMMM')}</h3>
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -537,7 +537,7 @@ export default function BudgetPage() {
                             <TableCell colSpan={8} className="text-center py-4 text-sm text-muted-foreground">No income planned for this month.</TableCell>
                         </TableRow>
                     ) : plannedIncomes.map((income) => (
-                        <TableRow key={income.id} className="text-xs sm:text-sm">
+                        <TableRow key={income.id} className="text-[10px] sm:text-sm">
                             <TableCell className="font-medium whitespace-normal px-1 sm:px-2">{income.description}</TableCell>
                             <TableCell className="px-1 sm:px-2">{income.category}</TableCell>
                             <TableCell className="px-1 sm:px-2">{format(parseISO(income.date), 'dd/MM/yy')}</TableCell>
@@ -547,15 +547,15 @@ export default function BudgetPage() {
                             <TableCell className="text-right px-1 sm:px-2">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right px-1 sm:px-2">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
-                                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => handleEditIncomeClick(income)}>
-                                        <Edit className="h-3 w-3"/>
+                                    <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => handleEditIncomeClick(income)}>
+                                        <Edit className="h-2.5 w-2.5"/>
                                         <span className="sr-only">Edit</span>
                                     </Button>
 
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-5 w-5">
-                                                <Trash2 className="h-3 w-3 text-destructive"/>
+                                            <Button variant="ghost" size="icon" className="h-4 w-4">
+                                                <Trash2 className="h-2.5 w-2.5 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
                                         </AlertDialogTrigger>
@@ -605,7 +605,7 @@ export default function BudgetPage() {
                             <TableCell colSpan={8} className="text-center py-4 text-sm text-muted-foreground">No expenses planned for this month.</TableCell>
                         </TableRow>
                     ) : plannedExpenses.map((expense) => (
-                        <TableRow key={expense.id} className="text-xs sm:text-sm">
+                        <TableRow key={expense.id} className="text-[10px] sm:text-sm">
                             <TableCell className="font-medium whitespace-normal px-1 sm:px-2">{expense.description}</TableCell>
                             <TableCell className="px-1 sm:px-2">{expense.category}</TableCell>
                             <TableCell className="px-1 sm:px-2">{format(parseISO(expense.date), 'dd/MM/yy')}</TableCell>
@@ -615,15 +615,15 @@ export default function BudgetPage() {
                             <TableCell className="text-right px-1 sm:px-2">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right px-1 sm:px-2">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
-                                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => handleEditExpenseClick(expense)}>
-                                        <Edit className="h-3 w-3"/>
+                                    <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => handleEditExpenseClick(expense)}>
+                                        <Edit className="h-2.5 w-2.5"/>
                                         <span className="sr-only">Edit</span>
                                     </Button>
 
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-5 w-5">
-                                                <Trash2 className="h-3 w-3 text-destructive"/>
+                                            <Button variant="ghost" size="icon" className="h-4 w-4">
+                                                <Trash2 className="h-2.5 w-2.5 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
                                         </AlertDialogTrigger>
