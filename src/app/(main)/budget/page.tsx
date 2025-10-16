@@ -413,7 +413,7 @@ export default function BudgetPage() {
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h3 className="text-base font-semibold text-center min-w-28">{format(selectedDate, 'MMMM')}</h3>
+                <h3 className="text-base font-semibold text-center min-w-24">{format(selectedDate, 'MMMM')}</h3>
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -537,7 +537,7 @@ export default function BudgetPage() {
                             <TableCell colSpan={8} className="text-center py-4 text-sm text-muted-foreground">No income planned for this month.</TableCell>
                         </TableRow>
                     ) : plannedIncomes.map((income) => (
-                        <TableRow key={income.id} className="text-[10px] sm:text-sm">
+                        <TableRow key={income.id} className="text-xs sm:text-sm">
                             <TableCell className="font-medium whitespace-normal px-1">{income.description}</TableCell>
                             <TableCell className="px-1">{income.category}</TableCell>
                             <TableCell className="px-1">{format(parseISO(income.date), 'dd/MM/yy')}</TableCell>
@@ -605,7 +605,7 @@ export default function BudgetPage() {
                             <TableCell colSpan={8} className="text-center py-4 text-sm text-muted-foreground">No expenses planned for this month.</TableCell>
                         </TableRow>
                     ) : plannedExpenses.map((expense) => (
-                        <TableRow key={expense.id} className="text-[10px] sm:text-sm">
+                        <TableRow key={expense.id} className="text-xs sm:text-sm">
                             <TableCell className="font-medium whitespace-normal px-1">{expense.description}</TableCell>
                             <TableCell className="px-1">{expense.category}</TableCell>
                             <TableCell className="px-1">{format(parseISO(expense.date), 'dd/MM/yy')}</TableCell>
