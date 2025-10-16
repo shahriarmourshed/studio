@@ -284,7 +284,7 @@ export default function BudgetPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-0">
+    <div className="container mx-auto px-4 sm:px-6">
       <PageHeader title="Budget Planner" subtitle="Plan your income and expenses.">
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
@@ -407,7 +407,7 @@ export default function BudgetPage() {
         </div>
       </PageHeader>
       
-      <div className="px-4 sm:px-0">
+      <div className="px-0 sm:px-0">
         <Card>
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
@@ -759,7 +759,5 @@ export default function BudgetPage() {
     </div>
   );
 }
-
-    
 
     
