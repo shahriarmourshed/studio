@@ -322,7 +322,7 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto p-0 sm:p-4">
       <PageHeader title="Transactions" subtitle="Log your actual income and expenses.">
          <div className="flex flex-col sm:flex-row gap-2 items-stretch">
             <AlertDialog>
@@ -462,8 +462,8 @@ export default function TransactionsPage() {
         </div>
       </PageHeader>
       
-      <div className="px-4 sm:px-0">
-        <Card>
+      <div className="p-4 sm:p-0">
+        <Card className="rounded-none sm:rounded-lg">
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
@@ -494,7 +494,7 @@ export default function TransactionsPage() {
       </div>
       
       <div className="p-4 sm:p-0 grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 rounded-none sm:rounded-lg">
           <CardHeader>
             <CardTitle>Actual Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
              <CardDescription>
@@ -519,7 +519,7 @@ export default function TransactionsPage() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="rounded-none sm:rounded-lg">
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                     <span>Savings Goal</span>
@@ -561,7 +561,7 @@ export default function TransactionsPage() {
             </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 rounded-none sm:rounded-lg">
           <CardHeader>
             <CardTitle>Actual Expense Breakdown</CardTitle>
             <CardDescription>How your money was actually spent.</CardDescription>
@@ -571,7 +571,7 @@ export default function TransactionsPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-4">
+        <Card className="lg:col-span-4 rounded-none sm:rounded-lg">
             <CardHeader><CardTitle>Manage Pre-planned Transactions</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
                 <Table>
@@ -618,7 +618,7 @@ export default function TransactionsPage() {
             </CardContent>
         </Card>
 
-        <Card className="lg:col-span-4">
+        <Card className="lg:col-span-4 rounded-none sm:rounded-lg">
           <CardHeader>
             <CardTitle>All Transactions for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
           </CardHeader>
@@ -758,5 +758,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    
