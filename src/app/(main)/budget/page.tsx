@@ -54,6 +54,7 @@ import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, add
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export default function BudgetPage() {
   const { getSymbol } = useCurrency();
@@ -402,7 +403,7 @@ export default function BudgetPage() {
         </div>
       </PageHeader>
       
-      <div className='px-4 sm:px-0'>
+      <div className="px-4 sm:px-0">
         <Card className='sm:rounded-lg'>
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
@@ -433,7 +434,7 @@ export default function BudgetPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4 px-4 sm:px-0">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Planned Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
@@ -520,32 +521,32 @@ export default function BudgetPage() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="hidden sm:table-cell">Recurrent</TableHead>
-                        <TableHead className="hidden md:table-cell">Note</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="px-2 sm:px-4">Description</TableHead>
+                        <TableHead className="px-2 sm:px-4">Category</TableHead>
+                        <TableHead className="px-2 sm:px-4">Date</TableHead>
+                        <TableHead className="hidden sm:table-cell px-2 sm:px-4">Recurrent</TableHead>
+                        <TableHead className="hidden md:table-cell px-2 sm:px-4">Note</TableHead>
+                        <TableHead className="px-2 sm:px-4">Status</TableHead>
+                        <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
+                        <TableHead className="text-right px-2 sm:px-4">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {plannedIncomes.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={8} className="text-center">No income planned for this month.</TableCell>
+                            <TableCell colSpan={8} className="text-center py-4 text-sm text-muted-foreground">No income planned for this month.</TableCell>
                         </TableRow>
                     ) : plannedIncomes.map((income) => (
-                        <TableRow key={income.id}>
-                            <TableCell className="font-medium">{income.description}</TableCell>
-                            <TableCell>{income.category}</TableCell>
-                            <TableCell>{income.date}</TableCell>
-                            <TableCell className="hidden sm:table-cell">{income.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{income.notes}</TableCell>
-                            <TableCell>{getPlanStatus(income)}</TableCell>
-                            <TableCell className="text-right">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
-                            <TableCell className="text-right">
-                                <div className="flex gap-2 justify-end">
+                        <TableRow key={income.id} className="text-xs sm:text-sm">
+                            <TableCell className="font-medium px-2 sm:px-4">{income.description}</TableCell>
+                            <TableCell className="px-2 sm:px-4">{income.category}</TableCell>
+                            <TableCell className="px-2 sm:px-4">{income.date}</TableCell>
+                            <TableCell className="hidden sm:table-cell px-2 sm:px-4">{income.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-2 sm:px-4">{income.notes}</TableCell>
+                            <TableCell className="px-2 sm:px-4">{getPlanStatus(income)}</TableCell>
+                            <TableCell className="text-right px-2 sm:px-4">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
+                            <TableCell className="text-right px-2 sm:px-4">
+                                <div className="flex gap-0 sm:gap-2 justify-end">
                                     <Button variant="ghost" size="icon" onClick={() => handleEditIncomeClick(income)}>
                                         <Edit className="h-4 w-4"/>
                                         <span className="sr-only">Edit</span>
@@ -588,32 +589,32 @@ export default function BudgetPage() {
              <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="hidden sm:table-cell">Recurrent</TableHead>
-                        <TableHead className="hidden md:table-cell">Note</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="px-2 sm:px-4">Description</TableHead>
+                        <TableHead className="px-2 sm:px-4">Category</TableHead>
+                        <TableHead className="px-2 sm:px-4">Date</TableHead>
+                        <TableHead className="hidden sm:table-cell px-2 sm:px-4">Recurrent</TableHead>
+                        <TableHead className="hidden md:table-cell px-2 sm:px-4">Note</TableHead>
+                        <TableHead className="px-2 sm:px-4">Status</TableHead>
+                        <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
+                        <TableHead className="text-right px-2 sm:px-4">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                      {plannedExpenses.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={8} className="text-center">No expenses planned for this month.</TableCell>
+                            <TableCell colSpan={8} className="text-center py-4 text-sm text-muted-foreground">No expenses planned for this month.</TableCell>
                         </TableRow>
                     ) : plannedExpenses.map((expense) => (
-                        <TableRow key={expense.id}>
-                            <TableCell className="font-medium">{expense.description}</TableCell>
-                            <TableCell>{expense.category}</TableCell>
-                            <TableCell>{expense.date}</TableCell>
-                            <TableCell className="hidden sm:table-cell">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{expense.notes}</TableCell>
-                            <TableCell>{getPlanStatus(expense)}</TableCell>
-                            <TableCell className="text-right">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
-                            <TableCell className="text-right">
-                                <div className="flex gap-2 justify-end">
+                        <TableRow key={expense.id} className="text-xs sm:text-sm">
+                            <TableCell className="font-medium px-2 sm:px-4">{expense.description}</TableCell>
+                            <TableCell className="px-2 sm:px-4">{expense.category}</TableCell>
+                            <TableCell className="px-2 sm:px-4">{expense.date}</TableCell>
+                            <TableCell className="hidden sm:table-cell px-2 sm:px-4">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-2 sm:px-4">{expense.notes}</TableCell>
+                            <TableCell className="px-2 sm:px-4">{getPlanStatus(expense)}</TableCell>
+                            <TableCell className="text-right px-2 sm:px-4">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
+                            <TableCell className="text-right px-2 sm:px-4">
+                                <div className="flex gap-0 sm:gap-2 justify-end">
                                     <Button variant="ghost" size="icon" onClick={() => handleEditExpenseClick(expense)}>
                                         <Edit className="h-4 w-4"/>
                                         <span className="sr-only">Edit</span>
@@ -752,5 +753,7 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
 
     
