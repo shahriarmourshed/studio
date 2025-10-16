@@ -21,7 +21,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import ExpenseChart from "@/components/budget/expense-chart";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, DollarSign, Edit, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { PlusCircle, DollarSign, Edit, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, XCircle, FilePen } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -50,7 +50,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Expense, Income } from '@/lib/types';
-import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, addYears, subYears } from 'date-fns';
+import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, addYears, subYears, parseISO } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -273,14 +273,14 @@ export default function BudgetPage() {
   const spentPercentage = totalPlannedIncome > 0 ? (totalPlannedExpenses / totalPlannedIncome) * 100 : 0;
   
   const getPlanStatus = (plan: Income | Expense) => {
-      const completed = expenses.find(t => t.plannedId === plan.id && t.status === 'completed') || incomes.find(t => t.plannedId === plan.id && t.status === 'completed');
-      const cancelled = expenses.find(t => t.plannedId === plan.id && t.status === 'cancelled') || incomes.find(t => t.plannedId === plan.id && t.status === 'cancelled');
+    const completed = expenses.find(t => t.plannedId === plan.id && t.status === 'completed') || incomes.find(t => t.plannedId === plan.id && t.status === 'completed');
+    const cancelled = expenses.find(t => t.plannedId === plan.id && t.status === 'cancelled') || incomes.find(t => t.plannedId === plan.id && t.status === 'cancelled');
 
-      if (completed) return <Badge variant="default">Completed</Badge>;
-      if (cancelled) return <Badge variant="destructive">Cancelled</Badge>;
-      if (plan.edited) return <Badge variant="secondary">Edited</Badge>;
+    if (completed) return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+    if (cancelled) return <XCircle className="h-5 w-5 text-red-500" />;
+    if (plan.edited) return <FilePen className="h-5 w-5 text-muted-foreground" />;
 
-      return null;
+    return null;
   }
 
   return (
@@ -530,7 +530,7 @@ export default function BudgetPage() {
                         <TableHead className="px-2 sm:px-4">Date</TableHead>
                         <TableHead className="hidden sm:table-cell px-2 sm:px-4">Recurrent</TableHead>
                         <TableHead className="hidden md:table-cell px-2 sm:px-4">Note</TableHead>
-                        <TableHead className="px-2 sm:px-4">Status</TableHead>
+                        <TableHead className="px-2 sm:px-4 text-center">Status</TableHead>
                         <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
                         <TableHead className="text-right px-2 sm:px-4">Actions</TableHead>
                     </TableRow>
@@ -544,10 +544,10 @@ export default function BudgetPage() {
                         <TableRow key={income.id} className="text-xs sm:text-sm">
                             <TableCell className="font-medium px-2 sm:px-4">{income.description}</TableCell>
                             <TableCell className="px-2 sm:px-4">{income.category}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{income.date}</TableCell>
+                            <TableCell className="px-2 sm:px-4">{format(parseISO(income.date), 'dd/MM/yy')}</TableCell>
                             <TableCell className="hidden sm:table-cell px-2 sm:px-4">{income.recurrent ? 'Yes' : 'No'}</TableCell>
                             <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-2 sm:px-4">{income.notes}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{getPlanStatus(income)}</TableCell>
+                            <TableCell className="px-2 sm:px-4"><div className="flex justify-center">{getPlanStatus(income)}</div></TableCell>
                             <TableCell className="text-right px-2 sm:px-4">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right px-2 sm:px-4">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
@@ -598,7 +598,7 @@ export default function BudgetPage() {
                         <TableHead className="px-2 sm:px-4">Date</TableHead>
                         <TableHead className="hidden sm:table-cell px-2 sm:px-4">Recurrent</TableHead>
                         <TableHead className="hidden md:table-cell px-2 sm:px-4">Note</TableHead>
-                        <TableHead className="px-2 sm:px-4">Status</TableHead>
+                        <TableHead className="px-2 sm:px-4 text-center">Status</TableHead>
                         <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
                         <TableHead className="text-right px-2 sm:px-4">Actions</TableHead>
                     </TableRow>
@@ -612,10 +612,10 @@ export default function BudgetPage() {
                         <TableRow key={expense.id} className="text-xs sm:text-sm">
                             <TableCell className="font-medium px-2 sm:px-4">{expense.description}</TableCell>
                             <TableCell className="px-2 sm:px-4">{expense.category}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{expense.date}</TableCell>
+                            <TableCell className="px-2 sm:px-4">{format(parseISO(expense.date), 'dd/MM/yy')}</TableCell>
                             <TableCell className="hidden sm:table-cell px-2 sm:px-4">{expense.recurrent ? 'Yes' : 'No'}</TableCell>
                             <TableCell className="text-xs text-muted-foreground hidden md:table-cell px-2 sm:px-4">{expense.notes}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{getPlanStatus(expense)}</TableCell>
+                            <TableCell className="px-2 sm:px-4"><div className="flex justify-center">{getPlanStatus(expense)}</div></TableCell>
                             <TableCell className="text-right px-2 sm:px-4">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right px-2 sm:px-4">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
