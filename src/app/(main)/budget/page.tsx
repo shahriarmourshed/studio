@@ -547,14 +547,14 @@ export default function BudgetPage() {
                             <TableCell className="text-right px-1">{getSymbol()}{income.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right px-1">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
-                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditIncomeClick(income)}>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditIncomeClick(income)}>
                                         <Edit className="h-4 w-4"/>
                                         <span className="sr-only">Edit</span>
                                     </Button>
 
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                                            <Button variant="ghost" size="icon" className="h-6 w-6">
                                                 <Trash2 className="h-4 w-4 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
@@ -615,14 +615,14 @@ export default function BudgetPage() {
                             <TableCell className="text-right px-1">{getSymbol()}{expense.amount.toLocaleString()}</TableCell>
                             <TableCell className="text-right px-1">
                                 <div className="flex gap-0 sm:gap-2 justify-end">
-                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditExpenseClick(expense)}>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditExpenseClick(expense)}>
                                         <Edit className="h-4 w-4"/>
                                         <span className="sr-only">Edit</span>
                                     </Button>
 
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                                            <Button variant="ghost" size="icon" className="h-6 w-6">
                                                 <Trash2 className="h-4 w-4 text-destructive"/>
                                                 <span className="sr-only">Delete</span>
                                             </Button>
