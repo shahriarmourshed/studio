@@ -12,7 +12,7 @@ export default function PageHeader({ title, subtitle, className, children }: Pag
   return (
     <header className={cn("px-4 pt-6 pb-4 sm:px-6", className)}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl font-headline">
             {title}
           </h1>
@@ -20,7 +20,7 @@ export default function PageHeader({ title, subtitle, className, children }: Pag
             <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
           )}
         </div>
-        {children && <div className="ml-auto sm:ml-4">{children}</div>}
+        {children && <div className="w-full sm:w-auto sm:ml-4">{children}</div>}
       </div>
     </header>
   );

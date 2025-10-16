@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -39,11 +40,11 @@ export default function BottomNav() {
                   ? 'text-primary'
                   : 'text-muted-foreground hover:text-primary',
                 // Adjust for more items
-                'px-1'
+                'px-1 py-1'
               )}
             >
               <Icon className="w-5 h-5 mb-1" />
-              <span className="text-xs">{label}</span>
+              <span className="text-xs text-center leading-tight">{label}</span>
             </Link>
           );
         })}
@@ -51,3 +52,5 @@ export default function BottomNav() {
     </nav>
   );
 }
+
+    

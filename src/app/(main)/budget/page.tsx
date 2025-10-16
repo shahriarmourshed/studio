@@ -285,10 +285,10 @@ export default function BudgetPage() {
   return (
     <div className="container mx-auto p-0 sm:p-4">
       <PageHeader title="Budget Planner" subtitle="Plan your income and expenses.">
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)}>
+                <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)} className="w-full">
                 <DollarSign className="mr-2 h-4 w-4" />
                 Add Planned Income
                 </Button>
@@ -345,7 +345,7 @@ export default function BudgetPage() {
 
             <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
             <DialogTrigger asChild>
-                <Button onClick={() => setIsExpenseDialogOpen(true)}>
+                <Button onClick={() => setIsExpenseDialogOpen(true)} className="w-full">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Planned Expense
                 </Button>
@@ -409,7 +409,7 @@ export default function BudgetPage() {
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <h3 className="text-lg font-semibold text-center w-36">{format(selectedDate, 'MMMM')}</h3>
+                    <h3 className="text-lg font-semibold text-center min-w-36">{format(selectedDate, 'MMMM')}</h3>
                      <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -752,3 +752,5 @@ export default function BudgetPage() {
     </div>
   );
 }
+
+    
