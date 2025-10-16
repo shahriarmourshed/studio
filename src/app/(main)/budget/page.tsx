@@ -441,7 +441,7 @@ export default function BudgetPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4 px-4 sm:px-0">
         <Card className="md:col-span-2 lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl">Planned Financial Overview</CardTitle>
+            <CardTitle className="text-xl">Planned Financial Overview</CardTitle>
              <CardDescription>
               {format(selectedDate, 'MMMM yyyy')}
             </CardDescription>
@@ -467,7 +467,7 @@ export default function BudgetPage() {
         
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center justify-between text-xl sm:text-2xl">
+                <CardTitle className="flex items-center justify-between text-xl">
                     <span>Savings Goal</span>
                     <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)}>
                         <Edit className="h-4 w-4"/>
@@ -507,10 +507,10 @@ export default function BudgetPage() {
 
          <Card className="md:col-span-2 lg:col-span-1">
           <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl">Expense Breakdown</CardTitle>
+            <CardTitle className="text-xl">Expense Breakdown</CardTitle>
             <CardDescription>How money is planned to be spent.</CardDescription>
           </CardHeader>
-          <CardContent className="h-64 sm:h-auto px-0">
+          <CardContent className="h-96 px-0">
             <ExpenseChart expenses={plannedExpenses} categories={expenseCategories} />
           </CardContent>
         </Card>
