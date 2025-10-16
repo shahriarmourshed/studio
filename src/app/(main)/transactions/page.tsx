@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -19,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign, ChevronsLeft, ChevronsRight, Trash2, ShieldAlert } from "lucide-react";
+import { Check, Edit, ChevronLeft, ChevronRight, Ban, PlusCircle, DollarSign, ChevronsLeft, ChevronsRight, Trash2, ShieldAlert, CheckCircle2, XCircle, FileClock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -313,11 +314,16 @@ export default function TransactionsPage() {
     }
   };
 
-  const getStatusVariant = (status: 'planned' | 'completed' | 'cancelled') => {
+  const renderStatusIcon = (status: 'planned' | 'completed' | 'cancelled') => {
     switch (status) {
-      case 'planned': return 'secondary';
-      case 'completed': return 'default';
-      case 'cancelled': return 'destructive';
+      case 'completed':
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      case 'cancelled':
+        return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'planned':
+        return <FileClock className="h-5 w-5 text-muted-foreground" />;
+      default:
+        return null;
     }
   };
 
@@ -466,7 +472,7 @@ export default function TransactionsPage() {
         </div>
       </PageHeader>
       
-      <div className="px-4 sm:px-0">
+      <div className="px-0 sm:px-4">
         <Card className='rounded-none sm:rounded-lg'>
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
@@ -626,14 +632,14 @@ export default function TransactionsPage() {
           <CardHeader>
             <CardTitle>All Transactions for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent>
             <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead className="px-2 sm:px-4">Description</TableHead>
                         <TableHead className="px-2 sm:px-4">Category</TableHead>
                         <TableHead className="px-2 sm:px-4">Date</TableHead>
-                        <TableHead className="px-2 sm:px-4">Status</TableHead>
+                        <TableHead className="px-2 sm:px-4 text-center">Status</TableHead>
                         <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -647,7 +653,9 @@ export default function TransactionsPage() {
                             <TableCell className="font-medium px-2 sm:px-4 whitespace-normal">{t.description}</TableCell>
                             <TableCell className="px-2 sm:px-4">{t.category}</TableCell>
                             <TableCell className="px-2 sm:px-4">{format(parseISO(t.date), 'dd/MM/yy')}</TableCell>
-                            <TableCell className="px-2 sm:px-4"><Badge variant={getStatusVariant(t.status)} className="px-1.5 py-0 text-[10px] sm:text-xs">{t.status}</Badge></TableCell>
+                            <TableCell className="px-2 sm:px-4 text-center">
+                                <div className="flex justify-center">{renderStatusIcon(t.status)}</div>
+                            </TableCell>
                             <TableCell className={cn("text-right px-2 sm:px-4", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
                                 {t.type === 'expense' ? '-' : '+'}
                                 {getSymbol()}{t.amount.toLocaleString()}
@@ -770,3 +778,4 @@ export default function TransactionsPage() {
     
 
     
+
