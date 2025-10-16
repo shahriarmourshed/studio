@@ -294,15 +294,15 @@ export default function BudgetPage() {
                 Add Planned Income
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
                 <DialogHeader>
                 <DialogTitle>Add Planned Income</DialogTitle>
                 <DialogDescription>
                     Log a new income source to your budget plan.
                 </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddIncome}>
-                <div className="grid gap-4 py-4">
+                <form onSubmit={handleAddIncome} className="flex-1 overflow-y-auto">
+                <div className="grid gap-4 py-4 px-1">
                     <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                     <Label htmlFor="income-description" className="text-left sm:text-right">Description</Label>
                     <Input id="income-description" placeholder="e.g., Monthly Salary" className="col-span-1 sm:col-span-3" value={newIncomeDesc} onChange={e=>setNewIncomeDesc(e.target.value)} required/>
@@ -338,6 +338,8 @@ export default function BudgetPage() {
                         <Label htmlFor="income-notes" className="text-left sm:text-right pt-2">Short Note</Label>
                         <Textarea id="income-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={newIncomeNotes} onChange={e => setNewIncomeNotes(e.target.value)} />
                     </div>
+                </div>
+                <div className="sticky bottom-0 bg-background pt-4 border-t px-4">
                     <Button type="submit" className="w-full">Save Planned Income</Button>
                 </div>
                 </form>
@@ -351,15 +353,15 @@ export default function BudgetPage() {
                 Add Planned Expense
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
                 <DialogHeader>
                 <DialogTitle>Add Planned Expense</DialogTitle>
                 <DialogDescription>
                     Log a new transaction to your budget plan.
                 </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddExpense}>
-                <div className="grid gap-4 py-4">
+                <form onSubmit={handleAddExpense} className="flex-1 overflow-y-auto">
+                <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                     <Label htmlFor="description" className="text-left sm:text-right">Description</Label>
                     <Input id="description" placeholder="e.g., Weekly Groceries" className="col-span-1 sm:col-span-3" value={newExpenseDesc} onChange={e=>setNewExpenseDesc(e.target.value)} required/>
@@ -395,7 +397,9 @@ export default function BudgetPage() {
                     <Label htmlFor="expense-notes" className="text-left sm:text-right pt-2">Short Note</Label>
                     <Textarea id="expense-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={newExpenseNotes} onChange={e => setNewExpenseNotes(e.target.value)} />
                 </div>
-                <Button type="submit" className="w-full">Save Planned Expense</Button>
+                </div>
+                 <div className="sticky bottom-0 bg-background pt-4 border-t px-4">
+                    <Button type="submit" className="w-full">Save Planned Expense</Button>
                 </div>
                 </form>
             </DialogContent>
@@ -403,7 +407,7 @@ export default function BudgetPage() {
         </div>
       </PageHeader>
       
-      <div>
+      <div className="px-0 sm:px-4">
         <Card className='rounded-none sm:rounded-lg'>
             <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
@@ -434,7 +438,7 @@ export default function BudgetPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4 px-4 sm:px-0">
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Planned Financial Overview for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
@@ -652,12 +656,12 @@ export default function BudgetPage() {
 
        {selectedIncome && (
         <Dialog open={isEditIncomeDialogOpen} onOpenChange={setIsEditIncomeDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>Edit Planned Income</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleUpdateIncome}>
-            <div className="grid gap-4 py-4">
+            <form onSubmit={handleUpdateIncome} className="flex-1 overflow-y-auto">
+            <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-income-description" className="text-left sm:text-right">Description</Label>
                 <Input id="edit-income-description" className="col-span-1 sm:col-span-3" value={editIncomeDesc} onChange={e=>setEditIncomeDesc(e.target.value)} required/>
@@ -693,6 +697,8 @@ export default function BudgetPage() {
                     <Label htmlFor="edit-income-notes" className="text-left sm:text-right pt-2">Short Note</Label>
                     <Textarea id="edit-income-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={editIncomeNotes} onChange={e => setEditIncomeNotes(e.target.value)} />
                 </div>
+            </div>
+            <div className="sticky bottom-0 bg-background pt-4 border-t px-4">
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>
             </form>
@@ -702,12 +708,12 @@ export default function BudgetPage() {
 
       {selectedExpense && (
         <Dialog open={isEditExpenseDialogOpen} onOpenChange={setIsEditExpenseDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
             <DialogHeader>
               <DialogTitle>Edit Planned Expense</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleUpdateExpense}>
-            <div className="grid gap-4 py-4">
+            <form onSubmit={handleUpdateExpense} className="flex-1 overflow-y-auto">
+            <div className="grid gap-4 py-4 px-1">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                     <Label htmlFor="edit-exp-description" className="text-left sm:text-right">Description</Label>
                     <Input id="edit-exp-description" className="col-span-1 sm:col-span-3" value={editExpenseDesc} onChange={e=>setEditExpenseDesc(e.target.value)} required/>
@@ -743,6 +749,8 @@ export default function BudgetPage() {
                     <Label htmlFor="edit-expense-notes" className="text-left sm:text-right pt-2">Short Note</Label>
                     <Textarea id="edit-expense-notes" placeholder="Any details to remember..." className="col-span-1 sm:col-span-3" value={editExpenseNotes} onChange={e => setEditExpenseNotes(e.target.value)} />
                 </div>
+            </div>
+            <div className="sticky bottom-0 bg-background pt-4 border-t px-4">
                 <Button type="submit" className="w-full">Save Changes</Button>
             </div>
             </form>
