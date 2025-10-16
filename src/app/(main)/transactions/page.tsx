@@ -324,10 +324,10 @@ export default function TransactionsPage() {
   return (
     <div className="container mx-auto p-0 sm:p-4">
       <PageHeader title="Transactions" subtitle="Log your actual income and expenses.">
-         <div className="flex flex-col sm:flex-row gap-2 items-stretch w-full sm:w-auto">
+         <div className="flex flex-col sm:flex-row gap-2 sm:items-center w-full sm:w-auto">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="w-full">
+                <Button variant="destructive" size="sm">
                   <ShieldAlert className="mr-2 h-4 w-4" />
                   Clear Month's Data
                 </Button>
@@ -758,5 +758,7 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+    
 
     
