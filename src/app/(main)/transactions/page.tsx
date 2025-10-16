@@ -44,7 +44,7 @@ import { Label } from "@/components/ui/label";
 import { useCurrency } from "@/context/currency-context";
 import { useData } from '@/context/data-context';
 import type { Expense, Income } from '@/lib/types';
-import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, addYears, subYears } from 'date-fns';
+import { format, getMonth, getYear, setMonth, setYear, addMonths, subMonths, addYears, subYears, parseISO } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -577,7 +577,7 @@ export default function TransactionsPage() {
 
         <Card className="lg:col-span-4">
             <CardHeader><CardTitle>Manage Pre-planned Transactions</CardTitle></CardHeader>
-            <CardContent className="overflow-x-auto">
+            <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -626,7 +626,7 @@ export default function TransactionsPage() {
           <CardHeader>
             <CardTitle>All Transactions for {format(selectedDate, 'MMMM yyyy')}</CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -646,8 +646,8 @@ export default function TransactionsPage() {
                         <TableRow key={t.id} className="text-xs sm:text-sm">
                             <TableCell className="font-medium px-2 sm:px-4 whitespace-normal">{t.description}</TableCell>
                             <TableCell className="px-2 sm:px-4">{t.category}</TableCell>
-                            <TableCell className="px-2 sm:px-4">{t.date}</TableCell>
-                            <TableCell className="px-2 sm:px-4"><Badge variant={getStatusVariant(t.status)}>{t.status}</Badge></TableCell>
+                            <TableCell className="px-2 sm:px-4">{format(parseISO(t.date), 'dd/MM/yy')}</TableCell>
+                            <TableCell className="px-2 sm:px-4"><Badge variant={getStatusVariant(t.status)} className="text-xs">{t.status}</Badge></TableCell>
                             <TableCell className={cn("text-right px-2 sm:px-4", t.type === 'expense' ? 'text-red-500' : 'text-green-500')}>
                                 {t.type === 'expense' ? '-' : '+'}
                                 {getSymbol()}{t.amount.toLocaleString()}
@@ -766,5 +766,7 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+    
 
     
