@@ -407,36 +407,34 @@ export default function BudgetPage() {
         </div>
       </PageHeader>
       
-      <div className="px-0 sm:px-0">
-        <Card>
-            <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <h3 className="text-md sm:text-lg font-semibold text-center min-w-36">{format(selectedDate, 'MMMM')}</h3>
-                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" onClick={() => setSelectedDate(subYears(selectedDate, 1))}>
-                        <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    <Input 
-                        type="number"
-                        className="w-24 text-center"
-                        value={getYear(selectedDate)}
-                        onChange={handleYearChange}
-                        aria-label="Year"
-                    />
-                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(addYears(selectedDate, 1))}>
-                        <ChevronsRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </CardHeader>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <h3 className="text-md sm:text-lg font-semibold text-center min-w-36">{format(selectedDate, 'MMMM')}</h3>
+                    <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => setSelectedDate(subYears(selectedDate, 1))}>
+                    <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Input 
+                    type="number"
+                    className="w-24 text-center"
+                    value={getYear(selectedDate)}
+                    onChange={handleYearChange}
+                    aria-label="Year"
+                />
+                    <Button variant="outline" size="icon" onClick={() => setSelectedDate(addYears(selectedDate, 1))}>
+                    <ChevronsRight className="h-4 w-4" />
+                </Button>
+            </div>
+        </CardHeader>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
         <Card className="lg:col-span-2">
@@ -759,5 +757,3 @@ export default function BudgetPage() {
     </div>
   );
 }
-
-    
