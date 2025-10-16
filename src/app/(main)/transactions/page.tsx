@@ -327,7 +327,7 @@ export default function TransactionsPage() {
          <div className="flex flex-col sm:flex-row gap-2 sm:items-center w-full sm:w-auto">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
+                <Button variant="destructive" size="sm" className="w-full sm:w-auto">
                   <ShieldAlert className="mr-2 h-4 w-4" />
                   Clear Month's Data
                 </Button>
@@ -348,7 +348,7 @@ export default function TransactionsPage() {
             </AlertDialog>
             <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)} className="w-full">
+                <Button variant="outline" onClick={() => setIsIncomeDialogOpen(true)} className="w-full sm:w-auto">
                 <DollarSign className="mr-2 h-4 w-4" />
                 Add Real Income
                 </Button>
@@ -405,7 +405,7 @@ export default function TransactionsPage() {
 
             <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
             <DialogTrigger asChild>
-                <Button onClick={() => setIsExpenseDialogOpen(true)} className="w-full">
+                <Button onClick={() => setIsExpenseDialogOpen(true)} className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Real Expense
                 </Button>
@@ -469,7 +469,7 @@ export default function TransactionsPage() {
                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(subMonths(selectedDate, 1))}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <h3 className="text-lg font-semibold text-center min-w-36">{format(selectedDate, 'MMMM')}</h3>
+                    <h3 className="text-lg font-semibold text-center min-w-32">{format(selectedDate, 'MMMM')}</h3>
                      <Button variant="outline" size="icon" onClick={() => setSelectedDate(addMonths(selectedDate, 1))}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -758,7 +758,5 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    
 
     
