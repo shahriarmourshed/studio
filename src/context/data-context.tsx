@@ -59,7 +59,6 @@ const DEFAULT_INCOME_CATEGORIES: Omit<IncomeCategory, 'id' | 'createdAt'>[] = [
 
 const DEFAULT_SETTINGS: UserSettings = {
     savingGoal: 0,
-    reminderDays: 3, // Legacy
     notificationSettings: {
         transactions: { enabled: false, time: '09:00', reminderDays: 3 },
         lowStock: { enabled: false, time: '10:00' },
