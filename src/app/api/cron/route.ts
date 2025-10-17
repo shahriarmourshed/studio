@@ -5,6 +5,8 @@ import type { UserSettings, Income, Expense, Product, FamilyMember } from '@/lib
 import { differenceInDays, parseISO, setYear as setYearDate, isFuture } from 'date-fns';
 import { getMessaging } from 'firebase-admin/messaging';
 
+export const dynamic = 'force-dynamic';
+
 // This function can be triggered by a cron job service.
 export async function GET(request: Request) {
   // Authorization check
