@@ -88,6 +88,7 @@ export type NotificationSettings = {
   transactions: {
     enabled: boolean;
     time: string; // "HH:mm"
+    reminderDays: number;
   };
   lowStock: {
     enabled: boolean;
@@ -102,7 +103,7 @@ export type NotificationSettings = {
 
 export type UserSettings = {
   savingGoal: number;
-  reminderDays: number;
+  reminderDays: number; // Legacy, will be deprecated
   notificationSettings: NotificationSettings;
   fcmTokens: string[];
 };

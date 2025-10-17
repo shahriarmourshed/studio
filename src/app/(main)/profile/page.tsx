@@ -41,7 +41,7 @@ import { Switch } from '@/components/ui/switch';
 export default function ProfilePage() {
   const { 
     settings, 
-    setReminderDays, 
+    setNotificationSettings,
     clearAllUserData, 
     expenseCategories, 
     addExpenseCategory, 
@@ -50,7 +50,6 @@ export default function ProfilePage() {
     addIncomeCategory,
     deleteIncomeCategory,
     addFcmToken,
-    setNotificationSettings,
   } = useData();
   const { logout, user } = useAuth();
   const router = useRouter();
@@ -167,7 +166,7 @@ export default function ProfilePage() {
 
   const handleNotificationSettingChange = (
     category: keyof NotificationSettings, 
-    field: 'enabled' | 'time' | 'daysBefore', 
+    field: 'enabled' | 'time' | 'daysBefore' | 'reminderDays', 
     value: boolean | string | number
   ) => {
       if (!settings || !settings.notificationSettings) return;
@@ -177,6 +176,7 @@ export default function ProfilePage() {
       if (category === 'transactions') {
         if (field === 'enabled') newSettings.transactions.enabled = value as boolean;
         if (field === 'time') newSettings.transactions.time = value as string;
+        if (field === 'reminderDays') newSettings.transactions.reminderDays = value as number;
       } else if (category === 'lowStock') {
         if (field === 'enabled') newSettings.lowStock.enabled = value as boolean;
         if (field === 'time') newSettings.lowStock.time = value as string;
@@ -242,8 +242,8 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex items-center gap-2">
                       <Select
-                          value={String(settings?.reminderDays)}
-                          onValueChange={(value) => setReminderDays(Number(value))}
+                          value={String(settings?.notificationSettings?.transactions?.reminderDays || 3)}
+                          onValueChange={(value) => handleNotificationSettingChange('transactions', 'reminderDays', Number(value))}
                           disabled={notificationPermission !== 'granted' || !settings?.notificationSettings?.transactions?.enabled}
                       >
                           <SelectTrigger className="w-24">
@@ -336,7 +336,6 @@ export default function ProfilePage() {
                   </div>
               </div>
             </div>
-            
           </CardContent>
         </Card>
         

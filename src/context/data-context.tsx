@@ -59,9 +59,9 @@ const DEFAULT_INCOME_CATEGORIES: Omit<IncomeCategory, 'id' | 'createdAt'>[] = [
 
 const DEFAULT_SETTINGS: UserSettings = {
     savingGoal: 0,
-    reminderDays: 3,
+    reminderDays: 3, // Legacy
     notificationSettings: {
-        transactions: { enabled: false, time: '09:00' },
+        transactions: { enabled: false, time: '09:00', reminderDays: 3 },
         lowStock: { enabled: false, time: '10:00' },
         events: { enabled: false, time: '11:00', daysBefore: 3 },
     },
@@ -78,7 +78,6 @@ interface DataContextType {
   incomeCategories: IncomeCategory[];
   settings: UserSettings;
   setSavingGoal: (goal: number) => void;
-  setReminderDays: (days: number) => void;
   setNotificationSettings: (settings: NotificationSettings) => void;
   addFcmToken: (token: string) => Promise<void>;
   addExpense: (expense: Omit<Expense, 'id'>, status?: Expense['status']) => Promise<void>;
@@ -203,7 +202,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
     
     const settingsUnsub = onSnapshot(doc(db, 'users', userId, 'settings', 'main'), (doc) => {
         if(doc.exists()) {
-            setSettings(doc.data() as UserSettings);
+            const remoteSettings = doc.data();
+            // Merge with defaults to ensure all fields are present, especially new ones.
+            setSettings(prevSettings => ({
+                ...DEFAULT_SETTINGS,
+                ...prevSettings,
+                ...remoteSettings,
+                notificationSettings: {
+                    ...DEFAULT_SETTINGS.notificationSettings,
+                    ...(prevSettings.notificationSettings || {}),
+                    ...(remoteSettings.notificationSettings || {}),
+                }
+            }));
         }
     });
     unsubscribes.push(settingsUnsub);
@@ -218,12 +228,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
     setSettings(s => ({...s, savingGoal: goal})); // Optimistic update
     await updateSettings(userId, { savingGoal: goal });
-  }
-
-  const setReminderDays = async (days: number) => {
-    if (!userId) return;
-    setSettings(s => ({...s, reminderDays: days})); // Optimistic update
-    await updateSettings(userId, { reminderDays: days });
   }
   
   const setNotificationSettings = async (notificationSettings: NotificationSettings) => {
@@ -388,7 +392,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     incomeCategories,
     settings,
     setSavingGoal, 
-    setReminderDays, 
     setNotificationSettings,
     addFcmToken,
     addExpense, 

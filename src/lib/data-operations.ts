@@ -20,7 +20,7 @@ import {
   where,
   arrayUnion,
 } from 'firebase/firestore';
-import type { Expense, FamilyMember, Product, Income, ExpenseCategory, UserSettings } from '@/lib/types';
+import type { Expense, FamilyMember, Product, Income, ExpenseCategory, UserSettings, NotificationSettings } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import {
   differenceInDays,
@@ -143,9 +143,9 @@ export const getSettings = async (userId: string): Promise<UserSettings> => {
 
     const defaultSettings: UserSettings = {
         savingGoal: 0,
-        reminderDays: 3,
+        reminderDays: 3, // Legacy
         notificationSettings: {
-            transactions: { enabled: false, time: '09:00' },
+            transactions: { enabled: false, time: '09:00', reminderDays: 3 },
             lowStock: { enabled: false, time: '10:00' },
             events: { enabled: false, time: '11:00', daysBefore: 3 },
         },
@@ -155,7 +155,7 @@ export const getSettings = async (userId: string): Promise<UserSettings> => {
     if (docSnap.exists()) {
         const data = docSnap.data();
         // Merge with defaults to ensure all fields are present
-        return {
+        const mergedSettings = {
             ...defaultSettings,
             ...data,
             notificationSettings: {
@@ -175,6 +175,12 @@ export const getSettings = async (userId: string): Promise<UserSettings> => {
                 },
             }
         };
+        // Handle legacy reminderDays
+        if (data.reminderDays && !data.notificationSettings?.transactions?.reminderDays) {
+            mergedSettings.notificationSettings.transactions.reminderDays = data.reminderDays;
+        }
+        return mergedSettings;
+
     } else {
         await setDoc(settingsDocRef, defaultSettings);
         return defaultSettings;

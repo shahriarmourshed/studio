@@ -31,19 +31,22 @@ export async function GET(request: Request) {
 
       const settings = settingsDoc.data() as UserSettings;
 
-      if (!settings.fcmTokens || settings.fcmTokens.length === 0) continue;
+      if (!settings.fcmTokens || settings.fcmTokens.length === 0 || !settings.notificationSettings) continue;
+
+      const { transactions, lowStock, events } = settings.notificationSettings;
 
       // Check for upcoming transactions
-      if (settings.notificationSettings?.transactions?.enabled && settings.notificationSettings.transactions.time === currentTime) {
-        const transactions = await getUpcomingTransactions(userId, settings.reminderDays);
-        if (transactions.length > 0) {
-          const body = `You have ${transactions.length} upcoming transaction(s) due soon.`;
+      if (transactions?.enabled && transactions.time === currentTime) {
+        const reminderDays = transactions.reminderDays || 3;
+        const upcomingTxs = await getUpcomingTransactions(userId, reminderDays);
+        if (upcomingTxs.length > 0) {
+          const body = `You have ${upcomingTxs.length} upcoming transaction(s) due soon.`;
           await sendNotification(settings.fcmTokens, "Upcoming Transactions", body);
         }
       }
       
       // Check for low stock products
-      if (settings.notificationSettings?.lowStock?.enabled && settings.notificationSettings.lowStock.time === currentTime) {
+      if (lowStock?.enabled && lowStock.time === currentTime) {
         const products = await getLowStockProducts(userId);
         if (products.length > 0) {
           const body = `You have ${products.length} product(s) running low on stock.`;
@@ -52,11 +55,11 @@ export async function GET(request: Request) {
       }
 
       // Check for upcoming events
-      if (settings.notificationSettings?.events?.enabled && settings.notificationSettings.events.time === currentTime) {
-        const daysBefore = settings.notificationSettings.events.daysBefore || 1;
-        const events = await getUpcomingEvents(userId, daysBefore);
-        if (events.length > 0) {
-          const body = `You have ${events.length} upcoming family event(s) in the next ${daysBefore} days.`;
+      if (events?.enabled && events.time === currentTime) {
+        const daysBefore = events.daysBefore || 1;
+        const upcomingEvents = await getUpcomingEvents(userId, daysBefore);
+        if (upcomingEvents.length > 0) {
+          const body = `You have ${upcomingEvents.length} upcoming family event(s) in the next ${daysBefore} days.`;
           await sendNotification(settings.fcmTokens, "Upcoming Family Events", body);
         }
       }
