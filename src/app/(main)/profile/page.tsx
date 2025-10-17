@@ -215,7 +215,7 @@ export default function ProfilePage() {
                     {notificationPermission === 'granted' ? 'Enabled' : 'Enable'}
                 </Button>
             </div>
-            {notificationPermission === 'granted' && settings?.notificationSettings && (
+            {settings?.notificationSettings && (
               <div className="space-y-4 pt-4">
                 <Separator />
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -230,7 +230,7 @@ export default function ProfilePage() {
                         <Select
                             value={String(settings.reminderDays)}
                             onValueChange={(value) => setReminderDays(Number(value))}
-                            disabled={!settings.notificationSettings.transactions.enabled}
+                            disabled={notificationPermission !== 'granted' || !settings.notificationSettings.transactions.enabled}
                         >
                             <SelectTrigger className="w-24">
                             <SelectValue placeholder="Days" />
@@ -248,11 +248,12 @@ export default function ProfilePage() {
                             className="w-28" 
                             value={settings.notificationSettings.transactions.time}
                             onChange={(e) => handleNotificationSettingChange('transactions', 'time', e.target.value)}
-                            disabled={!settings.notificationSettings.transactions.enabled}
+                            disabled={notificationPermission !== 'granted' || !settings.notificationSettings.transactions.enabled}
                         />
                         <Switch 
                           checked={settings.notificationSettings.transactions.enabled}
                           onCheckedChange={(checked) => handleNotificationSettingChange('transactions', 'enabled', checked)}
+                          disabled={notificationPermission !== 'granted'}
                         />
                     </div>
                 </div>
@@ -271,11 +272,12 @@ export default function ProfilePage() {
                           className="w-28" 
                           value={settings.notificationSettings.lowStock.time}
                           onChange={(e) => handleNotificationSettingChange('lowStock', 'time', e.target.value)}
-                          disabled={!settings.notificationSettings.lowStock.enabled}
+                          disabled={notificationPermission !== 'granted' || !settings.notificationSettings.lowStock.enabled}
                         />
                         <Switch 
                           checked={settings.notificationSettings.lowStock.enabled}
                           onCheckedChange={(checked) => handleNotificationSettingChange('lowStock', 'enabled', checked)}
+                          disabled={notificationPermission !== 'granted'}
                         />
                     </div>
                 </div>
@@ -292,7 +294,7 @@ export default function ProfilePage() {
                         <Select
                             value={String(settings.notificationSettings.events.daysBefore)}
                             onValueChange={(value) => handleNotificationSettingChange('events', 'daysBefore', Number(value))}
-                            disabled={!settings.notificationSettings.events.enabled}
+                            disabled={notificationPermission !== 'granted' || !settings.notificationSettings.events.enabled}
                         >
                             <SelectTrigger className="w-24">
                             <SelectValue placeholder="Days" />
@@ -310,11 +312,12 @@ export default function ProfilePage() {
                           className="w-28" 
                           value={settings.notificationSettings.events.time}
                           onChange={(e) => handleNotificationSettingChange('events', 'time', e.target.value)}
-                          disabled={!settings.notificationSettings.events.enabled}
+                          disabled={notificationPermission !== 'granted' || !settings.notificationSettings.events.enabled}
                         />
                         <Switch 
                           checked={settings.notificationSettings.events.enabled}
                           onCheckedChange={(checked) => handleNotificationSettingChange('events', 'enabled', checked)}
+                          disabled={notificationPermission !== 'granted'}
                         />
                     </div>
                 </div>
