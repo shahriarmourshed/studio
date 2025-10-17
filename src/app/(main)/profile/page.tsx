@@ -163,8 +163,8 @@ export default function ProfilePage() {
 
   const handleNotificationSettingChange = (
     category: keyof NotificationSettings, 
-    field: 'enabled' | 'time', 
-    value: boolean | string
+    field: 'enabled' | 'time' | 'daysBefore', 
+    value: boolean | string | number
   ) => {
       if (!settings) return;
       const newSettings = { ...settings.notificationSettings };
@@ -186,30 +186,6 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between">
               <p className="font-medium">Theme</p>
               <ThemeSwitcher />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="font-medium">Reminders</p>
-                <p className="text-sm text-muted-foreground">
-                  Set how many days in advance you get reminders for planned bills.
-                </p>
-              </div>
-              <Select
-                value={String(settings?.reminderDays)}
-                onValueChange={(value) => setReminderDays(Number(value))}
-              >
-                <SelectTrigger className="w-24">
-                  <SelectValue placeholder="Days" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 day</SelectItem>
-                  <SelectItem value="2">2 days</SelectItem>
-                  <SelectItem value="3">3 days</SelectItem>
-                  <SelectItem value="5">5 days</SelectItem>
-                  <SelectItem value="7">7 days</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
         </Card>
@@ -242,9 +218,28 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
                         <Clock className="h-5 w-5 text-primary"/>
-                        <p className="font-medium">Upcoming Transactions</p>
+                        <div>
+                          <p className="font-medium">Upcoming Transactions</p>
+                           <p className="text-xs text-muted-foreground">Remind me before a bill is due.</p>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        <Select
+                            value={String(settings?.reminderDays)}
+                            onValueChange={(value) => setReminderDays(Number(value))}
+                            disabled={!settings.notificationSettings.transactions.enabled}
+                        >
+                            <SelectTrigger className="w-24">
+                            <SelectValue placeholder="Days" />
+                            </SelectTrigger>
+                            <SelectContent>
+                            <SelectItem value="1">1 day</SelectItem>
+                            <SelectItem value="2">2 days</SelectItem>
+                            <SelectItem value="3">3 days</SelectItem>
+                            <SelectItem value="5">5 days</SelectItem>
+                            <SelectItem value="7">7 days</SelectItem>
+                            </SelectContent>
+                        </Select>
                         <Input 
                             type="time" 
                             className="w-28" 
@@ -262,7 +257,10 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
                         <ShoppingBasket className="h-5 w-5 text-primary"/>
-                        <p className="font-medium">Low Stock Alerts</p>
+                         <div>
+                          <p className="font-medium">Low Stock Alerts</p>
+                          <p className="text-xs text-muted-foreground">Notify me when products are running low.</p>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <Input 
@@ -282,9 +280,28 @@ export default function ProfilePage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
                         <CalendarClock className="h-5 w-5 text-primary"/>
-                        <p className="font-medium">Upcoming Events</p>
+                        <div>
+                          <p className="font-medium">Upcoming Events</p>
+                          <p className="text-xs text-muted-foreground">Get reminders for birthdays & anniversaries.</p>
+                        </div>
                     </div>
                      <div className="flex items-center gap-2">
+                        <Select
+                            value={String(settings?.notificationSettings.events.daysBefore)}
+                            onValueChange={(value) => handleNotificationSettingChange('events', 'daysBefore', Number(value))}
+                            disabled={!settings.notificationSettings.events.enabled}
+                        >
+                            <SelectTrigger className="w-24">
+                            <SelectValue placeholder="Days" />
+                            </SelectTrigger>
+                            <SelectContent>
+                            <SelectItem value="1">1 day</SelectItem>
+                            <SelectItem value="2">2 days</SelectItem>
+                            <SelectItem value="3">3 days</SelectItem>
+                            <SelectItem value="5">5 days</SelectItem>
+                            <SelectItem value="7">7 days</SelectItem>
+                            </SelectContent>
+                        </Select>
                         <Input 
                           type="time" 
                           className="w-28" 

@@ -53,9 +53,9 @@ export async function GET(request: Request) {
 
       // Check for upcoming events
       if (settings.notificationSettings?.events?.enabled && settings.notificationSettings.events.time === currentTime) {
-        const events = await getUpcomingEvents(userId, settings.reminderDays);
+        const events = await getUpcomingEvents(userId, settings.notificationSettings.events.daysBefore);
         if (events.length > 0) {
-          const body = `You have ${events.length} upcoming family event(s) in the next ${settings.reminderDays} days.`;
+          const body = `You have ${events.length} upcoming family event(s) in the next ${settings.notificationSettings.events.daysBefore} days.`;
           await sendNotification(settings.fcmTokens, "Upcoming Family Events", body);
         }
       }
@@ -122,7 +122,7 @@ async function getLowStockProducts(userId: string): Promise<Product[]> {
     return products.filter(p => p.lowStockThreshold !== undefined && p.currentStock <= p.lowStockThreshold);
 }
 
-async function getUpcomingEvents(userId: string, reminderDays: number): Promise<any[]> {
+async function getUpcomingEvents(userId: string, daysBefore: number): Promise<any[]> {
     const familySnapshot = await adminDb.collection('users').doc(userId).collection('familyMembers').get();
     const familyMembers = familySnapshot.docs.map(doc => doc.data() as FamilyMember);
 
@@ -141,7 +141,7 @@ async function getUpcomingEvents(userId: string, reminderDays: number): Promise<
                     nextEvent.setFullYear(currentYear + 1);
                 }
                 const daysLeft = differenceInDays(nextEvent, today);
-                if (daysLeft >= 0 && daysLeft <= reminderDays) {
+                if (daysLeft >= 0 && daysLeft <= daysBefore) {
                     events.push({
                         member,
                         eventName,

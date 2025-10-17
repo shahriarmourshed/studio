@@ -96,6 +96,7 @@ export type NotificationSettings = {
   events: {
     enabled: boolean;
     time: string; // "HH:mm"
+    daysBefore: number;
   };
 };
 

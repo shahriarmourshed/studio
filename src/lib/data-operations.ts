@@ -1,6 +1,5 @@
 
 
-
 'use client';
 
 import {
@@ -148,7 +147,7 @@ export const getSettings = async (userId: string): Promise<UserSettings> => {
         notificationSettings: {
             transactions: { enabled: false, time: '09:00' },
             lowStock: { enabled: false, time: '10:00' },
-            events: { enabled: false, time: '11:00' },
+            events: { enabled: false, time: '11:00', daysBefore: 3 },
         },
         fcmTokens: [],
     };

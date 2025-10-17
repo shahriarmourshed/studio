@@ -1,6 +1,5 @@
 
 
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -35,7 +34,7 @@ import {
   addExpenseCategoryOp,
   deleteExpenseCategoryOp,
   addIncomeCategoryOp,
-  deleteIncomeCategoryOp,
+deleteIncomeCategoryOp,
 } from '@/lib/data-operations';
 
 const DEFAULT_EXPENSE_CATEGORIES: Omit<ExpenseCategory, 'id' | 'createdAt'>[] = [
@@ -64,7 +63,7 @@ const DEFAULT_SETTINGS: UserSettings = {
     notificationSettings: {
         transactions: { enabled: false, time: '09:00' },
         lowStock: { enabled: false, time: '10:00' },
-        events: { enabled: false, time: '11:00' },
+        events: { enabled: false, time: '11:00', daysBefore: 3 },
     },
     fcmTokens: [],
 };
