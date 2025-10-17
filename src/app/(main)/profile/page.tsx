@@ -61,7 +61,6 @@ export default function ProfilePage() {
   useEffect(() => {
     // This code runs only on the client, after the component has mounted.
     if (typeof window !== 'undefined' && 'Notification' in window) {
-      setNotificationPermission(Notification.permission);
       if ('permissions' in navigator) {
         navigator.permissions.query({name: 'notifications'}).then(permissionStatus => {
           setNotificationPermission(permissionStatus.state);
@@ -69,6 +68,8 @@ export default function ProfilePage() {
             setNotificationPermission(permissionStatus.state);
           };
         });
+      } else {
+         setNotificationPermission(Notification.permission);
       }
     }
   }, []);
@@ -153,14 +154,12 @@ export default function ProfilePage() {
             title: "Notifications Enabled",
             description: "You will now receive notifications on this device.",
         });
-        setNotificationPermission('granted');
     } else {
         toast({
             variant: 'destructive',
             title: "Notifications Blocked",
             description: "Permission was not granted. Please enable notifications in your browser or system settings.",
         })
-        setNotificationPermission('denied');
     }
   }
 
@@ -492,3 +491,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
