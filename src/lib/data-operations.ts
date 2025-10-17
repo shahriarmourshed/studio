@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import {
@@ -18,8 +19,9 @@ import {
   CollectionReference,
   getDoc,
   where,
+  arrayUnion,
 } from 'firebase/firestore';
-import type { Expense, FamilyMember, Product, Income, ExpenseCategory } from '@/lib/types';
+import type { Expense, FamilyMember, Product, Income, ExpenseCategory, UserSettings } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import {
   differenceInDays,
@@ -136,20 +138,60 @@ export const generateRecurrentTransactions = <T extends Income | Expense>(
 };
 
 // Settings Operations
-export const getSettings = async (userId: string) => {
+export const getSettings = async (userId: string): Promise<UserSettings> => {
     const settingsDocRef = doc(db, 'users', userId, 'settings', 'main');
     const docSnap = await getDoc(settingsDocRef);
+
+    const defaultSettings: UserSettings = {
+        savingGoal: 0,
+        reminderDays: 3,
+        notificationSettings: {
+            transactions: { enabled: false, time: '09:00' },
+            lowStock: { enabled: false, time: '10:00' },
+            events: { enabled: false, time: '11:00' },
+        },
+        fcmTokens: [],
+    };
+    
     if (docSnap.exists()) {
-        return docSnap.data();
+        const data = docSnap.data();
+        // Merge with defaults to ensure all fields are present
+        return {
+            ...defaultSettings,
+            ...data,
+            notificationSettings: {
+                ...defaultSettings.notificationSettings,
+                ...(data.notificationSettings || {}),
+                 transactions: {
+                    ...defaultSettings.notificationSettings.transactions,
+                    ...(data.notificationSettings?.transactions || {}),
+                },
+                lowStock: {
+                    ...defaultSettings.notificationSettings.lowStock,
+                    ...(data.notificationSettings?.lowStock || {}),
+                },
+                events: {
+                    ...defaultSettings.notificationSettings.events,
+                    ...(data.notificationSettings?.events || {}),
+                },
+            }
+        };
     } else {
-        await setDoc(settingsDocRef, { savingGoal: 0, reminderDays: 3 });
-        return { savingGoal: 0, reminderDays: 3 };
+        await setDoc(settingsDocRef, defaultSettings);
+        return defaultSettings;
     }
 };
 
-export const updateSettings = async (userId: string, settings: { savingGoal?: number; reminderDays?: number }) => {
+export const updateSettings = async (userId: string, settings: Partial<UserSettings>) => {
     const settingsDocRef = doc(db, 'users', userId, 'settings', 'main');
-    await updateDoc(settingsDocRef, settings);
+    await setDoc(settingsDocRef, settings, { merge: true });
+};
+
+export const addFcmTokenOp = async (userId: string, token: string) => {
+    const settingsDocRef = doc(db, 'users', userId, 'settings', 'main');
+    await updateDoc(settingsDocRef, {
+        fcmTokens: arrayUnion(token)
+    });
 };
 
 

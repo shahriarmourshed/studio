@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PageHeader from '@/components/common/page-header';
 import {
   Card,
@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { LogOut, ShieldAlert, Trash2, PlusCircle, Bell } from 'lucide-react';
+import { LogOut, ShieldAlert, Trash2, PlusCircle, Bell, Clock, ShoppingBasket, CalendarClock } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import {
@@ -35,10 +35,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { requestForToken } from '@/lib/firebase';
+import type { NotificationSettings } from '@/lib/types';
+import { Switch } from '@/components/ui/switch';
 
 export default function ProfilePage() {
   const { 
-    reminderDays, 
+    settings, 
     setReminderDays, 
     clearAllUserData, 
     expenseCategories, 
@@ -46,15 +48,27 @@ export default function ProfilePage() {
     deleteExpenseCategory,
     incomeCategories,
     addIncomeCategory,
-    deleteIncomeCategory
+    deleteIncomeCategory,
+    addFcmToken,
+    setNotificationSettings,
   } = useData();
   const { logout, user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [newExpenseCategoryName, setNewExpenseCategoryName] = useState('');
   const [newIncomeCategoryName, setNewIncomeCategoryName] = useState('');
-  const [notificationStatus, setNotificationStatus] = useState(typeof window !== 'undefined' && Notification.permission);
+  const [notificationPermission, setNotificationPermission] = useState(typeof window !== 'undefined' ? Notification.permission : 'default');
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'permissions' in navigator) {
+      navigator.permissions.query({name: 'notifications'}).then(permissionStatus => {
+        setNotificationPermission(permissionStatus.state);
+        permissionStatus.onchange = () => {
+          setNotificationPermission(permissionStatus.state);
+        };
+      });
+    }
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -122,22 +136,41 @@ export default function ProfilePage() {
   }
 
   const handleNotificationPermission = async () => {
+    if (notificationPermission === 'granted') {
+      toast({
+        title: "Notifications are already enabled.",
+      });
+      return;
+    }
+    
     const token = await requestForToken();
     if (token) {
+        await addFcmToken(token);
         toast({
             title: "Notifications Enabled",
             description: "You will now receive notifications on this device.",
         });
-        setNotificationStatus('granted');
+        setNotificationPermission('granted');
     } else {
         toast({
             variant: 'destructive',
-            title: "Notifications Failed",
-            description: "Permission was not granted. Please enable notifications in your browser settings.",
+            title: "Notifications Blocked",
+            description: "Permission was not granted. Please enable notifications in your browser or system settings.",
         })
-        setNotificationStatus('denied');
+        setNotificationPermission('denied');
     }
   }
+
+  const handleNotificationSettingChange = (
+    category: keyof NotificationSettings, 
+    field: 'enabled' | 'time', 
+    value: boolean | string
+  ) => {
+      if (!settings) return;
+      const newSettings = { ...settings.notificationSettings };
+      (newSettings[category] as any)[field] = value;
+      setNotificationSettings(newSettings);
+  };
   
   return (
     <div className="container mx-auto">
@@ -163,7 +196,7 @@ export default function ProfilePage() {
                 </p>
               </div>
               <Select
-                value={String(reminderDays)}
+                value={String(settings?.reminderDays)}
                 onValueChange={(value) => setReminderDays(Number(value))}
               >
                 <SelectTrigger className="w-24">
@@ -181,27 +214,92 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Notifications</CardTitle>
             <CardDescription>Manage push notifications for alerts and reminders.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                 <div>
-                    <p className="font-medium">Push Notifications</p>
+                    <p className="font-medium">Push Notification Permission</p>
                     <p className="text-sm text-muted-foreground">
-                        Status: <span className="font-semibold">{notificationStatus}</span>
+                        Status: <span className="font-semibold capitalize">{notificationPermission}</span>
                     </p>
                 </div>
                 <Button 
                     onClick={handleNotificationPermission} 
-                    disabled={notificationStatus === 'granted'}
+                    disabled={notificationPermission === 'granted'}
+                    size="sm"
                 >
                     <Bell className="mr-2 h-4 w-4"/>
-                    {notificationStatus === 'granted' ? 'Enabled' : 'Enable'}
+                    {notificationPermission === 'granted' ? 'Enabled' : 'Enable'}
                 </Button>
             </div>
+            {notificationPermission === 'granted' && (
+              <div className="space-y-4 pt-4">
+                <Separator />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                        <Clock className="h-5 w-5 text-primary"/>
+                        <p className="font-medium">Upcoming Transactions</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Input 
+                            type="time" 
+                            className="w-28" 
+                            value={settings.notificationSettings.transactions.time}
+                            onChange={(e) => handleNotificationSettingChange('transactions', 'time', e.target.value)}
+                            disabled={!settings.notificationSettings.transactions.enabled}
+                        />
+                        <Switch 
+                          checked={settings.notificationSettings.transactions.enabled}
+                          onCheckedChange={(checked) => handleNotificationSettingChange('transactions', 'enabled', checked)}
+                        />
+                    </div>
+                </div>
+                 <Separator />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                        <ShoppingBasket className="h-5 w-5 text-primary"/>
+                        <p className="font-medium">Low Stock Alerts</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Input 
+                          type="time" 
+                          className="w-28" 
+                          value={settings.notificationSettings.lowStock.time}
+                          onChange={(e) => handleNotificationSettingChange('lowStock', 'time', e.target.value)}
+                          disabled={!settings.notificationSettings.lowStock.enabled}
+                        />
+                        <Switch 
+                          checked={settings.notificationSettings.lowStock.enabled}
+                          onCheckedChange={(checked) => handleNotificationSettingChange('lowStock', 'enabled', checked)}
+                        />
+                    </div>
+                </div>
+                 <Separator />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                        <CalendarClock className="h-5 w-5 text-primary"/>
+                        <p className="font-medium">Upcoming Events</p>
+                    </div>
+                     <div className="flex items-center gap-2">
+                        <Input 
+                          type="time" 
+                          className="w-28" 
+                          value={settings.notificationSettings.events.time}
+                          onChange={(e) => handleNotificationSettingChange('events', 'time', e.target.value)}
+                          disabled={!settings.notificationSettings.events.enabled}
+                        />
+                        <Switch 
+                          checked={settings.notificationSettings.events.enabled}
+                          onCheckedChange={(checked) => handleNotificationSettingChange('events', 'enabled', checked)}
+                        />
+                    </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
         

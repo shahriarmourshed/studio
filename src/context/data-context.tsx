@@ -1,9 +1,10 @@
 
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { Expense, FamilyMember, Product, Income, ExpenseCategory, IncomeCategory } from '@/lib/types';
+import type { Expense, FamilyMember, Product, Income, ExpenseCategory, IncomeCategory, UserSettings, NotificationSettings } from '@/lib/types';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { onSnapshot, collection, query, orderBy, writeBatch, getDocs, doc, deleteDoc } from "firebase/firestore";
@@ -12,6 +13,7 @@ import {
   generateRecurrentTransactions,
   getSettings,
   updateSettings,
+  addFcmTokenOp,
   addExpenseOp,
   updateExpenseOp,
   deleteExpenseOp,
@@ -56,6 +58,17 @@ const DEFAULT_INCOME_CATEGORIES: Omit<IncomeCategory, 'id' | 'createdAt'>[] = [
     { name: 'Other', isDefault: true },
 ];
 
+const DEFAULT_SETTINGS: UserSettings = {
+    savingGoal: 0,
+    reminderDays: 3,
+    notificationSettings: {
+        transactions: { enabled: false, time: '09:00' },
+        lowStock: { enabled: false, time: '10:00' },
+        events: { enabled: false, time: '11:00' },
+    },
+    fcmTokens: [],
+};
+
 
 interface DataContextType {
   expenses: Expense[];
@@ -64,10 +77,11 @@ interface DataContextType {
   familyMembers: FamilyMember[];
   expenseCategories: ExpenseCategory[];
   incomeCategories: IncomeCategory[];
-  savingGoal: number;
+  settings: UserSettings;
   setSavingGoal: (goal: number) => void;
-  reminderDays: number;
   setReminderDays: (days: number) => void;
+  setNotificationSettings: (settings: NotificationSettings) => void;
+  addFcmToken: (token: string) => Promise<void>;
   addExpense: (expense: Omit<Expense, 'id'>, status?: Expense['status']) => Promise<void>;
   updateExpense: (expense: Expense) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
@@ -105,8 +119,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<IncomeCategory[]>([]);
-  const [savingGoal, setSavingGoalState] = useState<number>(0);
-  const [reminderDays, setReminderDaysState] = useState<number>(3);
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   
   const userId = user?.uid || null;
 
@@ -121,8 +134,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setFamilyMembers([]);
       setExpenseCategories([]);
       setIncomeCategories([]);
-      setSavingGoalState(0);
-      setReminderDaysState(3);
+      setSettings(DEFAULT_SETTINGS);
       return;
     }
     
@@ -188,10 +200,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setupSubscription('expenseCategories', setExpenseCategories);
     setupSubscription('incomeCategories', setIncomeCategories);
     
-    getSettings(userId).then(settings => {
-      setSavingGoalState(settings.savingGoal);
-      setReminderDaysState(settings.reminderDays);
+    getSettings(userId).then(setSettings);
+    
+    const settingsUnsub = onSnapshot(doc(db, 'users', userId, 'settings', 'main'), (doc) => {
+        if(doc.exists()) {
+            setSettings(doc.data() as UserSettings);
+        }
     });
+    unsubscribes.push(settingsUnsub);
+
 
     return () => {
       unsubscribes.forEach(unsub => unsub());
@@ -200,14 +217,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const setSavingGoal = async (goal: number) => {
     if (!userId) return;
-    setSavingGoalState(goal); // Optimistic update
+    setSettings(s => ({...s, savingGoal: goal})); // Optimistic update
     await updateSettings(userId, { savingGoal: goal });
   }
 
   const setReminderDays = async (days: number) => {
     if (!userId) return;
-    setReminderDaysState(days); // Optimistic update
+    setSettings(s => ({...s, reminderDays: days})); // Optimistic update
     await updateSettings(userId, { reminderDays: days });
+  }
+  
+  const setNotificationSettings = async (notificationSettings: NotificationSettings) => {
+    if (!userId) return;
+    setSettings(s => ({...s, notificationSettings})); // Optimistic update
+    await updateSettings(userId, { notificationSettings });
+  }
+  
+  const addFcmToken = async (token: string) => {
+    if (!userId) return;
+    setSettings(s => ({...s, fcmTokens: [...new Set([...s.fcmTokens, token])]})); // Optimistic update
+    await addFcmTokenOp(userId, token);
   }
   
   const addExpense = async (expense: Omit<Expense, 'id'>, status: Expense['status'] = 'planned') => {
@@ -358,10 +387,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     familyMembers,
     expenseCategories,
     incomeCategories,
-    savingGoal, 
+    settings,
     setSavingGoal, 
-    reminderDays, 
     setReminderDays, 
+    setNotificationSettings,
+    addFcmToken,
     addExpense, 
     updateExpense, 
     deleteExpense, 
@@ -375,7 +405,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addFamilyMember,
     updateFamilyMember,
     deleteFamilyMember,
-    clearFamilyMembers,
+clearFamilyMembers,
     addExpenseCategory,
     deleteExpenseCategory,
     addIncomeCategory,

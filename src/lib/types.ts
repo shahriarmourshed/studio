@@ -1,4 +1,5 @@
 
+
 export type FamilyMember = {
   id: string;
   name: string;
@@ -81,4 +82,26 @@ export type Budget = {
     name: string;
     amount: number;
   }[];
+};
+
+export type NotificationSettings = {
+  transactions: {
+    enabled: boolean;
+    time: string; // "HH:mm"
+  };
+  lowStock: {
+    enabled: boolean;
+    time: string; // "HH:mm"
+  };
+  events: {
+    enabled: boolean;
+    time: string; // "HH:mm"
+  };
+};
+
+export type UserSettings = {
+  savingGoal: number;
+  reminderDays: number;
+  notificationSettings: NotificationSettings;
+  fcmTokens: string[];
 };
