@@ -228,9 +228,9 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex items-center gap-2">
                         <Select
-                            value={String(settings?.reminderDays)}
+                            value={String(settings.reminderDays)}
                             onValueChange={(value) => setReminderDays(Number(value))}
-                            disabled={!settings?.notificationSettings?.transactions?.enabled}
+                            disabled={!settings.notificationSettings.transactions.enabled}
                         >
                             <SelectTrigger className="w-24">
                             <SelectValue placeholder="Days" />
@@ -290,9 +290,9 @@ export default function ProfilePage() {
                     </div>
                      <div className="flex items-center gap-2">
                         <Select
-                            value={String(settings?.notificationSettings.events.daysBefore)}
+                            value={String(settings.notificationSettings.events.daysBefore)}
                             onValueChange={(value) => handleNotificationSettingChange('events', 'daysBefore', Number(value))}
-                            disabled={!settings?.notificationSettings?.events?.enabled}
+                            disabled={!settings.notificationSettings.events.enabled}
                         >
                             <SelectTrigger className="w-24">
                             <SelectValue placeholder="Days" />
