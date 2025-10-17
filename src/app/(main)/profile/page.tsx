@@ -60,6 +60,7 @@ export default function ProfilePage() {
   const [notificationPermission, setNotificationPermission] = useState('default');
 
   useEffect(() => {
+    // This code runs only on the client, after the component has mounted.
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setNotificationPermission(Notification.permission);
       if ('permissions' in navigator) {
@@ -170,8 +171,21 @@ export default function ProfilePage() {
     value: boolean | string | number
   ) => {
       if (!settings || !settings.notificationSettings) return;
-      const newSettings = { ...settings.notificationSettings };
-      (newSettings[category] as any)[field] = value;
+      
+      const newSettings: NotificationSettings = JSON.parse(JSON.stringify(settings.notificationSettings));
+      
+      if (category === 'transactions') {
+        if (field === 'enabled') newSettings.transactions.enabled = value as boolean;
+        if (field === 'time') newSettings.transactions.time = value as string;
+      } else if (category === 'lowStock') {
+        if (field === 'enabled') newSettings.lowStock.enabled = value as boolean;
+        if (field === 'time') newSettings.lowStock.time = value as string;
+      } else if (category === 'events') {
+        if (field === 'enabled') newSettings.events.enabled = value as boolean;
+        if (field === 'time') newSettings.events.time = value as string;
+        if (field === 'daysBefore') newSettings.events.daysBefore = value as number;
+      }
+      
       setNotificationSettings(newSettings);
   };
   
@@ -215,114 +229,114 @@ export default function ProfilePage() {
                     {notificationPermission === 'granted' ? 'Enabled' : 'Enable'}
                 </Button>
             </div>
-            {settings?.notificationSettings && (
-              <div className="space-y-4 pt-4">
-                <Separator />
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                        <Clock className="h-5 w-5 text-primary"/>
-                        <div>
-                          <p className="font-medium">Upcoming Transactions</p>
-                           <p className="text-xs text-muted-foreground">Remind me before a bill is due.</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Select
-                            value={String(settings.reminderDays)}
-                            onValueChange={(value) => setReminderDays(Number(value))}
-                            disabled={notificationPermission !== 'granted' || !settings.notificationSettings.transactions.enabled}
-                        >
-                            <SelectTrigger className="w-24">
-                            <SelectValue placeholder="Days" />
-                            </SelectTrigger>
-                            <SelectContent>
-                            <SelectItem value="1">1 day</SelectItem>
-                            <SelectItem value="2">2 days</SelectItem>
-                            <SelectItem value="3">3 days</SelectItem>
-                            <SelectItem value="5">5 days</SelectItem>
-                            <SelectItem value="7">7 days</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Input 
-                            type="time" 
-                            className="w-28" 
-                            value={settings.notificationSettings.transactions.time}
-                            onChange={(e) => handleNotificationSettingChange('transactions', 'time', e.target.value)}
-                            disabled={notificationPermission !== 'granted' || !settings.notificationSettings.transactions.enabled}
-                        />
-                        <Switch 
-                          checked={settings.notificationSettings.transactions.enabled}
-                          onCheckedChange={(checked) => handleNotificationSettingChange('transactions', 'enabled', checked)}
-                          disabled={notificationPermission !== 'granted'}
-                        />
-                    </div>
-                </div>
-                 <Separator />
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                        <ShoppingBasket className="h-5 w-5 text-primary"/>
-                         <div>
-                          <p className="font-medium">Low Stock Alerts</p>
-                          <p className="text-xs text-muted-foreground">Notify me when products are running low.</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Input 
+            
+            <div className="space-y-4 pt-4">
+              <Separator />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-primary"/>
+                      <div>
+                        <p className="font-medium">Upcoming Transactions</p>
+                         <p className="text-xs text-muted-foreground">Remind me before a bill is due.</p>
+                      </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <Select
+                          value={String(settings?.reminderDays)}
+                          onValueChange={(value) => setReminderDays(Number(value))}
+                          disabled={notificationPermission !== 'granted' || !settings?.notificationSettings?.transactions?.enabled}
+                      >
+                          <SelectTrigger className="w-24">
+                          <SelectValue placeholder="Days" />
+                          </SelectTrigger>
+                          <SelectContent>
+                          <SelectItem value="1">1 day</SelectItem>
+                          <SelectItem value="2">2 days</SelectItem>
+                          <SelectItem value="3">3 days</SelectItem>
+                          <SelectItem value="5">5 days</SelectItem>
+                          <SelectItem value="7">7 days</SelectItem>
+                          </SelectContent>
+                      </Select>
+                      <Input 
                           type="time" 
                           className="w-28" 
-                          value={settings.notificationSettings.lowStock.time}
-                          onChange={(e) => handleNotificationSettingChange('lowStock', 'time', e.target.value)}
-                          disabled={notificationPermission !== 'granted' || !settings.notificationSettings.lowStock.enabled}
-                        />
-                        <Switch 
-                          checked={settings.notificationSettings.lowStock.enabled}
-                          onCheckedChange={(checked) => handleNotificationSettingChange('lowStock', 'enabled', checked)}
-                          disabled={notificationPermission !== 'granted'}
-                        />
-                    </div>
-                </div>
-                 <Separator />
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                        <CalendarClock className="h-5 w-5 text-primary"/>
-                        <div>
-                          <p className="font-medium">Upcoming Events</p>
-                          <p className="text-xs text-muted-foreground">Get reminders for birthdays & anniversaries.</p>
-                        </div>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        <Select
-                            value={String(settings.notificationSettings.events.daysBefore)}
-                            onValueChange={(value) => handleNotificationSettingChange('events', 'daysBefore', Number(value))}
-                            disabled={notificationPermission !== 'granted' || !settings.notificationSettings.events.enabled}
-                        >
-                            <SelectTrigger className="w-24">
-                            <SelectValue placeholder="Days" />
-                            </SelectTrigger>
-                            <SelectContent>
-                            <SelectItem value="1">1 day</SelectItem>
-                            <SelectItem value="2">2 days</SelectItem>
-                            <SelectItem value="3">3 days</SelectItem>
-                            <SelectItem value="5">5 days</SelectItem>
-                            <SelectItem value="7">7 days</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Input 
-                          type="time" 
-                          className="w-28" 
-                          value={settings.notificationSettings.events.time}
-                          onChange={(e) => handleNotificationSettingChange('events', 'time', e.target.value)}
-                          disabled={notificationPermission !== 'granted' || !settings.notificationSettings.events.enabled}
-                        />
-                        <Switch 
-                          checked={settings.notificationSettings.events.enabled}
-                          onCheckedChange={(checked) => handleNotificationSettingChange('events', 'enabled', checked)}
-                          disabled={notificationPermission !== 'granted'}
-                        />
-                    </div>
-                </div>
+                          value={settings?.notificationSettings?.transactions?.time || '09:00'}
+                          onChange={(e) => handleNotificationSettingChange('transactions', 'time', e.target.value)}
+                          disabled={notificationPermission !== 'granted' || !settings?.notificationSettings?.transactions?.enabled}
+                      />
+                      <Switch 
+                        checked={settings?.notificationSettings?.transactions?.enabled || false}
+                        onCheckedChange={(checked) => handleNotificationSettingChange('transactions', 'enabled', checked)}
+                        disabled={notificationPermission !== 'granted'}
+                      />
+                  </div>
               </div>
-            )}
+               <Separator />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                      <ShoppingBasket className="h-5 w-5 text-primary"/>
+                       <div>
+                        <p className="font-medium">Low Stock Alerts</p>
+                        <p className="text-xs text-muted-foreground">Notify me when products are running low.</p>
+                      </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <Input 
+                        type="time" 
+                        className="w-28" 
+                        value={settings?.notificationSettings?.lowStock?.time || '10:00'}
+                        onChange={(e) => handleNotificationSettingChange('lowStock', 'time', e.target.value)}
+                        disabled={notificationPermission !== 'granted' || !settings?.notificationSettings?.lowStock?.enabled}
+                      />
+                      <Switch 
+                        checked={settings?.notificationSettings?.lowStock?.enabled || false}
+                        onCheckedChange={(checked) => handleNotificationSettingChange('lowStock', 'enabled', checked)}
+                        disabled={notificationPermission !== 'granted'}
+                      />
+                  </div>
+              </div>
+               <Separator />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                      <CalendarClock className="h-5 w-5 text-primary"/>
+                      <div>
+                        <p className="font-medium">Upcoming Events</p>
+                        <p className="text-xs text-muted-foreground">Get reminders for birthdays & anniversaries.</p>
+                      </div>
+                  </div>
+                   <div className="flex items-center gap-2">
+                      <Select
+                          value={String(settings?.notificationSettings?.events?.daysBefore || 1)}
+                          onValueChange={(value) => handleNotificationSettingChange('events', 'daysBefore', Number(value))}
+                          disabled={notificationPermission !== 'granted' || !settings?.notificationSettings?.events?.enabled}
+                      >
+                          <SelectTrigger className="w-24">
+                          <SelectValue placeholder="Days" />
+                          </SelectTrigger>
+                          <SelectContent>
+                          <SelectItem value="1">1 day</SelectItem>
+                          <SelectItem value="2">2 days</SelectItem>
+                          <SelectItem value="3">3 days</SelectItem>
+                          <SelectItem value="5">5 days</SelectItem>
+                          <SelectItem value="7">7 days</SelectItem>
+                          </SelectContent>
+                      </Select>
+                      <Input 
+                        type="time" 
+                        className="w-28" 
+                        value={settings?.notificationSettings?.events?.time || '11:00'}
+                        onChange={(e) => handleNotificationSettingChange('events', 'time', e.target.value)}
+                        disabled={notificationPermission !== 'granted' || !settings?.notificationSettings?.events?.enabled}
+                      />
+                      <Switch 
+                        checked={settings?.notificationSettings?.events?.enabled || false}
+                        onCheckedChange={(checked) => handleNotificationSettingChange('events', 'enabled', checked)}
+                        disabled={notificationPermission !== 'granted'}
+                      />
+                  </div>
+              </div>
+            </div>
+            
           </CardContent>
         </Card>
         
