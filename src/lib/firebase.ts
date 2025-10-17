@@ -30,7 +30,7 @@ export const requestForToken = async () => {
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      const currentToken = await getToken(messaging, { vapidKey: 'YOUR_VAPID_KEY' }); // Replace with your actual VAPID key
+      const currentToken = await getToken(messaging, { vapidKey: 'BBiqGgVOrDqA3mUjA_FmUnA-Fk-SSUi_yDkS-yGqH4t-6Lp3-zFpL5vX1f8mJ1hZ1g9wYjX2jV3k4eI' });
       if (currentToken) {
         console.log('FCM Token:', currentToken);
         // You would typically save this token to your server against the user's profile
