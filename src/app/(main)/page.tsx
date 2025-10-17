@@ -1,4 +1,5 @@
 
+
 'use client';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
@@ -36,7 +37,7 @@ import Image from 'next/image';
 
 export default function DashboardPage() {
   const { getSymbol } = useCurrency();
-  const { products, expenses, incomes, reminderDays, addExpense, loading, familyMembers, expenseCategories } = useData();
+  const { products, expenses, incomes, settings, addExpense, loading, familyMembers, expenseCategories } = useData();
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
 
   // Dialog states
@@ -109,6 +110,7 @@ export default function DashboardPage() {
   const upcomingTransactions = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); 
+    const reminderDays = settings?.notificationSettings?.transactions?.reminderDays || 3;
     
     const upcoming = (t: Income | Expense) => {
         const transactionDate = new Date(t.date);
@@ -121,7 +123,7 @@ export default function DashboardPage() {
     ];
 
     return combined.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [expenses, incomes, reminderDays]);
+  }, [expenses, incomes, settings]);
 
   const lowStockProducts = useMemo(() => {
     return products.filter(p => 
@@ -295,7 +297,7 @@ export default function DashboardPage() {
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Upcoming Transactions</CardTitle>
-            <CardDescription>Due within {reminderDays} day(s).</CardDescription>
+            <CardDescription>Due within {settings?.notificationSettings?.transactions?.reminderDays || 3} day(s).</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
@@ -399,3 +401,4 @@ export default function DashboardPage() {
   );
 }
 
+    

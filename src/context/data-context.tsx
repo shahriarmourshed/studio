@@ -102,6 +102,7 @@ interface DataContextType {
   clearAllUserData: () => Promise<void>;
   clearMonthData: (year: number, month: number) => Promise<void>;
   loading: boolean;
+  reminderDays: number;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -201,18 +202,42 @@ export function DataProvider({ children }: { children: ReactNode }) {
     
     const settingsUnsub = onSnapshot(doc(db, 'users', userId, 'settings', 'main'), (doc) => {
         if(doc.exists()) {
-            const remoteSettings = doc.data();
+            const remoteSettings = doc.data() as Partial<UserSettings & {reminderDays: number}>;
             // Merge with defaults to ensure all fields are present, especially new ones.
-            setSettings(prevSettings => ({
-                ...DEFAULT_SETTINGS,
-                ...prevSettings,
-                ...remoteSettings,
-                notificationSettings: {
-                    ...DEFAULT_SETTINGS.notificationSettings,
-                    ...(prevSettings.notificationSettings || {}),
-                    ...(remoteSettings.notificationSettings || {}),
+            setSettings(prevSettings => {
+                 const newSettings = {
+                    ...DEFAULT_SETTINGS,
+                    ...prevSettings,
+                    ...remoteSettings,
+                    notificationSettings: {
+                        ...DEFAULT_SETTINGS.notificationSettings,
+                        ...(prevSettings.notificationSettings || {}),
+                        ...(remoteSettings.notificationSettings || {}),
+                        transactions: {
+                            ...DEFAULT_SETTINGS.notificationSettings.transactions,
+                            ...(prevSettings.notificationSettings?.transactions || {}),
+                            ...(remoteSettings.notificationSettings?.transactions || {}),
+                        },
+                        lowStock: {
+                             ...DEFAULT_SETTINGS.notificationSettings.lowStock,
+                            ...(prevSettings.notificationSettings?.lowStock || {}),
+                            ...(remoteSettings.notificationSettings?.lowStock || {}),
+                        },
+                        events: {
+                            ...DEFAULT_SETTINGS.notificationSettings.events,
+                            ...(prevSettings.notificationSettings?.events || {}),
+                            ...(remoteSettings.notificationSettings?.events || {}),
+                        }
+                    }
+                };
+
+                // Migrate legacy reminderDays if it exists
+                if (remoteSettings.reminderDays && !remoteSettings.notificationSettings?.transactions?.reminderDays) {
+                    newSettings.notificationSettings.transactions.reminderDays = remoteSettings.reminderDays;
                 }
-            }));
+                
+                return newSettings;
+            });
         }
     });
     unsubscribes.push(settingsUnsub);
@@ -406,7 +431,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addFamilyMember,
     updateFamilyMember,
     deleteFamilyMember,
-clearFamilyMembers,
+    clearFamilyMembers,
     addExpenseCategory,
     deleteExpenseCategory,
     addIncomeCategory,
@@ -415,7 +440,8 @@ clearFamilyMembers,
     clearMonthData,
     completePlannedTransaction, 
     cancelPlannedTransaction,
-    loading
+    loading,
+    reminderDays: settings?.notificationSettings?.transactions?.reminderDays ?? 3,
   };
 
   return (
@@ -432,3 +458,5 @@ export function useData() {
   }
   return context;
 }
+
+    

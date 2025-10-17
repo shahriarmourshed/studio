@@ -143,7 +143,6 @@ export const getSettings = async (userId: string): Promise<UserSettings> => {
 
     const defaultSettings: UserSettings = {
         savingGoal: 0,
-        reminderDays: 3, // Legacy
         notificationSettings: {
             transactions: { enabled: false, time: '09:00', reminderDays: 3 },
             lowStock: { enabled: false, time: '10:00' },
@@ -153,9 +152,9 @@ export const getSettings = async (userId: string): Promise<UserSettings> => {
     };
     
     if (docSnap.exists()) {
-        const data = docSnap.data();
+        const data = docSnap.data() as Partial<UserSettings & {reminderDays: number}>;
         // Merge with defaults to ensure all fields are present
-        const mergedSettings = {
+        const mergedSettings: UserSettings = {
             ...defaultSettings,
             ...data,
             notificationSettings: {
@@ -447,3 +446,5 @@ export const deleteIncomeCategoryOp = async (userId: string, categoryId: string)
   const docRef = doc(db, `users/${userId}/incomeCategories`, categoryId);
   await deleteDoc(docRef);
 };
+
+    
