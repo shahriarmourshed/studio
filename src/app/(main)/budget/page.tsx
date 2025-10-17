@@ -67,12 +67,13 @@ export default function BudgetPage() {
     addIncome,
     updateIncome,
     deleteIncome,
-    savingGoal,
+    settings,
     setSavingGoal,
     expenseCategories,
     incomeCategories,
   } = useData();
 
+  const savingGoal = settings?.savingGoal;
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Dialog states
@@ -489,7 +490,7 @@ export default function BudgetPage() {
                     </form>
                 ) : (
                     <div className="text-center">
-                        <p className="text-lg sm:text-xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
+                        <p className="text-lg sm:text-xl font-bold text-primary">{getSymbol()}{(savingGoal || 0).toLocaleString()}</p>
                         <p className="text-sm text-muted-foreground mt-1">
                             Planned Savings: {getSymbol()}{plannedSavings.toLocaleString()}
                         </p>

@@ -71,7 +71,7 @@ export default function TransactionsPage() {
     deleteIncome,
     completePlannedTransaction,
     cancelPlannedTransaction,
-    savingGoal,
+    settings,
     setSavingGoal,
     clearMonthData,
     expenseCategories,
@@ -79,6 +79,7 @@ export default function TransactionsPage() {
   } = useData();
   const { toast } = useToast();
 
+  const savingGoal = settings?.savingGoal;
   const [selectedDate, setSelectedDate] = useState(new Date());
   
   // Dialog states
@@ -557,7 +558,7 @@ export default function TransactionsPage() {
                     </form>
                 ) : (
                     <div className="text-center">
-                        <p className="text-3xl font-bold text-primary">{getSymbol()}{savingGoal.toLocaleString()}</p>
+                        <p className="text-3xl font-bold text-primary">{getSymbol()}{(savingGoal || 0).toLocaleString()}</p>
                         {savingGoal > 0 && (
                             <p className="text-sm text-muted-foreground mt-1">
                                 {Math.max(0, (actualSavings / savingGoal) * 100).toFixed(0)}% of your goal reached
@@ -774,11 +775,5 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    
-
-    
-
-
 
     
