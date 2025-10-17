@@ -21,7 +21,11 @@ const db = getFirestore(app);
 // Get a messaging instance
 let messaging;
 if (typeof window !== "undefined") {
-    messaging = getMessaging(app);
+    try {
+        messaging = getMessaging(app);
+    } catch (err) {
+        console.error("Failed to initialize Firebase Messaging", err);
+    }
 }
 
 export const requestForToken = async () => {
@@ -30,10 +34,13 @@ export const requestForToken = async () => {
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      const currentToken = await getToken(messaging, { vapidKey: 'BBiqGgVOrDqA3mUjA_FmUnA-Fk-SSUi_yDkS-yGqH4t-6Lp3-zFpL5vX1f8mJ1hZ1g9wYjX2jV3k4eI' });
+      const serviceWorkerRegistration = await navigator.serviceWorker.ready;
+      const currentToken = await getToken(messaging, { 
+          vapidKey: 'BBiqGgVOrDqA3mUjA_FmUnA-Fk-SSUi_yDkS-yGqH4t-6Lp3-zFpL5vX1f8mJ1hZ1g9wYjX2jV3k4eI',
+          serviceWorkerRegistration 
+      });
       if (currentToken) {
         console.log('FCM Token:', currentToken);
-        // You would typically save this token to your server against the user's profile
         return currentToken;
       } else {
         console.log('No registration token available. Request permission to generate one.');
