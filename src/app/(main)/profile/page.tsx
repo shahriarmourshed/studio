@@ -57,16 +57,19 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [newExpenseCategoryName, setNewExpenseCategoryName] = useState('');
   const [newIncomeCategoryName, setNewIncomeCategoryName] = useState('');
-  const [notificationPermission, setNotificationPermission] = useState(typeof window !== 'undefined' ? Notification.permission : 'default');
+  const [notificationPermission, setNotificationPermission] = useState('default');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'permissions' in navigator) {
-      navigator.permissions.query({name: 'notifications'}).then(permissionStatus => {
-        setNotificationPermission(permissionStatus.state);
-        permissionStatus.onchange = () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setNotificationPermission(Notification.permission);
+      if ('permissions' in navigator) {
+        navigator.permissions.query({name: 'notifications'}).then(permissionStatus => {
           setNotificationPermission(permissionStatus.state);
-        };
-      });
+          permissionStatus.onchange = () => {
+            setNotificationPermission(permissionStatus.state);
+          };
+        });
+      }
     }
   }, []);
 
