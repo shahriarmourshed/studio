@@ -15,11 +15,11 @@ export async function GET(request: Request) {
 
   try {
     const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+    const currentHour = now.getUTCHours();
+    const currentMinute = now.getUTCMinutes();
     const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
 
-    console.log(`Cron job running at: ${currentTime}`);
+    console.log(`Cron job running at UTC: ${currentTime}`);
 
     const usersSnapshot = await adminDb.collection('users').get();
 
@@ -53,9 +53,10 @@ export async function GET(request: Request) {
 
       // Check for upcoming events
       if (settings.notificationSettings?.events?.enabled && settings.notificationSettings.events.time === currentTime) {
-        const events = await getUpcomingEvents(userId, settings.notificationSettings.events.daysBefore);
+        const daysBefore = settings.notificationSettings.events.daysBefore || 1;
+        const events = await getUpcomingEvents(userId, daysBefore);
         if (events.length > 0) {
-          const body = `You have ${events.length} upcoming family event(s) in the next ${settings.notificationSettings.events.daysBefore} days.`;
+          const body = `You have ${events.length} upcoming family event(s) in the next ${daysBefore} days.`;
           await sendNotification(settings.fcmTokens, "Upcoming Family Events", body);
         }
       }
