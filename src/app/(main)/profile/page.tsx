@@ -169,7 +169,7 @@ export default function ProfilePage() {
     field: 'enabled' | 'time' | 'daysBefore', 
     value: boolean | string | number
   ) => {
-      if (!settings) return;
+      if (!settings || !settings.notificationSettings) return;
       const newSettings = { ...settings.notificationSettings };
       (newSettings[category] as any)[field] = value;
       setNotificationSettings(newSettings);
@@ -230,7 +230,7 @@ export default function ProfilePage() {
                         <Select
                             value={String(settings?.reminderDays)}
                             onValueChange={(value) => setReminderDays(Number(value))}
-                            disabled={!settings.notificationSettings.transactions.enabled}
+                            disabled={!settings?.notificationSettings?.transactions?.enabled}
                         >
                             <SelectTrigger className="w-24">
                             <SelectValue placeholder="Days" />
@@ -292,7 +292,7 @@ export default function ProfilePage() {
                         <Select
                             value={String(settings?.notificationSettings.events.daysBefore)}
                             onValueChange={(value) => handleNotificationSettingChange('events', 'daysBefore', Number(value))}
-                            disabled={!settings.notificationSettings.events.enabled}
+                            disabled={!settings?.notificationSettings?.events?.enabled}
                         >
                             <SelectTrigger className="w-24">
                             <SelectValue placeholder="Days" />

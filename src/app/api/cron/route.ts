@@ -155,7 +155,9 @@ async function getUpcomingEvents(userId: string, daysBefore: number): Promise<an
         };
 
         checkEvent(member.birthday, `${member.name}'s Birthday`);
-        checkEvent(member.specialEventDate, member.specialEventName || 'Special Event');
+        if(member.specialEventName) {
+            checkEvent(member.specialEventDate, member.specialEventName);
+        }
     }
 
     return events.sort((a, b) => a.daysLeft - b.daysLeft);
