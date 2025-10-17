@@ -215,7 +215,7 @@ export default function ProfilePage() {
                     {notificationPermission === 'granted' ? 'Enabled' : 'Enable'}
                 </Button>
             </div>
-            {notificationPermission === 'granted' && (
+            {notificationPermission === 'granted' && settings?.notificationSettings && (
               <div className="space-y-4 pt-4">
                 <Separator />
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
