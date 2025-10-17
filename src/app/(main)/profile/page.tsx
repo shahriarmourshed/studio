@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { LogOut, ShieldAlert, Trash2, PlusCircle } from 'lucide-react';
+import { LogOut, ShieldAlert, Trash2, PlusCircle, Bell } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import {
@@ -34,6 +34,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { requestForToken } from '@/lib/firebase';
 
 export default function ProfilePage() {
   const { 
@@ -52,6 +53,8 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [newExpenseCategoryName, setNewExpenseCategoryName] = useState('');
   const [newIncomeCategoryName, setNewIncomeCategoryName] = useState('');
+  const [notificationStatus, setNotificationStatus] = useState(typeof window !== 'undefined' && Notification.permission);
+
 
   const handleLogout = async () => {
     try {
@@ -117,6 +120,24 @@ export default function ProfilePage() {
       description: `${categoryName} has been deleted.`
     })
   }
+
+  const handleNotificationPermission = async () => {
+    const token = await requestForToken();
+    if (token) {
+        toast({
+            title: "Notifications Enabled",
+            description: "You will now receive notifications on this device.",
+        });
+        setNotificationStatus('granted');
+    } else {
+        toast({
+            variant: 'destructive',
+            title: "Notifications Failed",
+            description: "Permission was not granted. Please enable notifications in your browser settings.",
+        })
+        setNotificationStatus('denied');
+    }
+  }
   
   return (
     <div className="container mx-auto">
@@ -156,6 +177,30 @@ export default function ProfilePage() {
                   <SelectItem value="7">7 days</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Notifications</CardTitle>
+            <CardDescription>Manage push notifications for alerts and reminders.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="font-medium">Push Notifications</p>
+                    <p className="text-sm text-muted-foreground">
+                        Status: <span className="font-semibold">{notificationStatus}</span>
+                    </p>
+                </div>
+                <Button 
+                    onClick={handleNotificationPermission} 
+                    disabled={notificationStatus === 'granted'}
+                >
+                    <Bell className="mr-2 h-4 w-4"/>
+                    {notificationStatus === 'granted' ? 'Enabled' : 'Enable'}
+                </Button>
             </div>
           </CardContent>
         </Card>
@@ -313,4 +358,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
