@@ -1,14 +1,16 @@
 
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
 import type { UserSettings, Income, Expense, Product, FamilyMember } from '@/lib/types';
 import { differenceInDays, parseISO, setYear as setYearDate, isFuture } from 'date-fns';
-import { getMessaging } from 'firebase-admin/messaging';
 
 export const dynamic = 'force-dynamic';
 
 // This function can be triggered by a cron job service.
 export async function GET(request: Request) {
+  // Dynamically import admin-sdk to prevent build errors
+  const { adminDb } = await import('@/lib/firebase-admin');
+  const { getMessaging } = await import('firebase-admin/messaging');
+  
   // Authorization check
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -24,6 +26,31 @@ export async function GET(request: Request) {
     console.log(`Cron job running at UTC: ${currentTime}`);
 
     const usersSnapshot = await adminDb.collection('users').get();
+
+    const sendNotification = async (tokens: string[], title: string, body: string) => {
+      if (tokens.length === 0) return;
+
+      const message = {
+        notification: { title, body },
+        tokens: tokens,
+      };
+      
+      try {
+        const response = await getMessaging().sendMulticast(message);
+        console.log('Successfully sent message:', response);
+        if (response.failureCount > 0) {
+            const failedTokens: string[] = [];
+            response.responses.forEach((resp, idx) => {
+                if (!resp.success) {
+                    failedTokens.push(tokens[idx]);
+                }
+            });
+            console.log('List of tokens that caused failures:', failedTokens);
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    }
 
     for (const userDoc of usersSnapshot.docs) {
       const userId = userDoc.id;
@@ -74,34 +101,11 @@ export async function GET(request: Request) {
   }
 }
 
-async function sendNotification(tokens: string[], title: string, body: string) {
-  if (tokens.length === 0) return;
-
-  const message = {
-    notification: { title, body },
-    tokens: tokens,
-  };
-  
-  try {
-    const response = await getMessaging().sendMulticast(message);
-    console.log('Successfully sent message:', response);
-    if (response.failureCount > 0) {
-        const failedTokens: string[] = [];
-        response.responses.forEach((resp, idx) => {
-            if (!resp.success) {
-                failedTokens.push(tokens[idx]);
-            }
-        });
-        console.log('List of tokens that caused failures:', failedTokens);
-    }
-  } catch (error) {
-    console.error('Error sending message:', error);
-  }
-}
 
 // --- Data fetching functions ---
 
 async function getUpcomingTransactions(userId: string, reminderDays: number): Promise<(Income | Expense)[]> {
+    const { adminDb } = await import('@/lib/firebase-admin');
     const today = new Date();
     today.setHours(0, 0, 0, 0); 
 
@@ -122,6 +126,7 @@ async function getUpcomingTransactions(userId: string, reminderDays: number): Pr
 }
 
 async function getLowStockProducts(userId: string): Promise<Product[]> {
+    const { adminDb } = await import('@/lib/firebase-admin');
     const productsSnapshot = await adminDb.collection('users').doc(userId).collection('products').get();
     const products = productsSnapshot.docs.map(doc => doc.data() as Product);
 
@@ -129,6 +134,7 @@ async function getLowStockProducts(userId: string): Promise<Product[]> {
 }
 
 async function getUpcomingEvents(userId: string, daysBefore: number): Promise<any[]> {
+    const { adminDb } = await import('@/lib/firebase-admin');
     const familySnapshot = await adminDb.collection('users').doc(userId).collection('familyMembers').get();
     const familyMembers = familySnapshot.docs.map(doc => doc.data() as FamilyMember);
 
