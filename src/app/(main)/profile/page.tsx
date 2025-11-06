@@ -37,6 +37,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { requestForToken } from '@/lib/firebase';
 import type { NotificationSettings } from '@/lib/types';
 import { Switch } from '@/components/ui/switch';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 export default function ProfilePage() {
   const { 
@@ -60,7 +62,11 @@ export default function ProfilePage() {
 
   useEffect(() => {
     // This code runs only on the client, after the component has mounted.
-    if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (Capacitor.isNativePlatform()) {
+      PushNotifications.checkPermissions().then(status => {
+        setNotificationPermission(status.receive);
+      });
+    } else if (typeof window !== 'undefined' && 'Notification' in window) {
       if ('permissions' in navigator) {
         navigator.permissions.query({name: 'notifications'}).then(permissionStatus => {
           setNotificationPermission(permissionStatus.state);
@@ -139,6 +145,34 @@ export default function ProfilePage() {
     })
   }
 
+  const registerNativeNotifications = async () => {
+    let permStatus = await PushNotifications.checkPermissions();
+
+    if (permStatus.receive === 'prompt') {
+      permStatus = await PushNotifications.requestPermissions();
+    }
+    
+    if (permStatus.receive !== 'granted') {
+      throw new Error('User denied permissions!');
+    }
+
+    await PushNotifications.register();
+  }
+
+  const getFCMToken = async () => {
+    return new Promise((resolve, reject) => {
+      PushNotifications.addListener('registration', (token) => {
+        console.log('Push registration success, token: ' + token.value);
+        resolve(token.value);
+      });
+
+      PushNotifications.addListener('registrationError', (error) => {
+        console.error('Error on registration: ' + JSON.stringify(error));
+        reject(error);
+      });
+    });
+  }
+
   const handleNotificationPermission = async () => {
     if (notificationPermission === 'granted') {
       toast({
@@ -146,19 +180,31 @@ export default function ProfilePage() {
       });
       return;
     }
-    
-    const token = await requestForToken();
-    if (token) {
-        await addFcmToken(token);
-        toast({
-            title: "Notifications Enabled",
-            description: "You will now receive notifications on this device.",
-        });
-    } else {
+
+    let token: string | null = null;
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await registerNativeNotifications();
+        token = await getFCMToken() as string;
+      } else {
+        token = await requestForToken();
+      }
+
+      if (token) {
+          await addFcmToken(token);
+          toast({
+              title: "Notifications Enabled",
+              description: "You will now receive notifications on this device.",
+          });
+          setNotificationPermission('granted');
+      } else {
+          throw new Error("Could not get notification token.");
+      }
+    } catch (err) {
         toast({
             variant: 'destructive',
             title: "Notifications Blocked",
-            description: "Permission was not granted. Please enable notifications in your browser or system settings.",
+            description: "Permission was not granted. Please enable notifications in your app or system settings.",
         })
     }
   }
@@ -491,5 +537,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
